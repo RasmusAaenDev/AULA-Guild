@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { CreateMenu } from '@/components/CreateMenu';
+import { UnansweredBanner } from '@/components/UnansweredBanner';
 import { countsLabel, eventTypeLabel, formatTimeRange, groupByDay, rsvpLabel } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
-import { listUpcomingEvents } from '@/lib/events';
+import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
 import { statusClass } from '@/lib/rsvp-ui';
 import { requireMember } from '@/lib/session';
 
@@ -9,14 +11,21 @@ export const dynamic = 'force-dynamic';
 
 export default async function CalendarPage() {
   const member = await requireMember();
-  const items = await listUpcomingEvents(getDb(), member.userId);
+  const db = getDb();
+  const [items, unanswered] = await Promise.all([
+    listUpcomingEvents(db, member.userId),
+    countUnansweredUpcoming(db, member.userId),
+  ]);
   const days = groupByDay(items);
   return (
     <>
-      <h1>Kalender</h1>
-      <div className="actions" style={{ marginBottom: 16 }}>
-        <Link href="/kalender/ny" className="btn">Opret event</Link>
-        {member.isOfficer && <Link href="/kalender/serier" className="btn secondary">Gentagne events</Link>}
+      <UnansweredBanner count={unanswered} />
+      <div className="section-head">
+        <h1>Kalender</h1>
+        <div className="actions">
+          {member.isOfficer && <Link href="/kalender/serier" className="btn secondary">Gentagne events</Link>}
+          <CreateMenu />
+        </div>
       </div>
       {days.length === 0 && (
         <section className="card"><p className="muted">Ingen kommende events.</p></section>

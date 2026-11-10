@@ -22,6 +22,14 @@ export function formatDayHeading(d: Date): string {
   return dayFormatter.format(d);
 }
 
+const dayNumberFormatter = new Intl.DateTimeFormat('da-DK', { day: 'numeric', timeZone: ZONE });
+const monthShortFormatter = new Intl.DateTimeFormat('da-DK', { month: 'short', timeZone: ZONE });
+
+/** Stor dato og kort måned til datoblokken: `{ day: '12', month: 'nov' }` (dansk tid, uden punktum). */
+export function formatDayMonth(d: Date): { day: string; month: string } {
+  return { day: dayNumberFormatter.format(d).replace('.', ''), month: monthShortFormatter.format(d).replace('.', '') };
+}
+
 /** «20:00» (dansk tid). */
 export function formatClock(d: Date): string {
   return timeFormatter.format(d).replace('.', ':');

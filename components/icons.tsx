@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -28,16 +28,27 @@ const paths: Record<IconName, ReactNode> = {
     </>
   ),
   afbud: <path d="M6 6l12 12M18 6L6 18" />,
+  opret: <path d="M12 5v14M5 12h14" />,
+  opslag: <path d="M5 4h14v16H5zM8 9h8M8 13h8M8 17h5" />,
+  bogmaerke: <path d="M7 4h10v16l-5-4-5 4z" />,
+  udraab: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v6M12 16.5v.5" />
+    </>
+  ),
+  luk: <path d="M6 6l12 12M18 6L6 18" />,
+  'pil-ned': <path d="M6 9l6 6 6-6" />,
 };
 
 /** Simpelt 24×24 stregikon i currentColor; skjult for skærmlæsere (teksten ved siden af bærer meningen). */
-export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
+export function Icon({ name, size = 24, filled = false }: { name: IconName; size?: number; filled?: boolean }) {
   return (
     <svg
       viewBox="0 0 24 24"
       width={size}
       height={size}
-      fill="none"
+      fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth={2}
       strokeLinecap="round"

@@ -60,6 +60,7 @@ main:focus { outline: none; }
 
 .btn { background: var(--topbar); color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 700; cursor: pointer; }
 .btn.secondary { background: transparent; color: var(--heading); border: 1px solid var(--border); }
+.btn.secondary.logout, .logout { text-transform: uppercase; letter-spacing: 0.06em; }
 .topbar-right > .btn.secondary { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
 .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 10px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
@@ -142,6 +143,47 @@ a.post-card { display: block; text-decoration: none; color: inherit; }
 .chat-meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
 .chat-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .chat-new { position: absolute; right: 24px; bottom: 28px; }
+
+/* Overblik: hovedkolonne + højre kolonne fra 1100 px */
+.overview-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 24px; align-items: start; }
+@media (min-width: 1100px) {
+  .overview-grid { grid-template-columns: minmax(0, 1fr) 320px; }
+  .overview-aside { position: sticky; top: 72px; }
+}
+.post-badges { margin: 0 0 6px; display: flex; gap: 6px; }
+.post-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.post-head p { margin: 0; }
+.post-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.post-card h3 a { text-decoration: none; color: var(--heading); }
+.post-card h3 a:hover { text-decoration: underline; }
+.bookmark-form { flex: none; }
+.icon-btn { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; border: 0; background: transparent; color: var(--heading); cursor: pointer; }
+.icon-btn:hover:not(:disabled) { background: var(--border); }
+.icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+details.create { position: relative; }
+details.create summary { list-style: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+details.create summary::-webkit-details-marker { display: none; }
+details.create .menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 200px; margin: 0; padding: 6px; list-style: none; background: var(--card); color: var(--text); border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); z-index: 10; }
+details.create .menu a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; text-decoration: none; color: var(--text); font-weight: 700; }
+details.create .menu a:hover { background: var(--border); }
+
+.alert-banner { display: flex; align-items: center; gap: 12px; background: var(--card); color: var(--text); border: 1px solid var(--badge); border-left-width: 6px; border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; }
+.alert-banner .icon { flex: none; color: var(--danger); }
+.alert-banner p { margin: 0; flex: 1; }
+.alert-banner a { color: var(--heading); font-weight: 700; }
+.banner-close { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; }
+.banner-close:hover { background: var(--border); }
+
+.date-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.date-row { display: flex; gap: 12px; align-items: flex-start; }
+.date-block { flex: none; width: 52px; text-align: center; background: var(--bg); border-radius: 8px; padding: 6px 0; line-height: 1.1; }
+.date-day { display: block; font-size: 24px; font-weight: 800; color: var(--heading); }
+.date-month { display: block; font-size: 13px; color: var(--muted); text-transform: uppercase; }
+.date-status { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; }
+.date-row.status-deltager .date-status { color: var(--ok); }
+.date-row.status-maaske .date-status { color: var(--maybe); }
+.date-row.status-afbud .date-status { color: var(--no); }
 
 @media (max-width: 360px) {
   .navlink { font-size: 11px; padding: 8px 0; }

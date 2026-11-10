@@ -7,6 +7,7 @@ import { getPost } from '@/lib/posts';
 import { formatAbsolute } from '@/lib/posts-ui';
 import { requireMember } from '@/lib/session';
 import { deleteCommentAction, deletePostAction } from '../actions';
+import { BookmarkButton } from '../BookmarkButton';
 import { CommentForm } from '../CommentForm';
 import { MarkRead } from '../MarkRead';
 import { PinForm } from '../PinForm';
@@ -27,9 +28,12 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       <MarkRead postId={post.id} unread={post.unread} />
       <h1>{post.title}</h1>
       <section className="card">
-        <p className="muted">
-          {post.pinned && <span className="badge">Fastgjort</span>} {post.authorName} · {formatAbsolute(post.createdAt)}
-        </p>
+        <div className="post-head">
+          <p className="muted">
+            {post.pinned && <span className="badge">Vigtig</span>} {post.authorName} · {formatAbsolute(post.createdAt)}
+          </p>
+          <BookmarkButton postId={post.id} bookmarked={post.bookmarked} />
+        </div>
         <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{post.body}</p>
         {(canDelete || member.isOfficer) && (
           <div className="actions">

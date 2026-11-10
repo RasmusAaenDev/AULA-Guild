@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getDb } from '@/lib/db';
 import { parseId } from '@/lib/parse';
-import { addComment, createPost, deleteComment, deletePost, markPostRead, setPinned } from '@/lib/posts';
+import { addComment, createPost, deleteComment, deletePost, markPostRead, setPinned, toggleBookmark } from '@/lib/posts';
 import { commentNotFound, postMessage } from '@/lib/posts-ui';
 import { requireMember, requireOfficer } from '@/lib/session';
 
@@ -86,4 +86,15 @@ export async function markReadAction(postId: number): Promise<void> {
   if (id === null) return;
   await markPostRead(getDb(), member.userId, id);
   revalidatePath('/', 'layout');
+}
+
+/** Gem/fjern bogmærke. Brugerens eget bogmærke; kræver kun medlemskab. */
+export async function toggleBookmarkAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await requireMember();
+  const postId = parseId(field(formData, 'postId'));
+  if (postId === null) return { error: postMessage('not_found') };
+  const result = await toggleBookmark(getDb(), member.userId, postId);
+  revalidatePosts(postId);
+  if (!result.ok) return { error: postMessage(result.reason) };
+  return {};
 }

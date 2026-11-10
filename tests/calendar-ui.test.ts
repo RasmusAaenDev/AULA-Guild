@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  calendarMessage, countsLabel, formatClock, formatDayHeading, formatTimeRange, groupByDay, seriesKeptMessage, timeMessage,
+  calendarMessage, countsLabel, formatClock, formatDayHeading, formatDayMonth, formatTimeRange, groupByDay, seriesKeptMessage, timeMessage,
 } from '@/lib/calendar-ui';
 
 describe('kalender-hjælpere', () => {
@@ -45,5 +45,16 @@ describe('kalender-hjælpere', () => {
     expect(seriesKeptMessage(NaN)).toBeNull();
     expect(seriesKeptMessage(1)).toBe('1 event har tilmeldinger og blev ikke ændret');
     expect(seriesKeptMessage(3)).toBe('3 events har tilmeldinger og blev ikke ændret');
+  });
+});
+
+describe('formatDayMonth', () => {
+  it('giver dag og kort måned uden punktum i dansk tid', () => {
+    expect(formatDayMonth(new Date('2026-11-12T18:00:00Z'))).toEqual({ day: '12', month: 'nov' });
+    expect(formatDayMonth(new Date('2026-03-05T12:00:00Z'))).toEqual({ day: '5', month: 'mar' });
+  });
+  it('bruger dansk dato omkring midnat', () => {
+    expect(formatDayMonth(new Date('2026-11-12T23:30:00Z'))).toEqual({ day: '13', month: 'nov' });
+    expect(formatDayMonth(new Date('2026-07-31T22:30:00Z'))).toEqual({ day: '1', month: 'aug' });
   });
 });

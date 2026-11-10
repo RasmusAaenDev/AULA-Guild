@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { addCharacterAction, type AddState } from '@/app/(app)/actions';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 
 const roleOptions = [
   { value: 'tank', label: 'Tank' },
@@ -11,15 +12,16 @@ const roleOptions = [
 
 export function AddCharacterForm() {
   const [state, action, pending] = useActionState<AddState, FormData>(addCharacterAction, {});
+  const { bind } = useFormValues({ name: '', role: 'dps' });
   return (
-    <form action={action} className="card">
+    <form onSubmit={submitHandler(action)} className="card">
       <div className="field">
         <label htmlFor="name">Karakterens navn (fornavn og efternavn)</label>
-        <input id="name" name="name" required maxLength={60} autoComplete="off" placeholder="fx Magi Far" />
+        <input id="name" {...bind('name')} required maxLength={60} autoComplete="off" placeholder="fx Magi Far" />
       </div>
       <div className="field">
         <label htmlFor="role">Rolle</label>
-        <select id="role" name="role" defaultValue="dps">
+        <select id="role" {...bind('role')}>
           {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
