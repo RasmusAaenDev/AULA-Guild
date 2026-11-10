@@ -55,12 +55,12 @@ main:focus { outline: none; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; padding-right: 16px; }
 /* Karakterskifter i topbjælken (som AULAs børnefilter): en rund avatar pr. karakter, flueben på den primære. */
 .topbar-chars { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; }
-.cs-list { list-style: none; margin: 0; padding: 0 8px; display: flex; align-items: center; gap: 12px; height: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.cs-list { list-style: none; margin: 0; padding: 0 12px 0 8px; display: flex; align-items: center; gap: 14px; height: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
 .cs-list li { flex: none; margin: 0; }
 .cs-list form { margin: 0; }
 .cs-avatar { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--focus-inverse); background: var(--cls-ukendt); color: var(--on-cls); font: inherit; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; padding: 0; cursor: pointer; }
 .cs-avatar[aria-current='true'] { cursor: default; box-shadow: 0 0 0 2px var(--logo); }
-.cs-avatar:not([aria-current='true']):hover { filter: brightness(1.15); }
+.cs-avatar:not([aria-current='true']):hover { box-shadow: 0 0 0 2px var(--focus-inverse); }
 .cs-check { position: absolute; right: -6px; bottom: -6px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--check-bg); color: var(--check-fg); border: 1px solid var(--check-fg); }
 .cs-add { color: #fff; font-weight: 700; margin-left: 8px; white-space: nowrap; }
 .cs-cls-death-knight { background: var(--cls-death-knight); } .cs-cls-demon-hunter { background: var(--cls-demon-hunter); }

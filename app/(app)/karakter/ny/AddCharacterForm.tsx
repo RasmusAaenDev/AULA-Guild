@@ -16,7 +16,7 @@ export function AddCharacterForm() {
   return (
     <form onSubmit={submitHandler(action)} className="card">
       <div className="field">
-        <label htmlFor="name">Karakterens navn (fornavn og efternavn)</label>
+        <label htmlFor="name">Karakterens navn (både fornavn og efternavn)</label>
         <input id="name" {...bind('name')} required maxLength={60} autoComplete="off" placeholder="fx Magi Far" />
       </div>
       <div className="field">

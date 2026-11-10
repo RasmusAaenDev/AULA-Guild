@@ -37,10 +37,10 @@ describe('addCharacter', () => {
   it('ændrer ikke aktiv karakter, når der tilføjes en ekstra', async () => {
     const userId = await seedUser(db);
     const blizzard = fakeBlizzard({
-      characters: { 'magi-far': armory(), 'ezzek': armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek', surname: 'Svumpukkel' }) },
+      characters: { 'magi-far': armory(), 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }) },
     });
     const first = await addCharacter(deps(blizzard), { userId, name: 'Magi Far', role: 'dps' });
-    await addCharacter(deps(blizzard), { userId, name: 'Ezzek', role: 'tank' });
+    await addCharacter(deps(blizzard), { userId, name: 'Ezzek Svumpukkel', role: 'tank' });
     if (!first.ok) throw new Error('forventede ok');
     expect(await activeOf(userId)).toBe(first.characterId);
     const mine = await listMyCharacters(db, userId);
@@ -60,19 +60,6 @@ describe('addCharacter', () => {
     const blizzard = fakeBlizzard({ roster: [member({ name: 'Andre', slug: 'andre' })] });
     expect(await addCharacter(deps(blizzard), { userId, name: 'Ukendt Navn', role: 'dps' })).toEqual({ ok: false, reason: 'not_found' });
     expect(await db.select().from(characters)).toHaveLength(0);
-  });
-
-  it('bruger rosterens slug, når navnet står i rosteren men slug afviger', async () => {
-    const userId = await seedUser(db);
-    const blizzard = fakeBlizzard({
-      roster: [member({ blizzardId: 1002, name: 'Ezzek', surname: 'Svumpukkel', slug: 'ezzek-svumpukkel' })],
-      characters: { 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }) },
-    });
-    const res = await addCharacter(deps(blizzard), { userId, name: 'ezzek', role: 'healer' });
-    expect(res.ok).toBe(true);
-    const [row] = await db.select().from(characters);
-    expect(row.slug).toBe('ezzek-svumpukkel');
-    expect(blizzard.calls).toEqual(['character:ezzek', 'roster', 'character:ezzek-svumpukkel']);
   });
 
   it('afviser karakter i en anden guild eller uden guild', async () => {
@@ -144,10 +131,10 @@ describe('setActiveCharacter og setRole', () => {
     const a = await seedUser(db, 'a');
     const b = await seedUser(db, 'b');
     const blizzard = fakeBlizzard({
-      characters: { 'magi-far': armory(), ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek', surname: 'Svumpukkel' }) },
+      characters: { 'magi-far': armory(), 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }) },
     });
     const mine = await addCharacter(deps(blizzard), { userId: a, name: 'Magi Far', role: 'dps' });
-    const theirs = await addCharacter(deps(blizzard), { userId: b, name: 'Ezzek', role: 'dps' });
+    const theirs = await addCharacter(deps(blizzard), { userId: b, name: 'Ezzek Svumpukkel', role: 'dps' });
     if (!mine.ok || !theirs.ok) throw new Error('forventede ok');
 
     expect(await setActiveCharacter(db, a, theirs.characterId)).toBe(false);
@@ -161,10 +148,10 @@ describe('setActiveCharacter og setRole', () => {
   it('skifter aktiv karakter til en anden af egne', async () => {
     const a = await seedUser(db, 'a');
     const blizzard = fakeBlizzard({
-      characters: { 'magi-far': armory(), ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek', surname: 'Svumpukkel' }) },
+      characters: { 'magi-far': armory(), 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }) },
     });
     await addCharacter(deps(blizzard), { userId: a, name: 'Magi Far', role: 'dps' });
-    const second = await addCharacter(deps(blizzard), { userId: a, name: 'Ezzek', role: 'dps' });
+    const second = await addCharacter(deps(blizzard), { userId: a, name: 'Ezzek Svumpukkel', role: 'dps' });
     if (!second.ok) throw new Error('forventede ok');
     expect(await setActiveCharacter(db, a, second.characterId)).toBe(true);
     expect(await activeOf(a)).toBe(second.characterId);
@@ -184,18 +171,32 @@ describe('unlinkCharacter', () => {
     expect(await listMyCharacters(db, a)).toEqual([]);
   });
 
+  it('vælger deterministisk ved samme fornavn (efter efternavn)', async () => {
+    const a = await seedUser(db, 'a');
+    await db.insert(characters).values([
+      { blizzardId: 1, slug: 'anna-ølund', name: 'Anna', surname: 'Ølund', className: 'Mage', role: 'dps', userId: a },
+      { blizzardId: 2, slug: 'anna-berg', name: 'Anna', surname: 'Berg', className: 'Mage', role: 'dps', userId: a },
+      { blizzardId: 3, slug: 'zed-zorn', name: 'Zed', surname: 'Zorn', className: 'Mage', role: 'dps', userId: a },
+    ]);
+    const rows = await db.select().from(characters);
+    const id = (b: number) => rows.find((r) => r.blizzardId === b)!.id;
+    await db.update(users).set({ activeCharacterId: id(3) }).where(eq(users.id, a));
+    await unlinkCharacter(db, id(3));
+    expect(await activeOf(a)).toBe(id(2));
+  });
+
   it('peger ejerens aktive karakter på en anden af hans egne (laveste navn), når den aktive frakobles', async () => {
     const a = await seedUser(db, 'a');
     const blizzard = fakeBlizzard({
       characters: {
         'magi-far': armory(),
-        ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek', surname: 'Svumpukkel' }),
-        zorro: armory({ blizzardId: 1003, slug: 'zorro', name: 'Zorro', surname: 'Zygote' }),
+        'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }),
+        'zorro-zygote': armory({ blizzardId: 1003, slug: 'zorro-zygote', name: 'Zorro', surname: 'Zygote' }),
       },
     });
     const first = await addCharacter(deps(blizzard), { userId: a, name: 'Magi Far', role: 'dps' });
-    const second = await addCharacter(deps(blizzard), { userId: a, name: 'Zorro', role: 'dps' });
-    const third = await addCharacter(deps(blizzard), { userId: a, name: 'Ezzek', role: 'dps' });
+    const second = await addCharacter(deps(blizzard), { userId: a, name: 'Zorro Zygote', role: 'dps' });
+    const third = await addCharacter(deps(blizzard), { userId: a, name: 'Ezzek Svumpukkel', role: 'dps' });
     if (!first.ok || !second.ok || !third.ok) throw new Error('forventede ok');
     expect(await activeOf(a)).toBe(first.characterId);
     await unlinkCharacter(db, first.characterId);
@@ -240,17 +241,6 @@ describe('addCharacter: efternavn og opslag på fuldt navn', () => {
     expect(blizzard.calls).toEqual(['character:ezzek-svumpukkel']);
   });
 
-  it('finder via kun fornavn i rosteren (matcher roster-name)', async () => {
-    const userId = await seedUser(db);
-    const blizzard = fakeBlizzard({
-      roster: [member({ blizzardId: 1002, name: 'Ezzek', surname: 'Svumpukkel', slug: 'ezzek-svumpukkel' })],
-      characters: { 'ezzek-svumpukkel': ezzek() },
-    });
-    expect((await addCharacter(deps(blizzard), { userId, name: 'Ezzek', role: 'dps' })).ok).toBe(true);
-    const [row] = await db.select().from(characters);
-    expect(row).toMatchObject({ slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' });
-  });
-
   it('finder via fuldt navn i rosteren, når profilopslag på sluggen fejler men rosteren har navn og efternavn', async () => {
     const userId = await seedUser(db);
     const blizzard = fakeBlizzard({
@@ -273,6 +263,45 @@ describe('listMyCharacters: fuldt navn og rækkefølge', () => {
     const mine = await listMyCharacters(db, a);
     expect(mine.map((c) => c.fullName)).toEqual(['Anna Berg', 'Anna Ølund', 'Bo Ek']);
     expect(mine.map((c) => c.name)).toEqual(['Anna', 'Anna', 'Bo']);
+  });
+});
+
+describe('addCharacter: kræver fornavn og efternavn', () => {
+  it.each(['Ezzek', '  Ezzek  ', ''])('afviser %j med invalid_name uden at kalde Blizzard', async (name) => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({ characters: { ezzek: armory({ slug: 'ezzek' }) } });
+    expect(await addCharacter(deps(blizzard), { userId, name, role: 'dps' })).toEqual({ ok: false, reason: 'invalid_name' });
+    expect(blizzard.calls).toEqual([]);
+    expect(await db.select().from(characters)).toHaveLength(0);
+  });
+
+  it('finder via rosterens fulde navn uanset store/små bogstaver og ekstra mellemrum, når sluggen afviger', async () => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({
+      roster: [
+        member({ blizzardId: 11, name: 'Anna', surname: 'Berg', slug: 'anna-berg-2' }),
+        member({ blizzardId: 12, name: 'Anna', surname: 'Ølund', slug: 'anna-ølund-2' }),
+      ],
+      characters: { 'anna-ølund-2': armory({ blizzardId: 12, slug: 'anna-ølund-2', name: 'Anna', surname: 'Ølund' }) },
+    });
+    expect((await addCharacter(deps(blizzard), { userId, name: '  aNNa   ØLUND ', role: 'dps' })).ok).toBe(true);
+    const [row] = await db.select().from(characters);
+    expect(row).toMatchObject({ blizzardId: 12, surname: 'Ølund' });
+  });
+
+  it('matcher aldrig på fornavn alene i rosteren', async () => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 11, name: 'Anna', surname: 'Berg', slug: 'anna-berg-2' })],
+      characters: { 'anna-berg-2': armory({ blizzardId: 11, slug: 'anna-berg-2', name: 'Anna', surname: 'Berg' }) },
+    });
+    expect(await addCharacter(deps(blizzard), { userId, name: 'Anna Nielsen', role: 'dps' })).toEqual({ ok: false, reason: 'not_found' });
+  });
+
+  it('rosterfejl giver unavailable', async () => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({ roster: new BlizzardError('unavailable', 'x') });
+    expect(await addCharacter(deps(blizzard), { userId, name: 'Anna Berg', role: 'dps' })).toEqual({ ok: false, reason: 'unavailable' });
   });
 });
 
@@ -305,9 +334,9 @@ describe('tilmeldinger følger karakterskift og frakobling', () => {
     const blizzard = fakeBlizzard({
       characters: {
         'magi-far': armory(),
-        ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek', surname: 'Svumpukkel' }),
-        zorro: armory({ blizzardId: 1003, slug: 'zorro', name: 'Zorro', surname: 'Zygote' }),
-        bob: armory({ blizzardId: 1004, slug: 'bob', name: 'Bob', surname: 'Bygger' }),
+        'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel' }),
+        'zorro-zygote': armory({ blizzardId: 1003, slug: 'zorro-zygote', name: 'Zorro', surname: 'Zygote' }),
+        'bob-bygger': armory({ blizzardId: 1004, slug: 'bob-bygger', name: 'Bob', surname: 'Bygger' }),
       },
     });
     const add = async (u: number, name: string) => {
@@ -316,9 +345,9 @@ describe('tilmeldinger følger karakterskift og frakobling', () => {
       return r.characterId;
     };
     const magi = await add(a, 'Magi Far');
-    const ezzek = await add(a, 'Ezzek');
-    const zorro = await add(a, 'Zorro');
-    const bob = await add(b, 'Bob');
+    const ezzek = await add(a, 'Ezzek Svumpukkel');
+    const zorro = await add(a, 'Zorro Zygote');
+    const bob = await add(b, 'Bob Bygger');
     const ev = async (h: number, cancelled = false) => {
       const [e] = await db.insert(events).values({
         type: 'aften', title: 'Aften', startsAt: hours(h), cancelledAt: cancelled ? NOW : null, createdBy: a,

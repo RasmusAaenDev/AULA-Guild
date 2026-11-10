@@ -24,9 +24,8 @@ async function lookup(deps: CharactersDeps, slug: string, typedName: string): Pr
     if (!(e instanceof BlizzardError) || e.kind !== 'not_found') throw e;
     const roster = await deps.blizzard.getGuildRoster(deps.guildSlug);
     const wanted = normalizeName(typedName);
-    const hit = roster.find(
-      (m) => normalizeName(m.name) === wanted || (m.surname !== null && normalizeName(`${m.name} ${m.surname}`) === wanted),
-    );
+    // Kun fuldt navn (fornavn + efternavn) matches; et fuldt navn er entydigt i guilden.
+    const hit = roster.find((m) => m.surname !== null && normalizeName(`${m.name} ${m.surname}`) === wanted);
     if (!hit || hit.slug === slug) throw e;
     return { found: await deps.blizzard.getCharacter(hit.slug), roster };
   }
@@ -51,7 +50,8 @@ export async function addCharacter(
   input: { userId: number; name: string; role: Role },
 ): Promise<AddResult> {
   const slug = nameToSlug(input.name);
-  if (!slug) return { ok: false, reason: 'invalid_name' };
+  // Både fornavn og efternavn kræves (afvises før noget Blizzard-kald).
+  if (!slug || normalizeName(input.name).split(' ').length < 2) return { ok: false, reason: 'invalid_name' };
 
   let found: ArmoryCharacter;
   let surname: string | null;
@@ -148,7 +148,7 @@ export async function unlinkCharacter(db: Db, characterId: number, now: Date = n
     await tx
       .update(users)
       .set({
-        activeCharacterId: sql`(select ${characters.id} from ${characters} where ${characters.userId} = ${users.id} order by ${characters.name} asc, ${characters.id} asc limit 1)`,
+        activeCharacterId: sql`(select ${characters.id} from ${characters} where ${characters.userId} = ${users.id} order by ${characters.name} asc, ${characters.surname} asc nulls last, ${characters.id} asc limit 1)`,
       })
       .where(eq(users.activeCharacterId, characterId));
     if (!owned?.userId) return;

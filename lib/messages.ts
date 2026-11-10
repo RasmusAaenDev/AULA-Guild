@@ -3,7 +3,7 @@ import type { Role } from '@/lib/db/schema';
 export type AddFailure = 'invalid_name' | 'not_found' | 'wrong_guild' | 'taken' | 'already_yours' | 'unavailable';
 
 const messages: Record<AddFailure, string> = {
-  invalid_name: 'Skriv karakterens fornavn og efternavn. Kun bogstaver, mellemrum, bindestreg og apostrof.',
+  invalid_name: 'Skriv både fornavn og efternavn.',
   not_found: 'Karakteren findes ikke i armory. Tjek stavningen.',
   wrong_guild: 'Karakteren er ikke i guilden AULA.',
   taken: 'Karakteren er allerede koblet til en anden spiller. Kontakt en officer.',
