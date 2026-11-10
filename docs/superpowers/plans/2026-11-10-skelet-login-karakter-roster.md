@@ -3235,6 +3235,15 @@ Med `npm run dev`:
 
 Fuldfør ikke tasken, hvis et trin ikke er set virke. Skriv resultatet (hvad blev set, hvad blev ikke) i commit-beskeden.
 
+- [ ] **Step 5b: Ekstra kontroller fra slutreviewet (kræver rigtig Cloudflare Tunnel og rigtige nøgler)**
+
+1. Roster-id og profil-id er samme id-rum: `verify-armory.ts` rapporterer allerede `id ≠ roster` som afvigelse. Skulle det ske, ville hver synkronisering markere alle som afvist (profil-id'et matcher ikke), så ret `getCharacter`/rosterens id-felt, før noget udrulles.
+2. Cloudflare Tunnel bevarer `Host: aula.aaensoftware.com`. Hvis appen ser `localhost:8102`, afviser Next.js' server actions (inkl. login-knappen) forespørgslen. Prøv login via det rigtige domæne. Hvis det fejler, sæt `experimental.serverActions.allowedOrigins` i `next.config.ts`.
+3. `X-Forwarded-Proto: https` når frem, så Auth.js sætter sikre cookies. Tjek i browserens devtools, at sessionscookien har flaget Secure.
+4. Login-fejlsiden: tving en Discord-fejl (fx forkert `DISCORD_GUILD_ID` eller offline) og bekræft, at `/login` viser den danske besked.
+
+Fuldfør ikke tasken, hvis et af punkterne ikke er set virke. Skriv hvad der er set og ikke set i commit-beskeden.
+
 - [ ] **Step 6: Commit**
 
 ```bash
