@@ -1,4 +1,4 @@
-import type { Counts } from '@/lib/events';
+import type { Counts, EventListItem } from '@/lib/events';
 import { utcToCopenhagen } from '@/lib/time';
 import type { EventType, RsvpStatus } from '@/lib/db/schema';
 
@@ -102,4 +102,25 @@ export function timeMessage(reason: 'invalid' | 'nonexistent'): string {
 export function seriesKeptMessage(n: number): string | null {
   if (!Number.isInteger(n) || n <= 0) return null;
   return n === 1 ? '1 event har tilmeldinger og blev ikke ændret' : `${n} events har tilmeldinger og blev ikke ændret`;
+}
+
+/**
+ * Udvalget til «Næste begivenheder»: de første `max` kommende, ikke-aflyste events, plus næste raid og næste aften,
+ * også hvis de ligger senere (så de altid kan få hurtig tilmelding). Højst `max` + 2 events, sorteret efter start og id.
+ */
+export function selectNextEvents(
+  events: EventListItem[],
+  now: Date,
+  max = 5,
+): { shown: EventListItem[]; rsvpIds: Set<number> } {
+  const future = events
+    .filter((e) => !e.cancelled && e.startsAt.getTime() > now.getTime())
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime() || a.id - b.id);
+  const nextRaid = future.find((e) => e.type === 'raid');
+  const nextAften = future.find((e) => e.type === 'aften');
+  const picked = new Map<number, EventListItem>();
+  for (const e of [...future.slice(0, Math.max(0, max)), nextRaid, nextAften]) if (e) picked.set(e.id, e);
+  const shown = [...picked.values()].sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime() || a.id - b.id);
+  const rsvpIds = new Set<number>([nextRaid, nextAften].flatMap((e) => (e ? [e.id] : [])));
+  return { shown, rsvpIds };
 }

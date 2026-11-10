@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  calendarMessage, countsLabel, formatClock, formatDayHeading, formatDayMonth, formatTimeRange, groupByDay, seriesKeptMessage, timeMessage,
+  calendarMessage, countsLabel, formatClock, formatDayHeading, formatDayMonth, formatTimeRange, selectNextEvents, groupByDay, seriesKeptMessage, timeMessage,
 } from '@/lib/calendar-ui';
 
 describe('kalender-hjælpere', () => {
@@ -48,6 +48,8 @@ describe('kalender-hjælpere', () => {
   });
 });
 
+import type { EventListItem } from '@/lib/events';
+
 describe('formatDayMonth', () => {
   it('giver dag og kort måned uden punktum i dansk tid', () => {
     expect(formatDayMonth(new Date('2026-11-12T18:00:00Z'))).toEqual({ day: '12', month: 'nov' });
@@ -56,5 +58,67 @@ describe('formatDayMonth', () => {
   it('bruger dansk dato omkring midnat', () => {
     expect(formatDayMonth(new Date('2026-11-12T23:30:00Z'))).toEqual({ day: '13', month: 'nov' });
     expect(formatDayMonth(new Date('2026-07-31T22:30:00Z'))).toEqual({ day: '1', month: 'aug' });
+  });
+});
+
+describe('selectNextEvents', () => {
+  const NOW = new Date('2026-11-10T12:00:00Z');
+  const ev = (id: number, type: 'raid' | 'aften', hours: number, over: Partial<EventListItem> = {}): EventListItem => ({
+    id, type, title: `E${id}`, startsAt: new Date(NOW.getTime() + hours * 3600_000), durationMinutes: 60,
+    cancelled: false, seriesId: null, counts: { tank: 0, healer: 0, dps: 0, total: 0 }, myStatus: null, ...over,
+  });
+  const ids = (r: { shown: EventListItem[] }) => r.shown.map((e) => e.id);
+
+  it('tager de første max og ingen ekstra, når næste raid og aften er med', () => {
+    const list = [ev(1, 'raid', 1), ev(2, 'aften', 2), ev(3, 'raid', 3), ev(4, 'aften', 4), ev(5, 'raid', 5), ev(6, 'raid', 6)];
+    const r = selectNextEvents(list, NOW);
+    expect(ids(r)).toEqual([1, 2, 3, 4, 5]);
+    expect([...r.rsvpIds].sort()).toEqual([1, 2]);
+  });
+
+  it('tager næste raid med, selv om den ligger efter den femte', () => {
+    const list = [1, 2, 3, 4, 5].map((i) => ev(i, 'aften', i)).concat(ev(6, 'raid', 6), ev(7, 'aften', 7));
+    const r = selectNextEvents(list, NOW);
+    expect(ids(r)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(r.rsvpIds).toEqual(new Set([1, 6]));
+  });
+
+  it('tager næste aften med, selv om den ligger efter den femte', () => {
+    const list = [1, 2, 3, 4, 5].map((i) => ev(i, 'raid', i)).concat(ev(6, 'aften', 6));
+    const r = selectNextEvents(list, NOW);
+    expect(ids(r)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(r.rsvpIds).toEqual(new Set([1, 6]));
+  });
+
+  it('kan overskride max med højst to og holder rækkefølgen', () => {
+    const list = [1, 2, 3, 4, 5].map((i) => ev(i, 'raid', i)).concat(ev(6, 'raid', 6), ev(7, 'aften', 7));
+    const r = selectNextEvents(list, NOW, 3);
+    expect(ids(r)).toEqual([1, 2, 3, 7]);
+    const worst = selectNextEvents([ev(1, 'raid', 1), ev(2, 'raid', 2), ev(3, 'raid', 3), ev(4, 'aften', 4), ev(5, 'aften', 5)], NOW, 1);
+    expect(ids(worst)).toEqual([1, 4]);
+    const none = selectNextEvents([ev(1, 'raid', 1)], NOW, 0);
+    expect(none.shown.length).toBeLessThanOrEqual(2);
+  });
+
+  it('klarer at der slet ingen raid (eller aften) findes', () => {
+    const r = selectNextEvents([ev(1, 'aften', 1), ev(2, 'aften', 2)], NOW);
+    expect(ids(r)).toEqual([1, 2]);
+    expect(r.rsvpIds).toEqual(new Set([1]));
+    expect(selectNextEvents([], NOW)).toEqual({ shown: [], rsvpIds: new Set() });
+  });
+
+  it('udelader aflyste og allerede startede events', () => {
+    const list = [
+      ev(1, 'raid', -1), ev(2, 'raid', 0), ev(3, 'raid', 2, { cancelled: true }), ev(4, 'aften', 3, { cancelled: true }),
+      ev(5, 'raid', 4), ev(6, 'aften', 5),
+    ];
+    const r = selectNextEvents(list, NOW);
+    expect(ids(r)).toEqual([5, 6]);
+    expect(r.rsvpIds).toEqual(new Set([5, 6]));
+  });
+
+  it('sorterer ens starttidspunkter efter id', () => {
+    const r = selectNextEvents([ev(9, 'raid', 2), ev(4, 'aften', 2), ev(7, 'raid', 2)], NOW);
+    expect(ids(r)).toEqual([4, 7, 9]);
   });
 });

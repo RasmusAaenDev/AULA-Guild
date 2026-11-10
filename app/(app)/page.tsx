@@ -5,7 +5,7 @@ import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
 import { UnansweredBanner } from '@/components/UnansweredBanner';
-import { eventTypeLabel, formatDayMonth, formatTimeRange, rsvpLabel } from '@/lib/calendar-ui';
+import { eventTypeLabel, formatDayMonth, formatTimeRange, rsvpLabel, selectNextEvents } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
@@ -42,11 +42,8 @@ export default async function OverviewPage({
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
   ]);
-  const nextEvents = upcoming.filter((e) => !e.cancelled && e.startsAt.getTime() > now.getTime()).slice(0, 5);
-  // Hurtig tilmelding (som før): til næste raid og næste aften blandt de viste begivenheder.
-  const rsvpIds = new Set(
-    (['raid', 'aften'] as const).flatMap((t) => nextEvents.filter((e) => e.type === t).slice(0, 1).map((e) => e.id)),
-  );
+  // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
+  const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
   const [row] = await db
     .select({ name: characters.name, className: characters.className, spec: characters.spec, role: characters.role, itemLevel: characters.itemLevel })
     .from(users)
