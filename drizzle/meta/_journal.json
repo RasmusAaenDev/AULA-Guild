@@ -8,6 +8,13 @@
       "when": 1794320579814,
       "tag": "0000_left_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794324705756,
+      "tag": "0001_opposite_gamora",
+      "breakpoints": true
     }
   ]
 }
