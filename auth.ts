@@ -5,7 +5,14 @@ import { applySignIn, type DiscordProfile } from '@/lib/auth-callbacks';
 import { authDeps } from '@/lib/services';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Discord({ authorization: { params: { scope: 'identify guilds.members.read' } } })],
+  providers: [
+    Discord({
+      // Siden 14. oktober 2026 sender Discord `iss=https://discord.com` i svaret (RFC 9207). Uden en issuer
+      // sammenligner Auth.js med pladsholderen https://authjs.dev og afviser alle logins.
+      issuer: 'https://discord.com',
+      authorization: { params: { scope: 'identify guilds.members.read' } },
+    }),
+  ],
   session: { strategy: 'jwt', maxAge: 60 * 60 * 12 },
   trustHost: true,
   pages: { signIn: '/login', error: '/login' },
