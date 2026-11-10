@@ -113,4 +113,28 @@ describe('blizzard-klient', () => {
       { blizzardId: 1003, slug: 'uden-href', name: 'Uden Href', rank: 5 },
     ]);
   });
+
+  describe('misdannede svar', () => {
+    const text = (body: string) => new Response(body, { status: 200 });
+    it('token-svar der ikke er JSON giver unavailable', async () => {
+      const { client } = setup(() => text('<html>'));
+      await expect(client.getCharacter('x')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+    it('token-svar uden access_token/expires_in giver unavailable', async () => {
+      const { client } = setup(() => jsonResponse(200, {}));
+      await expect(client.getCharacter('x')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+    it('karakter-svar der ikke er JSON giver unavailable', async () => {
+      const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : text('nope')));
+      await expect(client.getCharacter('x')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+    it('karakter-svar uden id/name giver unavailable', async () => {
+      const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, {})));
+      await expect(client.getCharacter('x')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+    it('roster-svar uden members giver unavailable', async () => {
+      const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, {})));
+      await expect(client.getGuildRoster('aula')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+  });
 });

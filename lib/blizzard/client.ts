@@ -31,6 +31,14 @@ function slugFromHref(href: string | undefined): string | null {
   }
 }
 
+async function readJson(res: Response, what: string): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    throw new BlizzardError('unavailable', `Ugyldigt JSON-svar: ${what}`);
+  }
+}
+
 export function createBlizzardClient(opts: {
   clientId: string;
   clientSecret: string;
@@ -57,7 +65,10 @@ export function createBlizzardClient(opts: {
       throw new BlizzardError('unavailable', 'Token-kald fejlede');
     }
     if (!res.ok) throw new BlizzardError(res.status === 429 ? 'rate_limited' : 'unavailable', `Token HTTP ${res.status}`);
-    const json = (await res.json()) as { access_token: string; expires_in: number };
+    const json = (await readJson(res, 'Token')) as { access_token?: unknown; expires_in?: unknown } | null;
+    if (!json || typeof json.access_token !== 'string' || typeof json.expires_in !== 'number') {
+      throw new BlizzardError('unavailable', 'Token-svar mangler access_token/expires_in');
+    }
     token = { value: json.access_token, expiresAt: now() + (json.expires_in - 60) * 1000 };
     return token.value;
   }
@@ -79,7 +90,7 @@ export function createBlizzardClient(opts: {
       if (res.status === 404) throw new BlizzardError('not_found', path);
       if (res.status === 429) throw new BlizzardError('rate_limited', path);
       if (!res.ok) throw new BlizzardError('unavailable', `HTTP ${res.status} ${path}`);
-      return (await res.json()) as T;
+      return (await readJson(res, path)) as T;
     }
     throw new BlizzardError('unavailable', 'Afvist trods nyt token');
   }
@@ -87,6 +98,9 @@ export function createBlizzardClient(opts: {
   return {
     async getCharacter(slug: string): Promise<ArmoryCharacter> {
       const raw = await get<RawCharacter>(`/profile/wow/character/${encodeURIComponent(slug)}`);
+      if (!raw || typeof raw !== 'object' || typeof raw.id !== 'number' || typeof raw.name !== 'string') {
+        throw new BlizzardError('unavailable', 'Karakter-svar mangler id/name');
+      }
       return {
         blizzardId: raw.id,
         slug,
@@ -102,6 +116,7 @@ export function createBlizzardClient(opts: {
 
     async getGuildRoster(guildSlug: string): Promise<RosterMember[]> {
       const raw = await get<RawRoster>(`/data/wow/guild/${encodeURIComponent(guildSlug)}/roster`);
+      if (!raw || !Array.isArray(raw.members)) throw new BlizzardError('unavailable', 'Roster-svar mangler members');
       return raw.members.map((m) => ({
         blizzardId: m.character.id,
         slug: slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
