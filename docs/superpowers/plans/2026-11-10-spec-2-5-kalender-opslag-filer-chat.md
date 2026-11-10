@@ -318,6 +318,22 @@ export function createChatClient(opts: { token: string; channelId: string; fetch
 
 ---
 
+## UI-pas
+
+### Task 12: AULA-udseende (efter at opslag, filer, galleri og chat findes)
+
+**Bygger på:** `docs/superpowers/notes/ui-sammenligning.md` (sammenligning med det originale AULA, lavet af en hjælper ud fra tekstkilder og koden; farver og ikoner for AULA er skønnet) og brugerens aftale om, at de tre første forslag tages som en samlet pas til sidst.
+
+**Files:** `components/NavLink.tsx`, `components/Shell.tsx`, `app/globals.css`, `components/RsvpButtons.tsx`, `app/(app)/kalender/page.tsx`, `components/NextEvents.tsx` (præcise filer afgøres af rapporten og den færdige kode).
+
+**Behavior (i prioriteret rækkefølge, lille først):**
+1. Ikoner i venstremenuen og bundbjælken (inline SVG, ingen ny pakke; genbrug stier fra designprototypen https://claude.ai/artifact/P278BNV5fSULm1VmYfpbGM hvis de kan læses, ellers simple egne). Ikon + tekst, `aria-hidden` på ikonet, aktiv tilstand uændret. Menupunkter: Overblik, Kalender, Filer, Galleri, (Chat), Kontakter. Magentatæller (`--badge`) på Overblik (ulæste) findes fra Task 7.
+2. Global `:focus-visible`-fokusring på alle interaktive elementer, et «Spring til indhold»-link øverst, og kontrastrettelse af `--nav` og `--muted`, så hvid 13 px tekst og dæmpet tekst når mindst 4,5:1 i både lys og mørk tilstand (mål efter WCAG-formlen og skriv tallene i commit-beskeden).
+3. Farvekodede tilmeldingsknapper (ikon + tekst, ikke kun farve) og en venstrekant på event-kort: ensfarvet for «Deltager», stribet for «Måske»/ubesvaret, dæmpet for «Afbud»; samme kodning i lys og mørk tilstand.
+4. Øvrige forslag fra rapportens top-10, i den rækkefølge rapporten giver dem, så længe de er små (CSS/komponent) og ikke ændrer funktion. Alt, der kræver et nyt layout (månedsgitter, højre widgetkolonne), udelades og noteres.
+
+**Tests:** rene hjælpere (fx statusklasse-mapning) får enhedstests. Ellers typecheck, build og kørsel af dev-serveren; kontrast beregnes med en lille testbar funktion. Skærmbilleder kan ikke tages uden login — det siges ærligt i rapporten.
+
 ## Udrulning og afslutning
 
 ### Task 11: Udrulningsfiler og dokumentation
