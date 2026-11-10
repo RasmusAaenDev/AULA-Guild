@@ -1,10 +1,10 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
-import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {
-  allowedInSection, deleteFile, detectType, getFile, listFiles, sanitizeFileName, setFilePinned, storeUpload,
+  allowedInSection, cleanupStaleUploads, deleteFile, detectType, getFile, listFiles, sanitizeFileName, setFilePinned, storeUpload,
   type StorageDeps,
 } from '@/lib/files';
 import { files } from '@/lib/db/schema';
@@ -456,5 +456,38 @@ describe('listFiles og getFile', () => {
     expect(await getFile(db, 0)).toBeNull();
     expect(await getFile(db, Number.NaN)).toBeNull();
     expect(await getFile(db, 2 ** 31)).toBeNull();
+  });
+});
+
+describe('cleanupStaleUploads', () => {
+  const HOUR = 60 * 60 * 1000;
+  const now = new Date('2026-11-10T12:00:00Z');
+  const touch = async (name: string, ageMs: number) => {
+    const p = path.join(uploadDir, name);
+    await writeFile(p, 'x');
+    const t = new Date(now.getTime() - ageMs);
+    await utimes(p, t, t);
+  };
+
+  it('sletter kun gamle .upload-filer og rører intet andet', async () => {
+    await mkdir(uploadDir, { recursive: true });
+    await touch('.upload-gammel', 2 * HOUR);
+    await touch('.upload-ny', 10 * 60 * 1000);
+    await touch('0b0f4b3e-1c2d-4e5f-8a9b-0c1d2e3f4a5b', 5 * 24 * HOUR);
+    await touch('anden.txt', 5 * 24 * HOUR);
+    await touch('x.upload-fejl', 5 * 24 * HOUR);
+    await mkdir(path.join(uploadDir, '.upload-mappe'));
+    const old = new Date(now.getTime() - 3 * HOUR);
+    await utimes(path.join(uploadDir, '.upload-mappe'), old, old);
+    await symlink(path.join(uploadDir, 'anden.txt'), path.join(uploadDir, '.upload-link'));
+
+    expect(await cleanupStaleUploads(uploadDir, now, HOUR)).toBe(1);
+    expect((await readdir(uploadDir)).sort()).toEqual(
+      ['.upload-link', '.upload-mappe', '.upload-ny', '0b0f4b3e-1c2d-4e5f-8a9b-0c1d2e3f4a5b', 'anden.txt', 'x.upload-fejl'].sort(),
+    );
+  });
+
+  it('en manglende mappe er ikke en fejl', async () => {
+    expect(await cleanupStaleUploads(path.join(root, 'findes-ikke'), now, HOUR)).toBe(0);
   });
 });

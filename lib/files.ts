@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, open, rename, rm, type FileHandle } from 'node:fs/promises';
+import { lstat, mkdir, open, readdir, rename, rm, type FileHandle } from 'node:fs/promises';
 import path from 'node:path';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
@@ -299,4 +299,32 @@ export async function getFile(
     .from(files)
     .where(and(eq(files.id, id), isNull(files.deletedAt)));
   return f ?? null;
+}
+
+/**
+ * Sletter efterladte midlertidige uploadfiler (`.upload-*`, almindelige filer) der er ældre end `maxAgeMs`.
+ * Rører aldrig andre filer. En manglende mappe er ikke en fejl. Returnerer antal slettede.
+ */
+export async function cleanupStaleUploads(uploadDir: string, now: Date, maxAgeMs: number): Promise<number> {
+  let entries;
+  try {
+    entries = await readdir(uploadDir, { withFileTypes: true });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return 0;
+    throw err;
+  }
+  let removed = 0;
+  for (const e of entries) {
+    if (!e.isFile() || !e.name.startsWith('.upload-')) continue;
+    const p = path.join(uploadDir, e.name);
+    try {
+      const st = await lstat(p);
+      if (!st.isFile() || now.getTime() - st.mtimeMs <= maxAgeMs) continue;
+      await rm(p, { force: true });
+      removed++;
+    } catch (err) {
+      console.error('Oprydning: kunne ikke fjerne', e.name, err);
+    }
+  }
+  return removed;
 }

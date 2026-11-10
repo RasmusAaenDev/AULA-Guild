@@ -7,6 +7,18 @@ export async function register() {
   const { env } = await import('@/lib/env');
   const config = env();
 
+  const { uploadDirWarning } = await import('@/lib/files-ui');
+  const warning = uploadDirWarning(process.env.NODE_ENV, config.UPLOAD_DIR);
+  if (warning) console.warn(warning);
+  try {
+    const { filesDeps } = await import('@/lib/services');
+    const { cleanupStaleUploads } = await import('@/lib/files');
+    const removed = await cleanupStaleUploads(filesDeps().uploadDir, new Date(), 60 * 60 * 1000);
+    if (removed > 0) console.log(`Ryddede ${removed} efterladte uploadfiler`);
+  } catch (err) {
+    console.error('Oprydning af uploadmappen mislykkedes', err);
+  }
+
   if (config.AUTO_MIGRATE) {
     const { getDb } = await import('@/lib/db');
     const { runMigrations } = await import('@/lib/db/migrate');

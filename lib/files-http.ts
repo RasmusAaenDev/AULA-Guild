@@ -62,6 +62,13 @@ export function uploadFailureResponse(reason: UploadError, ctx: { maxBytes: numb
   );
 }
 
+export function forbiddenOriginResponse(): Response {
+  return Response.json(
+    { ok: false, error: 'Forespørgslen blev afvist, fordi den ikke kommer fra siden selv. Genindlæs siden og prøv igen.' },
+    { status: 403, headers: { 'Cache-Control': 'no-store' } },
+  );
+}
+
 export function unauthorizedResponse(): Response {
   return Response.json(
     { ok: false, error: uploadErrorMessage('unauthorized', { maxBytes: 0 }) },
