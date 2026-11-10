@@ -4,6 +4,8 @@ import type { CharactersDeps } from '@/lib/characters';
 import { getDb } from '@/lib/db';
 import { fetchAccess } from '@/lib/discord-access';
 import { env } from '@/lib/env';
+import { runJobs, type JobsResult } from '@/lib/jobs';
+import { generateSeriesEvents } from '@/lib/series';
 import { syncRoster, type SyncResult } from '@/lib/sync';
 import { upsertUser } from '@/lib/users';
 
@@ -23,6 +25,10 @@ export function charactersDeps(): CharactersDeps {
 
 export function runSync(): Promise<SyncResult> {
   return syncRoster({ db: getDb(), blizzard: getBlizzard(), guildSlug: env().BLIZZARD_GUILD_SLUG });
+}
+
+export function runScheduledJobs(): Promise<JobsResult> {
+  return runJobs({ sync: runSync, generate: () => generateSeriesEvents(getDb()) });
 }
 
 export function authDeps() {

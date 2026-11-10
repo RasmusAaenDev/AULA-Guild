@@ -16,11 +16,11 @@ export async function register() {
 
   if (config.SYNC_ENABLED) {
     const { startScheduler } = await import('@/lib/scheduler');
-    const { runSync } = await import('@/lib/services');
+    const { runScheduledJobs } = await import('@/lib/services');
     startScheduler({
       run: async () => {
-        const r = await runSync();
-        console.log('Roster-synkronisering', r);
+        const r = await runScheduledJobs();
+        console.log('Planlagte jobs', r);
       },
     });
     console.log('Time-planlægger startet');
