@@ -77,3 +77,18 @@ a.btn.secondary { color: var(--heading); }
 a.event-card { display: block; text-decoration: none; }
 .cancelled { opacity: 0.55; }
 h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
+
+.unread-count { background: var(--badge); color: #fff; border-radius: 999px; padding: 1px 7px; font-size: 12px; font-weight: 700; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.tab { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); color: var(--heading); text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+.tab[aria-current='page'] { background: var(--topbar); color: #fff; border-color: var(--topbar); }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.section-head h2 { margin: 0; }
+a.post-card { display: block; text-decoration: none; color: inherit; }
+.post-card h3 { margin: 6px 0; }
+.post-card .excerpt { margin: 0 0 6px; overflow-wrap: anywhere; }
+.post-card.unread { border-left: 4px solid var(--badge); }
+.badge.new { background: var(--badge); color: #fff; }
+.comment { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+.comment p { margin: 4px 0; }
