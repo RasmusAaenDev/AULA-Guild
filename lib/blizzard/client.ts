@@ -10,16 +10,32 @@ type RawCharacter = {
   id: number;
   name: string;
   character_class?: { name: string };
-  active_spec?: { name: string };
   guild?: { id: number; name: string };
   equipped_item_level?: number;
   average_item_level?: number;
   last_login_timestamp?: number;
 };
 
-type RawRoster = {
-  members: { character: { id: number; name: string; key?: { href: string } }; rank: number }[];
+type RawSpecializations = {
+  specialization_groups?: {
+    is_active?: boolean;
+    specializations?: { specialization?: { name?: string }; spent_points?: number }[];
+  }[];
 };
+
+type RawRoster = {
+  members: { character: { id: number; name: string; slug?: string; key?: { href: string } }; rank: number }[];
+};
+
+// Forever (classic-talenter): profilen har ingen active_spec. Aktiv spec = talent-træet med flest point i den aktive gruppe.
+function activeSpec(raw: RawSpecializations | null): string | null {
+  const group = raw?.specialization_groups?.find((g) => g.is_active);
+  const trees = (group?.specializations ?? []).filter((t) => typeof t.spent_points === 'number' && typeof t.specialization?.name === 'string');
+  if (trees.length === 0) return null;
+  const max = Math.max(...trees.map((t) => t.spent_points as number));
+  const top = trees.filter((t) => t.spent_points === max);
+  return top.length === 1 && max > 0 ? (top[0].specialization!.name as string) : null;
+}
 
 function slugFromHref(href: string | undefined): string | null {
   if (!href) return null;
@@ -101,12 +117,18 @@ export function createBlizzardClient(opts: {
       if (!raw || typeof raw !== 'object' || typeof raw.id !== 'number' || typeof raw.name !== 'string') {
         throw new BlizzardError('unavailable', 'Karakter-svar mangler id/name');
       }
+      let specs: RawSpecializations | null = null;
+      try {
+        specs = await get<RawSpecializations>(`/profile/wow/character/${encodeURIComponent(slug)}/specializations`);
+      } catch (e) {
+        if (!(e instanceof BlizzardError && e.kind === 'not_found')) throw e;
+      }
       return {
         blizzardId: raw.id,
         slug,
         name: raw.name,
         className: raw.character_class?.name ?? 'Ukendt',
-        spec: raw.active_spec?.name ?? null,
+        spec: activeSpec(specs),
         itemLevel: raw.equipped_item_level ?? raw.average_item_level ?? null,
         guildId: raw.guild?.id ?? null,
         guildName: raw.guild?.name ?? null,
@@ -126,7 +148,7 @@ export function createBlizzardClient(opts: {
       }
       return raw.members.map((m) => ({
         blizzardId: m.character.id,
-        slug: slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
+        slug: m.character.slug ?? slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
         name: m.character.name,
         rank: m.rank,
       }));
