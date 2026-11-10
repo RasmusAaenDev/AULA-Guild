@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  formatAbsolute, formatRelative, parsePage, parseTab, postMessage, unreadLabel,
+  excerptText, formatAbsolute, formatRelative, parsePage, parseTab, postMessage, unreadLabel,
 } from '@/lib/posts-ui';
 
 describe('parseTab', () => {
@@ -68,5 +68,15 @@ describe('unreadLabel', () => {
     expect(unreadLabel(5)).toBe('5');
     expect(unreadLabel(99)).toBe('99');
     expect(unreadLabel(100)).toBe('99+');
+  });
+});
+
+describe('excerptText', () => {
+  it('lader korte uddrag være', () => {
+    expect(excerptText('Kort tekst')).toBe('Kort tekst');
+  });
+  it('tilføjer ellipsis ved afkortet uddrag', () => {
+    expect(excerptText('a'.repeat(200))).toBe(`${'a'.repeat(200)}…`);
+    expect(excerptText('ab ', 3)).toBe('ab…');
   });
 });

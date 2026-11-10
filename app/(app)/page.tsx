@@ -5,7 +5,7 @@ import { characters, users } from '@/lib/db/schema';
 import { NextEvents } from '@/components/NextEvents';
 import { roleLabel } from '@/lib/messages';
 import { countUnread, listPosts } from '@/lib/posts';
-import { formatRelative, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
+import { excerptText, formatRelative, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import type { PostTab } from '@/lib/posts';
 import { requireMember } from '@/lib/session';
 
@@ -79,16 +79,20 @@ export default async function OverviewPage({
             {p.unread && <> <span className="badge new">Ny</span></>} {p.authorName} · {formatRelative(p.createdAt, now)}
           </p>
           <h3>{p.title}</h3>
-          <p className="excerpt">{p.excerpt}</p>
+          <p className="excerpt">{excerptText(p.excerpt)}</p>
           <p className="muted">
             {p.commentCount === 1 ? '1 kommentar' : `${p.commentCount} kommentarer`}
           </p>
         </Link>
       ))}
-      {hasMore && (
-        <p>
-          <Link href={`/?fane=${tab}&side=${page + 1}`} className="btn secondary">Vis flere</Link>
-        </p>
+      {(page > 1 || hasMore) && (
+        <nav className="actions" aria-label="Sider med opslag">
+          {page > 1 && (
+            <Link href={page === 2 ? `/?fane=${tab}` : `/?fane=${tab}&side=${page - 1}`} className="btn secondary">Nyere opslag</Link>
+          )}
+          {hasMore && <Link href={`/?fane=${tab}&side=${page + 1}`} className="btn secondary">Ældre opslag</Link>}
+          <span className="muted">Side {page}</span>
+        </nav>
       )}
     </>
   );

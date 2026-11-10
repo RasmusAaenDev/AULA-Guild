@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
+import { useFormValues } from '@/components/useFormValues';
 import { weekdayNames } from '@/lib/calendar-ui';
 import { createSeriesAction, updateSeriesAction, type FormState } from './actions';
 
@@ -21,47 +22,54 @@ export function SeriesForm({ initial }: { initial?: SeriesFormValues }) {
     editing ? updateSeriesAction : createSeriesAction,
     {},
   );
+  const { bind } = useFormValues({
+    type: initial?.type ?? 'raid',
+    title: initial?.title ?? '',
+    weekday: String(initial?.weekday ?? 0),
+    startTime: initial?.startTime ?? '',
+    durationMinutes: String(initial?.durationMinutes ?? 120),
+    description: initial?.description ?? '',
+  });
   return (
     <form action={action} className="card">
       <h2>{editing ? 'Redigér serie' : 'Opret serie'}</h2>
       {editing && <input type="hidden" name="seriesId" value={initial.seriesId} />}
       <div className="field">
         <label htmlFor="type">Type</label>
-        <select id="type" name="type" defaultValue={initial?.type ?? 'raid'}>
+        <select id="type" {...bind('type')}>
           <option value="raid">Raid</option>
           <option value="aften">Aften</option>
         </select>
       </div>
       <div className="field">
         <label htmlFor="title">Titel</label>
-        <input id="title" name="title" required maxLength={100} defaultValue={initial?.title} autoComplete="off" />
+        <input id="title" {...bind('title')} required maxLength={100} autoComplete="off" />
       </div>
       <div className="field">
         <label htmlFor="weekday">Ugedag</label>
-        <select id="weekday" name="weekday" defaultValue={initial?.weekday ?? 0}>
+        <select id="weekday" {...bind('weekday')}>
           {weekdayNames.map((n, i) => <option key={n} value={i}>{n}</option>)}
         </select>
       </div>
       <div className="field">
         <label htmlFor="startTime">Klokkeslæt</label>
-        <input id="startTime" name="startTime" type="time" required defaultValue={initial?.startTime} />
+        <input id="startTime" {...bind('startTime')} type="time" required />
       </div>
       <div className="field">
         <label htmlFor="durationMinutes">Varighed i minutter (15–720)</label>
         <input
           id="durationMinutes"
-          name="durationMinutes"
+          {...bind('durationMinutes')}
           type="number"
           required
           min={15}
           max={720}
           step={1}
-          defaultValue={initial?.durationMinutes ?? 120}
         />
       </div>
       <div className="field">
         <label htmlFor="description">Beskrivelse</label>
-        <textarea id="description" name="description" rows={3} maxLength={2000} defaultValue={initial?.description} />
+        <textarea id="description" {...bind('description')} rows={3} maxLength={2000} />
       </div>
       {state.error && <p className="error" role="alert">{state.error}</p>}
       <div className="actions">

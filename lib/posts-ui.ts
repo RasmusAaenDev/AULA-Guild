@@ -62,3 +62,11 @@ export function unreadLabel(n: number): string | null {
   if (!Number.isFinite(n) || n <= 0) return null;
   return n > 99 ? '99+' : String(n);
 }
+
+/** Længden `listPosts` afkorter uddraget til (SQL `left(…, 200)`). */
+export const EXCERPT_LIMIT = 200;
+
+/** Tilføjer «…», når uddraget har ramt afkortningsgrænsen (så teksten kan være længere). */
+export function excerptText(excerpt: string, limit: number = EXCERPT_LIMIT): string {
+  return excerpt.length >= limit ? `${excerpt.trimEnd()}…` : excerpt;
+}

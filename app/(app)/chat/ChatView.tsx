@@ -114,6 +114,10 @@ export function ChatView() {
       if (changed) setNewBelow(true);
       return;
     }
+    if (wasEmptied && follow.current) {
+      scrollToBottom(); // listen vendte tilbage efter at have været tom, og brugeren fulgte bunden
+      return;
+    }
     if (!changed) return;
     if (follow.current || first) scrollToBottom();
     else setNewBelow(true);
