@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { characters, users, type Role } from '@/lib/db/schema';
 import { BlizzardError, type ArmoryCharacter, type BlizzardClient } from '@/lib/blizzard/types';
@@ -74,13 +74,17 @@ export async function addCharacter(
 }
 
 export async function setActiveCharacter(db: Db, userId: number, characterId: number): Promise<boolean> {
-  const [owned] = await db
-    .select({ id: characters.id })
-    .from(characters)
-    .where(and(eq(characters.id, characterId), eq(characters.userId, userId)));
-  if (!owned) return false;
-  await db.update(users).set({ activeCharacterId: characterId }).where(eq(users.id, userId));
-  return true;
+  const rows = await db
+    .update(users)
+    .set({ activeCharacterId: characterId })
+    .where(
+      and(
+        eq(users.id, userId),
+        sql`exists (select 1 from ${characters} where ${characters.id} = ${characterId} and ${characters.userId} = ${userId})`,
+      ),
+    )
+    .returning({ id: users.id });
+  return rows.length > 0;
 }
 
 export async function setRole(db: Db, userId: number, characterId: number, role: Role): Promise<boolean> {
@@ -95,7 +99,13 @@ export async function setRole(db: Db, userId: number, characterId: number, role:
 export async function unlinkCharacter(db: Db, characterId: number): Promise<void> {
   await db.transaction(async (tx) => {
     await tx.update(characters).set({ userId: null }).where(eq(characters.id, characterId));
-    await tx.update(users).set({ activeCharacterId: null }).where(eq(users.activeCharacterId, characterId));
+    // Peg ejerens aktive pointer på en anden af hans egne karakterer (laveste navn), ellers NULL.
+    await tx
+      .update(users)
+      .set({
+        activeCharacterId: sql`(select ${characters.id} from ${characters} where ${characters.userId} = ${users.id} order by ${characters.name} asc, ${characters.id} asc limit 1)`,
+      })
+      .where(eq(users.activeCharacterId, characterId));
   });
 }
 

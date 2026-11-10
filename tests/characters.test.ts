@@ -181,6 +181,24 @@ describe('unlinkCharacter', () => {
     expect(await activeOf(a)).toBeNull();
     expect(await listMyCharacters(db, a)).toEqual([]);
   });
+
+  it('peger ejerens aktive karakter på en anden af hans egne (laveste navn), når den aktive frakobles', async () => {
+    const a = await seedUser(db, 'a');
+    const blizzard = fakeBlizzard({
+      characters: {
+        'magi-far': armory(),
+        ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek' }),
+        zorro: armory({ blizzardId: 1003, slug: 'zorro', name: 'Zorro' }),
+      },
+    });
+    const first = await addCharacter(deps(blizzard), { userId: a, name: 'Magi Far', role: 'dps' });
+    const second = await addCharacter(deps(blizzard), { userId: a, name: 'Zorro', role: 'dps' });
+    const third = await addCharacter(deps(blizzard), { userId: a, name: 'Ezzek', role: 'dps' });
+    if (!first.ok || !second.ok || !third.ok) throw new Error('forventede ok');
+    expect(await activeOf(a)).toBe(first.characterId);
+    await unlinkCharacter(db, first.characterId);
+    expect(await activeOf(a)).toBe(third.characterId);
+  });
 });
 
 describe('listContacts', () => {
