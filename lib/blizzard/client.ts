@@ -16,25 +16,37 @@ type RawCharacter = {
   last_login_timestamp?: number;
 };
 
-type RawSpecializations = {
-  specialization_groups?: {
-    is_active?: boolean;
-    specializations?: { specialization?: { name?: string }; spent_points?: number }[];
-  }[];
-};
-
 type RawRoster = {
   members: { character: { id: number; name: string; slug?: string; key?: { href: string } }; rank: number }[];
 };
 
 // Forever (classic-talenter): profilen har ingen active_spec. Aktiv spec = talent-træet med flest point i den aktive gruppe.
-function activeSpec(raw: RawSpecializations | null): string | null {
-  const group = raw?.specialization_groups?.find((g) => g.is_active);
-  const trees = (group?.specializations ?? []).filter((t) => typeof t.spent_points === 'number' && typeof t.specialization?.name === 'string');
+// string = udledt spec, null = opslaget lykkedes men ingen enkelt spec, undefined = misdannet/ukendt svar.
+function activeSpec(raw: unknown): string | null | undefined {
+  if (!raw || typeof raw !== 'object') return undefined;
+  const groups = (raw as { specialization_groups?: unknown }).specialization_groups;
+  if (groups === undefined) return null;
+  if (!Array.isArray(groups)) return undefined;
+  let active: { specializations?: unknown } | null = null;
+  for (const g of groups as unknown[]) {
+    if (!g || typeof g !== 'object') return undefined;
+    if (!active && (g as { is_active?: unknown }).is_active === true) active = g as { specializations?: unknown };
+  }
+  if (!active || active.specializations === undefined) return null;
+  if (!Array.isArray(active.specializations)) return undefined;
+  const trees: { name: string; points: number }[] = [];
+  for (const t of active.specializations as unknown[]) {
+    if (!t || typeof t !== 'object') return undefined;
+    const pts = (t as { spent_points?: unknown }).spent_points;
+    const spec = (t as { specialization?: unknown }).specialization;
+    const name = spec && typeof spec === 'object' ? (spec as { name?: unknown }).name : undefined;
+    if (typeof pts !== 'number' || !Number.isFinite(pts) || typeof name !== 'string') return undefined;
+    trees.push({ name, points: pts });
+  }
   if (trees.length === 0) return null;
-  const max = Math.max(...trees.map((t) => t.spent_points as number));
-  const top = trees.filter((t) => t.spent_points === max);
-  return top.length === 1 && max > 0 ? (top[0].specialization!.name as string) : null;
+  const max = Math.max(...trees.map((t) => t.points));
+  const top = trees.filter((t) => t.points === max);
+  return top.length === 1 && max > 0 ? top[0].name : null;
 }
 
 function slugFromHref(href: string | undefined): string | null {
@@ -117,18 +129,19 @@ export function createBlizzardClient(opts: {
       if (!raw || typeof raw !== 'object' || typeof raw.id !== 'number' || typeof raw.name !== 'string') {
         throw new BlizzardError('unavailable', 'Karakter-svar mangler id/name');
       }
-      let specs: RawSpecializations | null = null;
+      // Sekundære data: enhver fejl her giver spec undefined (ukendt), aldrig en fejlet profil.
+      let spec: string | null | undefined;
       try {
-        specs = await get<RawSpecializations>(`/profile/wow/character/${encodeURIComponent(slug)}/specializations`);
-      } catch (e) {
-        if (!(e instanceof BlizzardError && e.kind === 'not_found')) throw e;
+        spec = activeSpec(await get<unknown>(`/profile/wow/character/${encodeURIComponent(slug)}/specializations`));
+      } catch {
+        spec = undefined;
       }
       return {
         blizzardId: raw.id,
         slug,
         name: raw.name,
         className: raw.character_class?.name ?? 'Ukendt',
-        spec: activeSpec(specs),
+        spec,
         itemLevel: raw.equipped_item_level ?? raw.average_item_level ?? null,
         guildId: raw.guild?.id ?? null,
         guildName: raw.guild?.name ?? null,
@@ -148,7 +161,7 @@ export function createBlizzardClient(opts: {
       }
       return raw.members.map((m) => ({
         blizzardId: m.character.id,
-        slug: m.character.slug ?? slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
+        slug: (typeof m.character.slug === 'string' && m.character.slug !== '' ? m.character.slug : null) ?? slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
         name: m.character.name,
         rank: m.rank,
       }));

@@ -88,7 +88,7 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
           slug: c.slug,
           name: p.name,
           className: p.className,
-          spec: p.spec,
+          ...(p.spec !== undefined ? { spec: p.spec } : {}),
           itemLevel: p.itemLevel,
           lastLogin: p.lastLogin,
           lastSynced: now(),

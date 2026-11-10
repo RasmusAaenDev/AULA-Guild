@@ -36,6 +36,22 @@ describe('syncRoster', () => {
     expect(await row(1)).toMatchObject({ guildRank: 2, slug: 'alpha-ny', itemLevel: 42, spec: 'Frost', inGuild: true, lastSynced: NOW });
   });
 
+  it('beholder gemt spec når spec er undefined, men opdaterer øvrige felter; skriver null når spec er null', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    await seed(2, 'Beta', u);
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha' }), member({ blizzardId: 2, slug: 'beta', name: 'Beta' })],
+      characters: {
+        alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', itemLevel: 42, spec: undefined }),
+        beta: armory({ blizzardId: 2, slug: 'beta', name: 'Beta', itemLevel: 43, spec: null }),
+      },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 2, failed: 0 });
+    expect(await row(1)).toMatchObject({ spec: 'Fire', itemLevel: 42 });
+    expect(await row(2)).toMatchObject({ spec: null, itemLevel: 43 });
+  });
+
   it('markerer karakterer, der ikke står i rosteren, som forladt og beholder deres data', async () => {
     const u = await seedUser(db);
     await seed(1, 'Alpha', u);

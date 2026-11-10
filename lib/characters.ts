@@ -42,7 +42,7 @@ export async function addCharacter(
     slug: found.slug,
     name: found.name,
     className: found.className,
-    spec: found.spec,
+    spec: found.spec ?? null,
     role: input.role,
     itemLevel: found.itemLevel,
     inGuild: true,

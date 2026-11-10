@@ -37,7 +37,7 @@ const rawRoster = {
     { character: { id: 1001, name: 'Magi Far', slug: 'magi-far', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/magi-far?namespace=profile-forever-eu' } }, rank: 3 },
     { character: { id: 1002, name: 'Ezzek', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/ezzek-svumpukkel?namespace=profile-forever-eu' } }, rank: 0 },
     { character: { id: 1003, name: 'Uden Href' }, rank: 5 },
-    { character: { id: 1004, name: 'Knud', slug: 'knud-klunkekløe', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/knud-klunkekl%C3%B8e?namespace=profile-forever-eu' } }, rank: 1 },
+    { character: { id: 1004, name: 'Testørn', slug: 'testørn-klunkekløe', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/test%C3%B8rn-klunkekl%C3%B8e?namespace=profile-forever-eu' } }, rank: 1 },
   ],
 };
 
@@ -94,16 +94,39 @@ describe('blizzard-klient', () => {
     expect((await client.getCharacter('x')).spec).toBeNull();
   });
 
-  it('giver spec null hvis specializations-opslaget giver 404, men videresender rate limit', async () => {
-    const a = setup(byPath(jsonResponse(404)));
-    expect((await a.client.getCharacter('x')).spec).toBeNull();
-    const b = setup(byPath(jsonResponse(429)));
-    await expect(b.client.getCharacter('x')).rejects.toMatchObject({ kind: 'rate_limited' });
+  // Bevidst ændret: specializations er sekundære data. Før propagerede 429 herfra; nu giver enhver fejl spec undefined og profilen lykkes.
+  it.each([
+    ['404', () => jsonResponse(404)],
+    ['429', () => jsonResponse(429)],
+    ['500', () => jsonResponse(500)],
+    ['netværksfejl', () => { throw new TypeError('fetch failed'); }],
+    ['ikke-JSON', () => new Response('<html>', { status: 200 })],
+  ])('giver spec undefined og lykkes med profilen når specializations giver %s', async (_t, spec) => {
+    const { client } = setup(byPath(spec as () => Response));
+    const c = await client.getCharacter('x');
+    expect(c.spec).toBeUndefined();
+    expect(c).toMatchObject({ blizzardId: 1001, itemLevel: 8 });
   });
 
-  it('klarer karakter uden guild, spec og item level', async () => {
-    const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, { id: 5, name: 'Nul', character_class: { name: 'Priest' } })));
-    expect(await client.getCharacter('nul')).toMatchObject({ spec: null, itemLevel: null, guildId: null, guildName: null, lastLogin: null });
+  it.each([
+    ['specialization_groups ikke et array', { specialization_groups: 'x' }],
+    ['null gruppe', { specialization_groups: [null] }],
+    ['specializations ikke et array', { specialization_groups: [{ is_active: true, specializations: {} }] }],
+    ['null træ', { specialization_groups: [{ is_active: true, specializations: [null] }] }],
+    ['ikke-numerisk spent_points', { specialization_groups: [{ is_active: true, specializations: [{ specialization: { name: 'A' }, spent_points: 'x' }] }] }],
+    ['hele svaret er null', null],
+  ])('giver spec undefined uden TypeError ved misdannet svar: %s', async (_t, specs) => {
+    const { client } = setup(byPath(jsonResponse(200, specs)));
+    expect((await client.getCharacter('x')).spec).toBeUndefined();
+  });
+
+  it('roster: tom eller ikke-streng character.slug falder tilbage til href, så navn', async () => {
+    const body = { members: [
+      { character: { id: 1, name: 'A', slug: '', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/a-href?namespace=x' } }, rank: 1 },
+      { character: { id: 2, name: 'B C', slug: 7 }, rank: 1 },
+    ] };
+    const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, body)));
+    expect((await client.getGuildRoster('aula')).map((m) => m.slug)).toEqual(['a-href', 'b-c']);
   });
 
   it('genbruger token mellem kald og henter nyt, når det er udløbet', async () => {
@@ -158,7 +181,7 @@ describe('blizzard-klient', () => {
       { blizzardId: 1001, slug: 'magi-far', name: 'Magi Far', rank: 3 },
       { blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', rank: 0 },
       { blizzardId: 1003, slug: 'uden-href', name: 'Uden Href', rank: 5 },
-      { blizzardId: 1004, slug: 'knud-klunkekløe', name: 'Knud', rank: 1 },
+      { blizzardId: 1004, slug: 'testørn-klunkekløe', name: 'Testørn', rank: 1 },
     ]);
   });
 
