@@ -145,3 +145,28 @@ export const postReads = pgTable(
   },
   (t) => [primaryKey({ columns: [t.userId, t.postId] }), index('post_reads_post_id_idx').on(t.postId)],
 );
+
+export const fileSections = ['filer', 'galleri'] as const;
+export type FileSectionValue = (typeof fileSections)[number];
+export const fileSectionEnum = pgEnum('file_section', fileSections);
+
+export const files = pgTable(
+  'files',
+  {
+    id: serial('id').primaryKey(),
+    section: fileSectionEnum('section').notNull(),
+    title: text('title').notNull(),
+    originalName: text('original_name').notNull(),
+    mime: text('mime').notNull(),
+    sizeBytes: integer('size_bytes').notNull(),
+    // Serverens eget tilfældige id (crypto.randomUUID()); aldrig afledt af brugerinput.
+    storageKey: text('storage_key').notNull().unique(),
+    uploadedBy: integer('uploaded_by')
+      .notNull()
+      .references(() => users.id),
+    pinned: boolean('pinned').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [index('files_section_created_at_idx').on(t.section, t.createdAt)],
+);

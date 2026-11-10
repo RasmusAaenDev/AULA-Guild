@@ -13,6 +13,10 @@ const schema = z.object({
   CRON_SECRET: z.string().min(16),
   SYNC_ENABLED: bool,
   AUTO_MIGRATE: bool,
+  // Filer: mappen er serverens egen konfiguration, aldrig brugerinput.
+  UPLOAD_DIR: z.string().min(1).default('./data/uploads'),
+  MAX_UPLOAD_MB: z.coerce.number().int().positive().max(1024).default(10),
+  MAX_TOTAL_MB: z.coerce.number().int().positive().default(2048),
 });
 
 export type Env = z.infer<typeof schema>;
