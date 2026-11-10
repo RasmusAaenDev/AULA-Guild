@@ -328,80 +328,78 @@
   },
   {
     "id": "satire-22",
-    "title": "Raid i aften: nye regler",
-    "body": "Ready check er ikke til diskussion. Hvis du er AFK, skriv AFK. Hvis du ikke ved, om du er AFK, så er du det.\nMvh Officer Bodil",
-    "author": "Officer Bodil (fiktiv)",
+    "title": "VIGTIGT: Nye regler for ventelisten",
+    "body": "Ventelisten til SFO er ikke til diskussion. Hvis dit barn er nummer 7, er det nummer 7. Hvis du ikke ved, hvilket nummer dit barn er, er det nok nummer 7.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
     "important": true,
     "tags": [
-      "raid",
+      "sfo",
       "vigtigt"
     ],
     "comments": [
       {
-        "author": "Healer-Henning (fiktiv)",
-        "body": "Jeg var ikke AFK. Jeg var bare stille."
+        "author": "Oscars mormor (fiktiv)",
+        "body": "Hvad hvis vi er nummer 6? Vi har ikke fået besked."
       }
     ],
-    "inspiration": "Guild-twist på klassisk pædagog-regel.",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-23",
-    "title": "Loot-fordeling: DKP",
-    "body": "Der er kommet DKP-uenighed efter fredagens raid. Alle, der har taget loot uden at spørge, kan godt skrive til mig. Jeg har en liste.\nMvh Guildmaster Knud",
-    "author": "Guildmaster Knud (fiktiv)",
+    "title": "Vedr. fordeling af kagestykker",
+    "body": "Der er kommet uenighed efter fredagens kage. Alle, der har taget et stykke uden at spørge, kan godt skrive til klasselæreren. Vi laver en liste.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": false,
     "tags": [
-      "dkp",
-      "loot"
+      "kage"
     ],
     "comments": [],
-    "inspiration": "Loot-drama som forældremøde.",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-24",
-    "title": "Husk flasker til raid",
-    "body": "Til lørdag skal alle have flasker med. Både life og mana. Vi vil ikke gentage sidste uges wipe, hvor ingen havde noget.\nMvh Officer Bodil",
-    "author": "Officer Bodil (fiktiv)",
+    "title": "Husk drikkedunke",
+    "body": "Til torsdag skal alle have drikkedunk med. Både vand og saft, men ikke i samme dunk. Vi vil ikke gentage sidste uges oversvømmelse, hvor ingen havde låg.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": false,
     "tags": [
-      "raid",
-      "flasker"
+      "kost"
     ],
     "comments": [],
-    "inspiration": "Pakkeliste som madpakkeliste.",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-25",
-    "title": "Healer søges",
-    "body": "Tankens mormor har spurgt, om vi har en healer. Det har vi ikke.\nTanken har det fint, men hun vil gerne have, at han bliver healet alligevel.\nHilsen Officer Bodil",
-    "author": "Officer Bodil (fiktiv)",
+    "title": "Støttelærer søges",
+    "body": "Valdemars mormor har spurgt, om vi har en støttelærer til tirsdag. Det har vi ikke. Valdemar har det fint, men hun vil gerne have, at nogen spørger ham.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": false,
     "tags": [
-      "healer"
+      "personale"
     ],
     "comments": [],
-    "inspiration": "Forældre blander sig i raid-opstilling.",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-26",
-    "title": "Wipe nummer 4",
-    "body": "Vi har wipet fire gange på samme boss. Det er ikke nogens skyld. Det er bossens.\nVenlig hilsen Guildmaster Knud",
-    "author": "Guildmaster Knud (fiktiv)",
+    "title": "Fjerde gang uden kridt",
+    "body": "Vi har nu været uden kridt fire gange på samme dag. Det er ikke nogens skyld. Det er kridtets.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": false,
     "tags": [
-      "wipe"
+      "kridt"
     ],
     "comments": [
       {
-        "author": "Dps-Dorthe (fiktiv)",
-        "body": "Tak for forståelsen. Jeg var ikke i nærheden."
+        "author": "Idas mor (fiktiv)",
+        "body": "Kan vi sende en pakke med? Jeg har et helt hav."
       }
     ],
-    "inspiration": "Træner forklarer nederlag venligt.",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
@@ -838,49 +836,47 @@
   },
   {
     "id": "satire-57",
-    "title": "Raid-besked: Healeren er kommet",
-    "body": "Healeren er kommet. Hun er fint tilfreds med at heale. Vi beder tanken om ikke at gå ind før hun er klar. Det er ikke en kritik, det er en besked.\nVenlig hilsen Guildmaster Kristian",
-    "author": "Guildmaster Kristian (fiktiv)",
+    "title": "Besked fra skolens bibliotekar",
+    "body": "Bogen om dinosaurer er kommet tilbage. Den manglede de sidste fire sider, men dem har vi fundet i Emils taske. Tak for hjælpen.\nMvh Skolens bibliotekar",
+    "author": "Skolens bibliotekar (fiktiv)",
     "important": false,
     "tags": [
-      "raid",
-      "healer"
+      "bibliotek"
     ],
     "comments": [
       {
-        "author": "Tankens mormor (fiktiv)",
-        "body": "Det skal nok gå. Han spiser godt."
+        "author": "Emils far (fiktiv)",
+        "body": "Han mente at have fået dem med hjem, fordi de var gode."
       }
     ],
-    "inspiration": "Rotationspulje (runde 2).",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-58",
-    "title": "Loot: Hvem tog stolen?",
-    "body": "Der er forsvundet en stol fra loot-listen. Den er ikke droppet, den er ikke solgt. Den er bare væk. Skriv til Guildmaster hvis du har set den.\nVenlig hilsen Guildmaster Kristian",
-    "author": "Guildmaster Kristian (fiktiv)",
+    "title": "Hvem tog stolen?",
+    "body": "Der er forsvundet en stol fra klasselokalet. Den er ikke flyttet, den er ikke solgt. Den er bare væk. Skriv til skolen, hvis du har set den.\nVenlig hilsen Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
     "important": false,
     "tags": [
-      "loot"
+      "stol"
     ],
     "comments": [],
-    "inspiration": "Rotationspulje (runde 2).",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
     "id": "satire-59",
-    "title": "VIGTIGT: Buff-regler til lørdag",
-    "body": "Lørdag er det food og flask før pull. Ikke efter pull. Ikke under pull. Før pull. Hvis du er i tvivl, er det før pull.\nVenlig hilsen Guildmaster Kristian",
-    "author": "Guildmaster Kristian (fiktiv)",
+    "title": "VIGTIGT: Regler for tirsdag",
+    "body": "Tirsdag er det rullesko og hjelm før frikvarter. Ikke efter frikvarter. Ikke under frikvarter. Før frikvarter. Hvis du er i tvivl, er det før frikvarter.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": true,
     "tags": [
-      "raid",
-      "buff",
+      "rulleskøjter",
       "vigtigt"
     ],
     "comments": [],
-    "inspiration": "Rotationspulje (runde 2).",
+    "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
   {
