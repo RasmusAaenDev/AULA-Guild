@@ -267,11 +267,11 @@ describe('listMyCharacters: fuldt navn og rækkefølge', () => {
     const a = await seedUser(db, 'a');
     await db.insert(characters).values([
       { blizzardId: 1, slug: 'anna-ølund', name: 'Anna', surname: 'Ølund', className: 'Mage', role: 'dps', userId: a },
-      { blizzardId: 2, slug: 'anna-aaen', name: 'Anna', surname: 'Aaen', className: 'Mage', role: 'dps', userId: a },
+      { blizzardId: 2, slug: 'anna-berg', name: 'Anna', surname: 'Berg', className: 'Mage', role: 'dps', userId: a },
       { blizzardId: 3, slug: 'bo-ek', name: 'Bo', surname: null, className: 'Mage', role: 'dps', userId: a },
     ]);
     const mine = await listMyCharacters(db, a);
-    expect(mine.map((c) => c.fullName)).toEqual(['Anna Aaen', 'Anna Ølund', 'Bo Ek']);
+    expect(mine.map((c) => c.fullName)).toEqual(['Anna Berg', 'Anna Ølund', 'Bo Ek']);
     expect(mine.map((c) => c.name)).toEqual(['Anna', 'Anna', 'Bo']);
   });
 });
