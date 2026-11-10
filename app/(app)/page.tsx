@@ -14,6 +14,8 @@ const EMPTY: Record<PostTab, string> = {
   alle: 'Der er ingen opslag endnu. Skriv det første.',
   ulaeste: 'Du har læst alle opslag.',
   vigtige: 'Der er ingen fastgjorte opslag.',
+  egne: 'Du har ikke skrevet nogen opslag endnu.',
+  gemte: 'Du har ikke gemt nogen opslag.',
 };
 
 export default async function OverviewPage({

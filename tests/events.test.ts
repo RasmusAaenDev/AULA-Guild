@@ -1,10 +1,10 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import {
-  cancelEvent, createEvent, getEvent, listUpcomingEvents, updateEvent, validateEventFields,
+  cancelEvent, countUnansweredUpcoming, createEvent, getEvent, listUpcomingEvents, updateEvent, validateEventFields,
   type EventActor, type EventInput,
 } from '@/lib/events';
-import { characters, eventSeries, events, rsvps, type Role, type RsvpStatus } from '@/lib/db/schema';
+import { characters, eventSeries, events, rsvps, users, type Role, type RsvpStatus } from '@/lib/db/schema';
 import { resetDb, testDb } from './db';
 import { seedUser } from './helpers';
 
@@ -255,5 +255,58 @@ describe('getEvent', () => {
     expect(d.createdBy).toBe(creator);
     expect(d.description).toBe('Beskrivelse');
     expect(d.attendees[0]).toMatchObject({ userName: 'Bruger t', className: 'Mage', role: 'tank', status: 'deltager' });
+  });
+});
+
+describe('countUnansweredUpcoming', () => {
+  async function plainEvent(startsAt: Date, extra: Partial<typeof events.$inferInsert> = {}) {
+    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.discordId, 'creator'));
+    const creator = existing?.id ?? (await seedUser(db, 'creator'));
+    const [e] = await db.insert(events).values({
+      type: 'aften', title: 'E', description: '', startsAt, durationMinutes: 60, createdBy: creator, ...extra,
+    }).returning({ id: events.id });
+    return e.id;
+  }
+
+  it('tæller kun kommende, ikke aflyste events uden svar inden for 14 dage', async () => {
+    const u = await seedUser(db, 'u');
+    await plainEvent(hours(24));
+    await plainEvent(hours(48));
+    await plainEvent(hours(-1)); // startet
+    await plainEvent(hours(30), { cancelledAt: NOW }); // aflyst
+    await plainEvent(hours(24 * 15)); // uden for vinduet
+    expect(await countUnansweredUpcoming(db, u, NOW)).toBe(2);
+  });
+
+  it('har en grænse på præcis 14 dage (inklusive) og et valgfrit vindue', async () => {
+    const u = await seedUser(db, 'u');
+    await plainEvent(hours(24 * 14));
+    await plainEvent(hours(24 * 14 + 1));
+    expect(await countUnansweredUpcoming(db, u, NOW)).toBe(1);
+    expect(await countUnansweredUpcoming(db, u, NOW, 15)).toBe(2);
+    expect(await countUnansweredUpcoming(db, u, NOW, 1)).toBe(0);
+  });
+
+  it('tæller ikke starttidspunktet nu som kommende', async () => {
+    const u = await seedUser(db, 'u');
+    await plainEvent(NOW);
+    expect(await countUnansweredUpcoming(db, u, NOW)).toBe(0);
+  });
+
+  it('tæller egen tilmelding som besvaret uanset status, men ikke andres', async () => {
+    const u = await seedUser(db, 'u');
+    const v = await seedUser(db, 'v');
+    const cu = await seedChar(u, 'dps', 'Uffe');
+    const cv = await seedChar(v, 'dps', 'Vera');
+    const e1 = await plainEvent(hours(24));
+    const e2 = await plainEvent(hours(25));
+    const e3 = await plainEvent(hours(26));
+    const e4 = await plainEvent(hours(27));
+    await rsvp(e1, u, cu, 'deltager');
+    await rsvp(e2, u, cu, 'maaske');
+    await rsvp(e3, u, cu, 'afbud');
+    await rsvp(e4, v, cv, 'deltager');
+    expect(await countUnansweredUpcoming(db, u, NOW)).toBe(1);
+    expect(await countUnansweredUpcoming(db, v, NOW)).toBe(3);
   });
 });

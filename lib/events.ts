@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, count, eq, gt, inArray, isNull, lte, notExists, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { characters, events, rsvps, users, type EventType, type Role, type RsvpStatus } from '@/lib/db/schema';
 
@@ -231,4 +231,26 @@ export async function listUpcomingEvents(
     counts: counts.get(e.id) ?? emptyCounts(),
     myStatus: mine.get(e.id) ?? null,
   }));
+}
+
+/** Kommende, ikke-aflyste events inden for `days` dage (inklusive), som brugeren ikke har tilmeldt sig eller meldt afbud til. */
+export async function countUnansweredUpcoming(
+  db: Db,
+  userId: number,
+  now: Date = new Date(),
+  days = 14,
+): Promise<number> {
+  const until = new Date(now.getTime() + days * 24 * 3600_000);
+  const [r] = await db
+    .select({ n: count() })
+    .from(events)
+    .where(
+      and(
+        gt(events.startsAt, now),
+        lte(events.startsAt, until),
+        isNull(events.cancelledAt),
+        notExists(db.select({ one: sql`1` }).from(rsvps).where(and(eq(rsvps.eventId, events.id), eq(rsvps.userId, userId)))),
+      ),
+    );
+  return r.n;
 }

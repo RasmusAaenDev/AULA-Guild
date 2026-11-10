@@ -36,6 +36,13 @@
       "when": 1794326605559,
       "tag": "0004_gray_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794329249069,
+      "tag": "0005_chief_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }

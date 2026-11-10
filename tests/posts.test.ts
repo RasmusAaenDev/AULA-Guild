@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
 import {
-  addComment, countUnread, createPost, deleteComment, deletePost, getPost, listPosts, markPostRead, setPinned,
+  addComment, countUnread, toggleBookmark, createPost, deleteComment, deletePost, getPost, listPosts, markPostRead, setPinned,
 } from '@/lib/posts';
-import { comments, postReads, posts } from '@/lib/db/schema';
+import { characters, comments, postBookmarks, postReads, posts, users } from '@/lib/db/schema';
 import { resetDb, testDb } from './db';
 import { seedUser } from './helpers';
 
@@ -337,5 +337,111 @@ describe('getPost', () => {
     const p = await seedPost(a, 'P', T0, { deletedAt: T0 });
     expect(await getPost(db, a, p)).toBeNull();
     expect(await getPost(db, a, 9999)).toBeNull();
+  });
+});
+
+describe('toggleBookmark', () => {
+  it('slår til og fra og rører kun eget bogmærke', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const p = await seedPost(a, 'P');
+    expect(await toggleBookmark(db, a, p)).toEqual({ ok: true, bookmarked: true });
+    expect(await toggleBookmark(db, b, p)).toEqual({ ok: true, bookmarked: true });
+    expect(await db.select().from(postBookmarks)).toHaveLength(2);
+    expect(await toggleBookmark(db, a, p)).toEqual({ ok: true, bookmarked: false });
+    const left = await db.select().from(postBookmarks);
+    expect(left).toHaveLength(1);
+    expect(left[0]).toMatchObject({ userId: b, postId: p });
+    expect(await toggleBookmark(db, a, p)).toEqual({ ok: true, bookmarked: true });
+  });
+
+  it('giver not_found for ukendt, ugyldigt og slettet opslag', async () => {
+    const a = await seedUser(db);
+    const p = await seedPost(a, 'P', T0, { deletedAt: T0 });
+    expect(await toggleBookmark(db, a, p)).toEqual({ ok: false, reason: 'not_found' });
+    expect(await toggleBookmark(db, a, 9999)).toEqual({ ok: false, reason: 'not_found' });
+    expect(await toggleBookmark(db, a, 0)).toEqual({ ok: false, reason: 'not_found' });
+    expect(await toggleBookmark(db, a, 2 ** 31)).toEqual({ ok: false, reason: 'not_found' });
+    expect(await db.select().from(postBookmarks)).toHaveLength(0);
+  });
+
+  it('kan fjerne et bogmærke på et opslag, der siden er slettet', async () => {
+    const a = await seedUser(db);
+    const p = await seedPost(a, 'P');
+    await toggleBookmark(db, a, p);
+    await db.update(posts).set({ deletedAt: T0 }).where(eq(posts.id, p));
+    expect(await toggleBookmark(db, a, p)).toEqual({ ok: false, reason: 'not_found' });
+    // bogmærket er skjult i fanen, så rækken er harmløs
+    expect((await listPosts(db, a, 'gemte', 1)).items).toHaveLength(0);
+  });
+});
+
+describe('listPosts: egne og gemte, bookmarked og authorCharacter', () => {
+  it('egne viser kun brugerens egne opslag, fastgjorte først, uden slettede', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const old = await seedPost(a, 'gammel', min(0));
+    const nyere = await seedPost(a, 'nyere', min(5));
+    await seedPost(b, 'andens', min(6));
+    await seedPost(a, 'slettet', min(7), { deletedAt: T0 });
+    const pinned = await seedPost(a, 'fast', min(1), { pinned: true, pinnedAt: min(1) });
+    const r = await listPosts(db, a, 'egne', 1);
+    expect(r.items.map((i) => i.id)).toEqual([pinned, nyere, old]);
+    expect((await listPosts(db, b, 'egne', 1)).items.map((i) => i.title)).toEqual(['andens']);
+  });
+
+  it('gemte viser kun egne bogmærker, med paging og uden slettede', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const p1 = await seedPost(a, 'P1', min(1));
+    const p2 = await seedPost(b, 'P2', min(2));
+    const p3 = await seedPost(b, 'P3', min(3));
+    const p4 = await seedPost(b, 'P4', min(4));
+    const gone = await seedPost(b, 'slettet', min(5));
+    await seedPost(b, 'ikke gemt', min(6));
+    for (const p of [p1, p2, p3, p4, gone]) await toggleBookmark(db, a, p);
+    await toggleBookmark(db, b, p1); // andres bogmærker er ikke synlige for a
+    await db.update(posts).set({ deletedAt: T0 }).where(eq(posts.id, gone));
+    const first = await listPosts(db, a, 'gemte', 1, 2);
+    expect(first.items.map((i) => i.id)).toEqual([p4, p3]);
+    expect(first.hasMore).toBe(true);
+    const second = await listPosts(db, a, 'gemte', 2, 2);
+    expect(second.items.map((i) => i.id)).toEqual([p2, p1]);
+    expect(second.hasMore).toBe(false);
+    expect((await listPosts(db, b, 'gemte', 1)).items.map((i) => i.id)).toEqual([p1]);
+  });
+
+  it('bookmarked-flaget gælder kun den aktuelle bruger (liste og detalje)', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const p = await seedPost(a, 'P');
+    const q = await seedPost(a, 'Q', min(1));
+    await toggleBookmark(db, b, p);
+    const forB = (await listPosts(db, b, 'alle', 1)).items;
+    expect(forB.find((i) => i.id === p)!.bookmarked).toBe(true);
+    expect(forB.find((i) => i.id === q)!.bookmarked).toBe(false);
+    expect((await listPosts(db, a, 'alle', 1)).items.every((i) => !i.bookmarked)).toBe(true);
+    expect((await getPost(db, b, p))!.bookmarked).toBe(true);
+    expect((await getPost(db, a, p))!.bookmarked).toBe(false);
+  });
+
+  it('authorCharacter er den aktive karakter, ellers null', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const c = await seedUser(db, 'c');
+    const [ca] = await db.insert(characters).values({
+      blizzardId: 1, slug: 'magi', name: 'Magi Far', className: 'Mage', role: 'dps', userId: a,
+    }).returning({ id: characters.id });
+    // b har en karakter, men ingen aktiv; c peger på en andens karakter (må ikke vises)
+    await db.insert(characters).values({ blizzardId: 2, slug: 'tank', name: 'Tankie', className: 'Warrior', role: 'tank', userId: b });
+    await db.update(users).set({ activeCharacterId: ca.id }).where(eq(users.id, a));
+    await db.update(users).set({ activeCharacterId: ca.id }).where(eq(users.id, c));
+    const pa = await seedPost(a, 'A', min(1));
+    const pb = await seedPost(b, 'B', min(2));
+    const pc = await seedPost(c, 'C', min(3));
+    const items = (await listPosts(db, a, 'alle', 1)).items;
+    expect(items.find((i) => i.id === pa)!.authorCharacter).toBe('Magi Far');
+    expect(items.find((i) => i.id === pb)!.authorCharacter).toBeNull();
+    expect(items.find((i) => i.id === pc)!.authorCharacter).toBeNull();
   });
 });

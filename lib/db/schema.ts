@@ -146,6 +146,20 @@ export const postReads = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.postId] }), index('post_reads_post_id_idx').on(t.postId)],
 );
 
+export const postBookmarks = pgTable(
+  'post_bookmarks',
+  {
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.postId] }), index('post_bookmarks_post_id_idx').on(t.postId)],
+);
+
 export const fileSections = ['filer', 'galleri'] as const;
 export type FileSectionValue = (typeof fileSections)[number];
 export const fileSectionEnum = pgEnum('file_section', fileSections);

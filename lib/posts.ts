@@ -1,18 +1,21 @@
 import { and, asc, count, desc, eq, isNull, notExists, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
-import { comments, postReads, posts, users } from '@/lib/db/schema';
+import { characters, comments, postBookmarks, postReads, posts, users } from '@/lib/db/schema';
 
-export type PostTab = 'alle' | 'ulaeste' | 'vigtige';
+export type PostTab = 'alle' | 'ulaeste' | 'vigtige' | 'egne' | 'gemte';
 export type PostActor = { userId: number; isOfficer: boolean };
 export type PostListItem = {
   id: number;
   title: string;
   excerpt: string;
   authorName: string;
+  /** Navnet på forfatterens aktive karakter, ellers null. */
+  authorCharacter: string | null;
   createdAt: Date;
   pinned: boolean;
   commentCount: number;
   unread: boolean;
+  bookmarked: boolean;
 };
 export type CommentItem = { id: number; authorId: number; authorName: string; body: string; createdAt: Date };
 export type PostDetail = {
@@ -25,6 +28,7 @@ export type PostDetail = {
   pinned: boolean;
   comments: CommentItem[];
   unread: boolean;
+  bookmarked: boolean;
 };
 
 /** Uddraget hentes med ét tegn mere end vist, så UI kan se, om teksten blev afkortet (se `excerptText`). */
@@ -141,6 +145,34 @@ export async function markPostRead(db: Db, userId: number, postId: number): Prom
     on conflict do nothing`);
 }
 
+/** Slår brugerens bogmærke på et (ikke-slettet) opslag til eller fra. Et allerede slettet opslag kan ikke gemmes. */
+export async function toggleBookmark(
+  db: Db,
+  userId: number,
+  postId: number,
+): Promise<{ ok: true; bookmarked: boolean } | { ok: false; reason: 'not_found' }> {
+  if (!validId(postId)) return { ok: false, reason: 'not_found' };
+  return db.transaction(async (tx) => {
+    // Lås opslagsrækken, så et samtidigt sletningsforsøg og et samtidigt dobbeltklik ikke kan slå fejl.
+    const [p] = await tx
+      .select({ id: posts.id })
+      .from(posts)
+      .where(and(eq(posts.id, postId), isNull(posts.deletedAt)))
+      .for('share');
+    if (!p) return { ok: false as const, reason: 'not_found' as const };
+    const removed = await tx
+      .delete(postBookmarks)
+      .where(and(eq(postBookmarks.userId, userId), eq(postBookmarks.postId, postId)))
+      .returning({ postId: postBookmarks.postId });
+    if (removed.length > 0) return { ok: true as const, bookmarked: false };
+    await tx.insert(postBookmarks).values({ userId, postId }).onConflictDoNothing();
+    return { ok: true as const, bookmarked: true };
+  });
+}
+
+const bookmarkedSql = (userId: number) =>
+  sql<boolean>`exists (select 1 from ${postBookmarks} where ${postBookmarks.postId} = ${posts.id} and ${postBookmarks.userId} = ${userId})`;
+
 const unreadSql = (userId: number) =>
   sql<boolean>`not exists (select 1 from ${postReads} where ${postReads.postId} = ${posts.id} and ${postReads.userId} = ${userId})`;
 
@@ -158,6 +190,8 @@ export async function listPosts(
     isNull(posts.deletedAt),
     tab === 'vigtige' ? eq(posts.pinned, true) : undefined,
     tab === 'ulaeste' ? unreadSql(userId) : undefined,
+    tab === 'egne' ? eq(posts.authorId, userId) : undefined,
+    tab === 'gemte' ? bookmarkedSql(userId) : undefined,
   );
   const rows = await db
     .select({
@@ -165,13 +199,16 @@ export async function listPosts(
       title: posts.title,
       excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH + 1})`,
       authorName: users.name,
+      authorCharacter: characters.name,
       createdAt: posts.createdAt,
       pinned: posts.pinned,
       commentCount: sql<number>`(select count(*)::int from ${comments} where ${comments.postId} = ${posts.id} and ${comments.deletedAt} is null)`,
       unread: unreadSql(userId),
+      bookmarked: bookmarkedSql(userId),
     })
     .from(posts)
     .innerJoin(users, eq(users.id, posts.authorId))
+    .leftJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(where)
     .orderBy(
       desc(posts.pinned),
@@ -196,6 +233,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       createdAt: posts.createdAt,
       pinned: posts.pinned,
       unread: unreadSql(userId),
+      bookmarked: bookmarkedSql(userId),
     })
     .from(posts)
     .innerJoin(users, eq(users.id, posts.authorId))

@@ -1,8 +1,10 @@
 import type { PostTab } from '@/lib/posts';
 
-const TABS: readonly PostTab[] = ['alle', 'ulaeste', 'vigtige'];
+const TABS: readonly PostTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte'];
 
-export const tabLabels: Record<PostTab, string> = { alle: 'Alle', ulaeste: 'Ulæste', vigtige: 'Vigtige' };
+export const tabLabels: Record<PostTab, string> = {
+  alle: 'Alle', ulaeste: 'Ulæste', vigtige: 'Vigtige', egne: 'Egne opslag', gemte: 'Gemte',
+};
 
 /** Ukendt eller manglende fane giver «alle». */
 export function parseTab(value: string | string[] | undefined): PostTab {
