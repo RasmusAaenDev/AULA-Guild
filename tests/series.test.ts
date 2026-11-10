@@ -56,7 +56,7 @@ describe('createSeries', () => {
     expect(await createSeries(db, plain(u.userId), input(), NOW)).toEqual({ ok: false, reason: 'forbidden' });
     for (const bad of [
       input({ weekday: 7 }), input({ weekday: -1 }), input({ weekday: 1.5 }), input({ startTime: '25:00' }),
-      input({ startTime: '8:00' }), input({ title: '  ' }), input({ durationMinutes: 5 }), input({ durationMinutes: null }),
+      input({ startTime: '8:00' }), input({ title: '  ' }), input({ durationMinutes: 5 }), input({ durationMinutes: null as unknown as number }),
     ]) {
       expect(await createSeries(db, officer(u.userId), bad, NOW)).toEqual({ ok: false, reason: 'invalid' });
     }
@@ -101,7 +101,7 @@ describe('generateSeriesEvents', () => {
     expect(utcTimes).toContain('18:00'); // 31. okt, vintertid
   });
 
-  it('hul-dato springes over (30. marts 2027, 02:30)', async () => {
+  it('hul-dato springes over (28. marts 2027, 02:30)', async () => {
     // Søndag 28. marts 2027 er skiftet; 02:30 findes ikke den dag. Søndag = weekday 6.
     const now = new Date('2027-03-20T12:00:00Z');
     const { seriesId } = await mkSeries({ weekday: 6, startTime: '02:30' }, now);
@@ -129,7 +129,34 @@ describe('generateSeriesEvents', () => {
   });
 });
 
+describe('mandag og samme-dag-dubletter', () => {
+  it('serie på mandag (0) giver mandage i dansk tid', async () => {
+    const { seriesId } = await mkSeries({ weekday: 0 });
+    const rows = await seriesEvents(seriesId);
+    expect(rows.length).toBeGreaterThanOrEqual(4);
+    expect(rows.every((e) => utcToCopenhagen(e.startsAt).weekday === 0)).toBe(true);
+  });
+
+  it('flyttet (detached) event genskabes ikke på den oprindelige plads', async () => {
+    const { seriesId, generated } = await mkSeries();
+    const [first] = await seriesEvents(seriesId);
+    await db.update(events).set({ detached: true, startsAt: new Date(first.startsAt.getTime() + 3600_000) }).where(eq(events.id, first.id));
+    expect(await generateSeriesEvents(db, NOW)).toEqual({ created: 0 });
+    expect((await seriesEvents(seriesId)).length).toBe(generated);
+  });
+});
+
 describe('updateSeries', () => {
+  it('rører ikke fortidige events', async () => {
+    const { userId, seriesId } = await mkSeries();
+    const [old] = await db.insert(events).values({
+      type: 'raid', title: 'Gammel', startsAt: new Date('2026-11-04T19:00:00Z'), seriesId, createdBy: userId,
+    }).returning({ id: events.id });
+    await updateSeries(db, officer(userId), seriesId, input({ title: 'Nyt' }), NOW);
+    await deactivateSeries(db, officer(userId), seriesId, NOW);
+    expect(await db.select().from(events).where(eq(events.id, old.id))).toHaveLength(1);
+  });
+
   it('flytter fremtidige uberørte events ved ændret klokkeslæt', async () => {
     const { userId, seriesId, generated } = await mkSeries();
     const r = await updateSeries(db, officer(userId), seriesId, input({ startTime: '21:00' }), NOW);
@@ -147,9 +174,13 @@ describe('updateSeries', () => {
     }).returning({ id: characters.id });
     await db.insert(rsvps).values({ eventId: first.id, userId, characterId: c.id, status: 'deltager' });
     const r = await updateSeries(db, officer(userId), seriesId, input({ startTime: '21:00', title: 'Nyt' }), NOW);
-    expect(r).toEqual({ ok: true, regenerated: generated, keptWithRsvps: 1 });
+    expect(r).toEqual({ ok: true, regenerated: generated - 1, keptWithRsvps: 1 });
+    const dates = (await seriesEvents(seriesId)).map((e) => utcToCopenhagen(e.startsAt).date);
+    expect(new Set(dates).size).toBe(dates.length);
+    expect(dates.filter((d) => d === utcToCopenhagen(first.startsAt).date)).toHaveLength(1);
     const kept = await db.select().from(events).where(eq(events.id, first.id));
     expect(kept[0].title).toBe('Raid');
+    expect(kept[0].id).toBe(first.id);
     expect(utcToCopenhagen(kept[0].startsAt).time).toBe('20:00');
     expect(await db.select().from(rsvps)).toHaveLength(1);
   });
@@ -196,6 +227,39 @@ describe('deactivateSeries', () => {
     const { userId, seriesId } = await mkSeries();
     expect(await deactivateSeries(db, plain(userId), seriesId, NOW)).toEqual({ ok: false, reason: 'forbidden' });
     expect(await deactivateSeries(db, officer(userId), 9999, NOW)).toEqual({ ok: false, reason: 'not_found' });
+  });
+});
+
+describe('tilmelding under sletning', () => {
+  it('en samtidig tilmelding i en åben transaktion cascade-slettes ikke', async () => {
+    const { userId, seriesId } = await mkSeries();
+    const [first] = await seriesEvents(seriesId);
+    const [c] = await db.insert(characters).values({
+      blizzardId: 1, slug: 'a', name: 'A', className: 'Mage', role: 'dps', userId,
+    }).returning({ id: characters.id });
+    const other = testDb();
+    try {
+      let release!: () => void;
+      const gate = new Promise<void>((r) => { release = r; });
+      let inserted!: () => void;
+      const ready = new Promise<void>((r) => { inserted = r; });
+      const holder = other.db.transaction(async (tx) => {
+        await tx.insert(rsvps).values({ eventId: first.id, userId, characterId: c.id, status: 'deltager' });
+        inserted();
+        await gate;
+      });
+      await ready;
+      const pending = deactivateSeries(db, officer(userId), seriesId, NOW);
+      await new Promise((r) => setTimeout(r, 300));
+      release();
+      await holder;
+      const r = await pending;
+      expect(r).toMatchObject({ ok: true, keptWithRsvps: 1 });
+      expect(await db.select().from(rsvps)).toHaveLength(1);
+      expect(await db.select().from(events).where(eq(events.id, first.id))).toHaveLength(1);
+    } finally {
+      await other.close();
+    }
   });
 });
 

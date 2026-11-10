@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, gte, inArray, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { eventSeries, events, type EventType } from '@/lib/db/schema';
 import { validateEventFields, type EventActor } from '@/lib/events';
@@ -10,7 +10,8 @@ export type SeriesInput = {
   description: string | null;
   weekday: number;
   startTime: string;
-  durationMinutes: number | null;
+  /** Påkrævet: event_series.duration_minutes er NOT NULL. */
+  durationMinutes: number;
 };
 export type SeriesRow = {
   id: number;
@@ -19,20 +20,20 @@ export type SeriesRow = {
   description: string;
   weekday: number;
   startTime: string;
-  durationMinutes: number | null;
+  durationMinutes: number;
   active: boolean;
   createdBy: number;
   upcomingCount: number;
 };
 
 const HORIZON_DAYS = 28;
+type Tx = Pick<Db, 'select' | 'insert' | 'update' | 'delete'>;
 
 function validate(input: SeriesInput): boolean {
   if (input.type !== 'raid' && input.type !== 'aften') return false;
   if (!Number.isInteger(input.weekday) || input.weekday < 0 || input.weekday > 6) return false;
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.startTime)) return false;
-  // event_series.duration_minutes er NOT NULL i databasen, så serier kræver en varighed.
-  if (input.durationMinutes === null) return false;
+  if (typeof input.durationMinutes !== 'number') return false; // runtime-værn for utypet input
   return validateEventFields(input) === 'ok';
 }
 
@@ -43,25 +44,32 @@ function values(input: SeriesInput) {
     description: (input.description ?? '').trim(),
     weekday: input.weekday,
     startTime: input.startTime,
-    durationMinutes: input.durationMinutes as number,
+    durationMinutes: input.durationMinutes,
   };
 }
 
-/** Opretter manglende forekomster for aktive serier inden for horisonten. Idempotent og race-sikker. */
-export async function generateSeriesEvents(
-  db: Db,
-  now: Date = new Date(),
-  horizonDays: number = HORIZON_DAYS,
-): Promise<{ created: number }> {
-  const series = await db.select().from(eventSeries).where(eq(eventSeries.active, true));
-  const today = todayInCopenhagen(now);
-  let created = 0;
-  for (const s of series) {
+/**
+ * Genererer manglende forekomster for én serie og returnerer antal faktisk indsatte rækker.
+ * Kører i en transaktion, der først låser serierækken (FOR UPDATE) og bruger dens aktuelle værdier,
+ * så samtidige kørsler og ændringer serialiseres. En dato springes over, hvis serien allerede har
+ * et event den dag (aflyst og detached medregnet).
+ */
+async function generateForSeries(db: Db, seriesId: number, now: Date, horizonDays: number): Promise<number> {
+  return db.transaction(async (tx) => {
+    const [s] = await tx.select().from(eventSeries).where(eq(eventSeries.id, seriesId)).for('update');
+    if (!s || !s.active) return 0;
+    const today = todayInCopenhagen(now);
+    const existing = await tx
+      .select({ startsAt: events.startsAt })
+      .from(events)
+      .where(and(eq(events.seriesId, s.id), gte(events.startsAt, new Date(now.getTime() - 36 * 3600_000))));
+    const taken = new Set(existing.map((e) => utcToCopenhagen(e.startsAt).date));
     const rows: (typeof events.$inferInsert)[] = [];
     for (let i = 0; i <= horizonDays; i++) {
       const date = addDaysToDate(today, i);
       const probe = copenhagenToUtc(date, '12:00');
       if (!probe.ok || utcToCopenhagen(probe.utc).weekday !== s.weekday) continue;
+      if (taken.has(date)) continue;
       const at = copenhagenToUtc(date, s.startTime);
       if (!at.ok || at.utc.getTime() <= now.getTime()) continue;
       rows.push({
@@ -75,14 +83,25 @@ export async function generateSeriesEvents(
         createdBy: s.createdBy,
       });
     }
-    if (rows.length === 0) continue;
-    const inserted = await db
+    if (rows.length === 0) return 0;
+    const inserted = await tx
       .insert(events)
       .values(rows)
       .onConflictDoNothing({ target: [events.seriesId, events.startsAt], where: sql`${events.seriesId} is not null` })
       .returning({ id: events.id });
-    created += inserted.length;
-  }
+    return inserted.length;
+  });
+}
+
+/** Opretter manglende forekomster for aktive serier inden for horisonten. Idempotent og race-sikker. */
+export async function generateSeriesEvents(
+  db: Db,
+  now: Date = new Date(),
+  horizonDays: number = HORIZON_DAYS,
+): Promise<{ created: number }> {
+  const series = await db.select({ id: eventSeries.id }).from(eventSeries).where(eq(eventSeries.active, true));
+  let created = 0;
+  for (const s of series) created += await generateForSeries(db, s.id, now, horizonDays);
   return { created };
 }
 
@@ -98,32 +117,38 @@ export async function createSeries(
     .insert(eventSeries)
     .values({ ...values(input), createdBy: actor.userId })
     .returning({ id: eventSeries.id });
-  // Generatoren dækker alle serier; antallet for denne serie er nyoprettet, så alle dens events tælles.
-  await generateSeriesEvents(db, now);
-  return { ok: true, seriesId: row.id, generated: await countEvents(db, row.id) };
+  return { ok: true, seriesId: row.id, generated: await generateForSeries(db, row.id, now, HORIZON_DAYS) };
 }
 
-/** Sletter fremtidige, urørte events uden tilmeldinger (i SQL, så tilmeldinger aldrig cascade-slettes). */
+/**
+ * Sletter fremtidige, urørte events uden tilmeldinger. Først låses kandidaterne (FOR UPDATE), så en
+ * samtidig tilmelding enten er committet før sletningen (og ses af NOT EXISTS i det næste statement)
+ * eller blokeres, til vi er færdige. Tilmeldinger cascade-slettes dermed aldrig.
+ */
 async function removeUntouched(
-  tx: Db,
+  tx: Tx,
   seriesId: number,
   now: Date,
 ): Promise<{ removed: number; keptWithRsvps: number }> {
-  const untouched = and(
-    eq(events.seriesId, seriesId),
-    gt(events.startsAt, now),
-    isNull(events.cancelledAt),
-    eq(events.detached, false),
-  );
+  const candidates = await tx
+    .select({ id: events.id })
+    .from(events)
+    .where(
+      and(eq(events.seriesId, seriesId), gt(events.startsAt, now), isNull(events.cancelledAt), eq(events.detached, false)),
+    )
+    .for('update');
+  const ids = candidates.map((c) => c.id);
+  if (ids.length === 0) return { removed: 0, keptWithRsvps: 0 };
   const removedRows = await tx
     .delete(events)
-    .where(and(untouched, sql`not exists (select 1 from rsvps where rsvps.event_id = ${events.id})`))
+    .where(and(inArray(events.id, ids), sql`not exists (select 1 from rsvps where rsvps.event_id = ${events.id})`))
     .returning({ id: events.id });
-  const [{ n }] = await tx
-    .select({ n: sql<number>`count(*)::int` })
-    .from(events)
-    .where(and(untouched, sql`exists (select 1 from rsvps where rsvps.event_id = ${events.id})`));
-  return { removed: removedRows.length, keptWithRsvps: n };
+  return { removed: removedRows.length, keptWithRsvps: ids.length - removedRows.length };
+}
+
+async function lockSeries(tx: Tx, seriesId: number): Promise<boolean> {
+  const rows = await tx.select({ id: eventSeries.id }).from(eventSeries).where(eq(eventSeries.id, seriesId)).for('update');
+  return rows.length > 0;
 }
 
 export async function updateSeries(
@@ -138,20 +163,13 @@ export async function updateSeries(
   if (!actor.isOfficer) return { ok: false, reason: 'forbidden' };
   if (!validate(input)) return { ok: false, reason: 'invalid' };
   const res = await db.transaction(async (tx) => {
-    const updated = await tx.update(eventSeries).set(values(input)).where(eq(eventSeries.id, seriesId)).returning({ id: eventSeries.id });
-    if (updated.length === 0) return null;
-    return removeUntouched(tx as unknown as Db, seriesId, now);
+    if (!(await lockSeries(tx, seriesId))) return null;
+    await tx.update(eventSeries).set(values(input)).where(eq(eventSeries.id, seriesId));
+    return removeUntouched(tx, seriesId, now);
   });
   if (!res) return { ok: false, reason: 'not_found' };
-  const before = await countEvents(db, seriesId);
-  await generateSeriesEvents(db, now);
-  const after = await countEvents(db, seriesId);
-  return { ok: true, regenerated: after - before, keptWithRsvps: res.keptWithRsvps };
-}
-
-async function countEvents(db: Db, seriesId: number): Promise<number> {
-  const [{ n }] = await db.select({ n: sql<number>`count(*)::int` }).from(events).where(eq(events.seriesId, seriesId));
-  return n;
+  const regenerated = await generateForSeries(db, seriesId, now, HORIZON_DAYS);
+  return { ok: true, regenerated, keptWithRsvps: res.keptWithRsvps };
 }
 
 export async function deactivateSeries(
@@ -162,9 +180,9 @@ export async function deactivateSeries(
 ): Promise<{ ok: true; removed: number; keptWithRsvps: number } | { ok: false; reason: 'forbidden' | 'not_found' }> {
   if (!actor.isOfficer) return { ok: false, reason: 'forbidden' };
   const res = await db.transaction(async (tx) => {
-    const updated = await tx.update(eventSeries).set({ active: false }).where(eq(eventSeries.id, seriesId)).returning({ id: eventSeries.id });
-    if (updated.length === 0) return null;
-    return removeUntouched(tx as unknown as Db, seriesId, now);
+    if (!(await lockSeries(tx, seriesId))) return null;
+    await tx.update(eventSeries).set({ active: false }).where(eq(eventSeries.id, seriesId));
+    return removeUntouched(tx, seriesId, now);
   });
   if (!res) return { ok: false, reason: 'not_found' };
   return { ok: true, ...res };
