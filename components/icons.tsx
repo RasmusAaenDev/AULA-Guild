@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'sim' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -14,6 +14,7 @@ const paths: Record<IconName, ReactNode> = {
     </>
   ),
   chat: <path d="M4 5h16v11H9l-5 4z" />,
+  sim: <path d="M4 20V4M4 20h16M8 16l4-5 3 3 5-7" />,
   kontakter: (
     <>
       <circle cx="9" cy="8" r="3.5" />

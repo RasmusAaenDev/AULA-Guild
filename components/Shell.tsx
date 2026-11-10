@@ -9,13 +9,14 @@ import { ProfileMenu } from './ProfileMenu';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Shell({
-  member, characters, activeId, unreadPosts = 0, unansweredEvents = 0, children,
+  member, characters, activeId, unreadPosts = 0, unansweredEvents = 0, simEnabled = false, children,
 }: {
   member: Member;
   characters: MyCharacter[];
   activeId: number | null;
   unreadPosts?: number;
   unansweredEvents?: number;
+  simEnabled?: boolean;
   children: React.ReactNode;
 }) {
   const badges = {
@@ -35,7 +36,7 @@ export function Shell({
       </header>
       <div className="layout">
         <nav className="sidenav" aria-label="Hovedmenu">
-          {menuItems().map((item) => {
+          {menuItems({ simEnabled }).map((item) => {
             const b = item.badge ? badges[item.badge] : null;
             return (
               <NavLink

@@ -268,3 +268,13 @@ details.create .menu a:hover { background: var(--border); }
 .chat-new-channel { margin-top: 12px; padding: 0 10px; }
 .chat-new-channel summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 700; }
 .chat-new-channel .field { margin: 8px 0; }
+
+.sim-form .field textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace; font-size: 13px; }
+.sim-form code { background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+.sim-list { list-style: none; margin: 0; padding: 0; }
+.sim-item { padding: 12px 0; border-top: 1px solid var(--border); }
+.sim-item:first-child { border-top: 0; }
+.sim-item p { margin: 4px 0; }
+.sim-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sim-dps { font-size: 20px; font-weight: 800; color: var(--heading); }
+.sim-warnings { margin: 4px 0; padding-left: 20px; color: var(--maybe); }

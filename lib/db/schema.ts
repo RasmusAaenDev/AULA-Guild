@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, index, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const roles = ['tank', 'healer', 'dps'] as const;
 export type Role = (typeof roles)[number];
@@ -243,4 +243,28 @@ export const highlights = pgTable(
     uniqueIndex('highlights_character_dedupe_idx').on(t.characterId, t.dedupeKey),
     index('highlights_occurred_at_idx').on(t.occurredAt.desc()),
   ],
+);
+
+// SimulationCraft-jobs: en kø i databasen, som appens runner afvikler én ad gangen mod simc-worker.
+export const simStatuses = ['queued', 'running', 'done', 'failed'] as const;
+export type SimStatus = (typeof simStatuses)[number];
+
+export const simJobs = pgTable(
+  'sim_jobs',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    // Til senere brug (armory-indgang); bruges ikke endnu.
+    characterId: integer('character_id').references(() => characters.id, { onDelete: 'set null' }),
+    input: text('input').notNull(),
+    status: text('status').$type<SimStatus>().notNull(),
+    result: jsonb('result'),
+    error: text('error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+  },
+  (t) => [index('sim_jobs_status_id_idx').on(t.status, t.id), index('sim_jobs_user_id_id_idx').on(t.userId, t.id.desc())],
 );

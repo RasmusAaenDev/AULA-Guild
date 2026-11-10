@@ -8,6 +8,8 @@ import { getDb } from '@/lib/db';
 import { fetchAccess } from '@/lib/discord-access';
 import { env } from '@/lib/env';
 import type { StorageDeps } from '@/lib/files';
+import { processQueue } from '@/lib/sim-runner';
+import { deleteOldSims } from '@/lib/sims';
 import { runJobs, type JobsResult } from '@/lib/jobs';
 import { generateSeriesEvents } from '@/lib/series';
 import { syncRoster, type SyncResult } from '@/lib/sync';
@@ -35,8 +37,26 @@ export function runSync(): Promise<SyncResult> {
   return g.__aulaSync;
 }
 
-export function runScheduledJobs(): Promise<JobsResult> {
-  return runJobs({ sync: runSync, generate: () => generateSeriesEvents(getDb()) });
+export function isSimConfigured(): boolean {
+  return !!env().SIMC_WORKER_URL;
+}
+
+/** Sætter køen i gang uden at vente på den (til actions og planlagte jobs). Intet sker, hvis simulatoren ikke er sat op. */
+export function kickSimQueue(): void {
+  const workerUrl = env().SIMC_WORKER_URL;
+  if (!workerUrl) return;
+  processQueue({ db: getDb(), workerUrl }).catch((err) => console.error('Sim-kø fejlede', err));
+}
+
+export async function runScheduledJobs(): Promise<JobsResult> {
+  const result = await runJobs({ sync: runSync, generate: () => generateSeriesEvents(getDb()) });
+  try {
+    await deleteOldSims(getDb());
+    kickSimQueue();
+  } catch (err) {
+    console.error('Oprydning af simulationer fejlede', err);
+  }
+  return result;
 }
 
 export function authDeps() {

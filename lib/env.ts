@@ -2,6 +2,12 @@ import { z } from 'zod';
 
 const bool = z.enum(['true', 'false']).default('false').transform((v) => v === 'true');
 
+// Tom streng regnes som ikke sat.
+const optionalHttpUrl = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.string().url().refine((u) => /^https?:\/\//i.test(u), 'Kun http/https').optional(),
+);
+
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
   DISCORD_GUILD_ID: z.string().min(1),
@@ -21,6 +27,8 @@ const schema = z.object({
   // Valideres bevidst løst her (se lib/chat-config.ts), så en fejl i chat-opsætningen aldrig vælter env().
   DISCORD_BOT_TOKEN: z.string().optional(),
   DISCORD_CHAT_CHANNEL_ID: z.string().optional(),
+  // Sim (valgfri): adressen på simc-worker, fx http://simc:8080. Ikke sat = Sim-siden er slået fra.
+  SIMC_WORKER_URL: optionalHttpUrl,
 });
 
 export type Env = z.infer<typeof schema>;

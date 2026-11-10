@@ -31,6 +31,7 @@ Se `.env.example`. Ingen hemmeligheder må committes. Nye valgfrie variabler:
 | `MAX_UPLOAD_MB` | 10 | Største fil i MB |
 | `MAX_TOTAL_MB` | 2048 | Samlet plads til uploads i MB |
 | `DISCORD_BOT_TOKEN`, `DISCORD_CHAT_CHANNEL_ID` | ikke sat | Chatten er kun aktiv, hvis begge er sat |
+| `SIMC_WORKER_URL` | ikke sat | Adressen på simc-worker (fx `http://simc:8080`); uden den er Sim-siden slået fra |
 
 `AUTH_URL` skal være den adresse, siden nås på (produktion: `https://aula.aaensoftware.com`); uploadruten afviser forespørgsler med en anden `Origin`. Generér `AUTH_SECRET` og `CRON_SECRET` hver for sig med:
 

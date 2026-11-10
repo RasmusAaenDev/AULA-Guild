@@ -26,6 +26,19 @@ export async function register() {
     console.log('Migrationer kørt');
   }
 
+  if (config.SIMC_WORKER_URL) {
+    try {
+      const { getDb } = await import('@/lib/db');
+      const { resetStaleRunning } = await import('@/lib/sims');
+      const { kickSimQueue } = await import('@/lib/services');
+      const reset = await resetStaleRunning(getDb());
+      if (reset > 0) console.log(`Lagde ${reset} hængende simulationer tilbage i køen`);
+      kickSimQueue();
+    } catch (err) {
+      console.error('Opstart af sim-køen mislykkedes', err);
+    }
+  }
+
   if (config.SYNC_ENABLED) {
     const { startScheduler } = await import('@/lib/scheduler');
     const { runScheduledJobs } = await import('@/lib/services');
