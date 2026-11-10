@@ -17,7 +17,7 @@ import { fullName } from '@/lib/names';
 import { countUnread, listPosts } from '@/lib/posts';
 import type { PostTab } from '@/lib/posts';
 import type { OverviewTab } from '@/lib/posts-ui';
-import { excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
+import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
 import { SATIRE_COOKIE, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satirePosts, satireNeeded } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
@@ -87,7 +87,7 @@ export default async function OverviewPage({
             ))}
           </nav>
           <div className="satire-note">
-            <p className="muted">Opslag mærket FAKE · SATIRE er opdigtede.</p>
+            {satireOn && <p className="muted">Opslag mærket FAKE · SATIRE er opdigtede.</p>}
             <form action={setSatirePreferenceAction} className="satire-toggle">
               <input type="hidden" name="satire" value={satireOn ? 'off' : 'on'} />
               <button type="submit" className="btn secondary">{satireOn ? 'Skjul satire' : 'Vis satire'}</button>
@@ -121,7 +121,7 @@ export default async function OverviewPage({
                 )}
                 <div className="post-head">
                   <p className="post-meta">
-                    <strong>{p.authorCharacterFullName ? `${p.authorName} (${p.authorCharacterFullName})` : p.authorName}</strong>
+                    <strong>{authorLabel(p.authorName, p.authorCharacterFullName)}</strong>
                     <span className="muted">Delt med hele guilden</span>
                     <time className="muted" dateTime={p.createdAt.toISOString()} title={formatAbsolute(p.createdAt)}>
                       {formatRelativeDay(p.createdAt, now)}

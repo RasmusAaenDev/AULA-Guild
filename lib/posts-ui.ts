@@ -48,6 +48,11 @@ const absolute = new Intl.DateTimeFormat('da-DK', {
 });
 
 /** «01.07.2026 12.30» i dansk tid. */
+/** «Discord-navn (Karakter Fuldnavn)», eller bare Discord-navnet uden aktiv karakter. */
+export function authorLabel(authorName: string, characterFullName: string | null): string {
+  return characterFullName ? `${authorName} (${characterFullName})` : authorName;
+}
+
 export function formatAbsolute(d: Date): string {
   return absolute.format(d).replace(',', '');
 }

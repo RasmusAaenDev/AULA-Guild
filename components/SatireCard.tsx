@@ -9,7 +9,6 @@ export function SatireCard({ post }: { post: SatirePost }) {
   const paragraphs = post.body.split(/\n{2,}/);
   return (
     <article className="card post-card satire-card" aria-label="Fake opslag (satire)">
-      <span className="sr-only">Fake opslag (satire)</span>
       <div className="satire-head">
         <span className="satire-mask" aria-hidden="true"><Icon name="maske" size={26} /></span>
         <span className="satire-badge">

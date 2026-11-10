@@ -54,7 +54,7 @@ function values(input: SeriesInput) {
  * så samtidige kørsler og ændringer serialiseres. En dato springes over, hvis serien allerede har
  * et event den dag (aflyst og detached medregnet).
  */
-async function generateForSeries(db: Db, seriesId: number, now: Date, horizonDays: number): Promise<number> {
+export async function generateForSeries(db: Db, seriesId: number, now: Date, horizonDays: number): Promise<number> {
   return db.transaction(async (tx) => {
     const [s] = await tx.select().from(eventSeries).where(eq(eventSeries.id, seriesId)).for('update');
     if (!s || !s.active) return 0;
@@ -98,10 +98,18 @@ export async function generateSeriesEvents(
   db: Db,
   now: Date = new Date(),
   horizonDays: number = HORIZON_DAYS,
+  generate: typeof generateForSeries = generateForSeries,
 ): Promise<{ created: number }> {
   const series = await db.select({ id: eventSeries.id }).from(eventSeries).where(eq(eventSeries.active, true));
   let created = 0;
-  for (const s of series) created += await generateForSeries(db, s.id, now, horizonDays);
+  for (const s of series) {
+    // En defekt serie må ikke stoppe de øvrige; fejlen logges med serie-id (ingen data fra rækken).
+    try {
+      created += await generate(db, s.id, now, horizonDays);
+    } catch (e) {
+      console.error(`Serie ${s.id}: generering fejlede`, e instanceof Error ? e.message : 'ukendt fejl');
+    }
+  }
   return { created };
 }
 

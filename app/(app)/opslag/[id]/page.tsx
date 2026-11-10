@@ -4,7 +4,7 @@ import { ConfirmForm } from '@/components/ConfirmForm';
 import { getDb } from '@/lib/db';
 import { parseId } from '@/lib/parse';
 import { getPost } from '@/lib/posts';
-import { formatAbsolute } from '@/lib/posts-ui';
+import { authorLabel, formatAbsolute } from '@/lib/posts-ui';
 import { requireMember } from '@/lib/session';
 import { deleteCommentAction, deletePostAction } from '../actions';
 import { BookmarkButton } from '../BookmarkButton';
@@ -30,7 +30,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       <section className="card">
         <div className="post-head">
           <p className="muted">
-            {post.pinned && <span className="badge">Vigtig</span>} {post.authorName} · {formatAbsolute(post.createdAt)}
+            {post.pinned && <span className="badge">Vigtig</span>} {authorLabel(post.authorName, post.authorCharacterFullName)} · {formatAbsolute(post.createdAt)}
           </p>
           <BookmarkButton postId={post.id} bookmarked={post.bookmarked} />
         </div>
@@ -55,7 +55,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
         {post.comments.length === 0 && <p className="muted">Ingen kommentarer endnu.</p>}
         {post.comments.map((c) => (
           <div key={c.id} className="comment">
-            <p className="muted">{c.authorName} · {formatAbsolute(c.createdAt)}</p>
+            <p className="muted">{authorLabel(c.authorName, c.authorCharacterFullName)} · {formatAbsolute(c.createdAt)}</p>
             <p style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{c.body}</p>
             {(member.isOfficer || c.authorId === member.userId) && (
               <ConfirmForm

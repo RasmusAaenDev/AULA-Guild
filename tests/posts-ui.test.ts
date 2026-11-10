@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, postMessage, unreadLabel,
+  authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, postMessage, unreadLabel,
 } from '@/lib/posts-ui';
 
 describe('parseTab', () => {
@@ -102,5 +102,12 @@ describe('formatRelativeDay', () => {
   it('ugedage i dansk tid, ikke UTC', () => {
     const n = new Date('2026-11-12T12:00:00Z');
     expect(formatRelativeDay(new Date('2026-11-09T23:30:00Z'), n)).toBe('Tir. 00:30'); // tirsdag lokalt, mandag UTC
+  });
+});
+
+describe('authorLabel', () => {
+  it('viser karakterens fulde navn i parentes når den findes', () => {
+    expect(authorLabel('Rasmus', 'Magi Far')).toBe('Rasmus (Magi Far)');
+    expect(authorLabel('Rasmus', null)).toBe('Rasmus');
   });
 });

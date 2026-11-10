@@ -325,6 +325,29 @@ describe('getPost', () => {
     expect((await getPost(db, a, p))!.unread).toBe(true);
   });
 
+  it('viser forfatterens aktive karakter på opslag og kommentarer, men ikke en andens', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const c = await seedUser(db, 'c');
+    const [ca] = await db.insert(characters).values({
+      blizzardId: 1, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', role: 'dps', userId: a,
+    }).returning({ id: characters.id });
+    await db.update(users).set({ activeCharacterId: ca.id }).where(eq(users.id, a));
+    await db.update(users).set({ activeCharacterId: ca.id }).where(eq(users.id, c)); // andens karakter
+    const p = await seedPost(a, 'P');
+    const k1 = await seedComment(p, a, min(1));
+    const k2 = await seedComment(p, b, min(2));
+    const k3 = await seedComment(p, c, min(3));
+    const d = (await getPost(db, b, p))!;
+    expect(d.authorCharacterFullName).toBe('Magi Far');
+    const byId = (id: number) => d.comments.find((x) => x.id === id)!;
+    expect(byId(k1).authorCharacterFullName).toBe('Magi Far');
+    expect(byId(k2).authorCharacterFullName).toBeNull();
+    expect(byId(k3).authorCharacterFullName).toBeNull();
+    const pc = await seedPost(c, 'C');
+    expect((await getPost(db, a, pc))!.authorCharacterFullName).toBeNull();
+  });
+
   it('markPostRead for ukendt id er en no-op', async () => {
     const a = await seedUser(db);
     await markPostRead(db, a, 424242);

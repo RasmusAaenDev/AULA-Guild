@@ -224,7 +224,7 @@ details.create .menu a:hover { background: var(--border); }
 }
 
 /* Satire-opslag: bevidst anderledes end ægte opslag (stiplet kant, egen baggrund, egen badge). */
-.satire-card { background: var(--sat-bg); border: 2px dashed var(--sat-border); box-shadow: none; color: var(--text); }
+.satire-card { position: relative; background: var(--sat-bg); border: 2px dashed var(--sat-border); box-shadow: none; color: var(--text); }
 .satire-card h3, .satire-card h3 a { color: var(--heading); }
 .satire-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
 .satire-mask { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; border: 2px dashed var(--sat-border); color: var(--sat-ink); }

@@ -1,7 +1,7 @@
-import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import {
-  createSeries, deactivateSeries, generateSeriesEvents, listSeries, updateSeries, type SeriesInput,
+  createSeries, deactivateSeries, generateForSeries as generateForSeriesReal, generateSeriesEvents, listSeries, updateSeries, type SeriesInput,
 } from '@/lib/series';
 import { runJobs } from '@/lib/jobs';
 import { utcToCopenhagen } from '@/lib/time';
@@ -81,6 +81,34 @@ describe('generateSeriesEvents', () => {
     const total = results.reduce((a, r) => a + r.created, 0);
     const rows = await seriesEvents(s.id);
     expect(total).toBe(rows.length);
+  });
+
+  it('en fejlende serie stopper ikke de andre og tælles ikke med', async () => {
+    const { userId } = await seedOfficer();
+    const ids: number[] = [];
+    for (const title of ['A', 'B', 'C']) {
+      const [s] = await db.insert(eventSeries).values({
+        type: 'raid', title, weekday: 2, startTime: '20:00', durationMinutes: 60, createdBy: userId,
+      }).returning({ id: eventSeries.id });
+      ids.push(s.id);
+    }
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const failing = async (d: typeof db, id: number, now: Date, h: number) => {
+        if (id === ids[1]) throw new Error('boom');
+        return generateForSeriesReal(d, id, now, h);
+      };
+      const r = await generateSeriesEvents(db, NOW, 28, failing);
+      const counts = await Promise.all(ids.map(async (id) => (await seriesEvents(id)).length));
+      expect(counts[1]).toBe(0);
+      expect(counts[0]).toBeGreaterThan(0);
+      expect(counts[2]).toBe(counts[0]);
+      expect(r.created).toBe(counts[0] + counts[2]);
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(String(spy.mock.calls[0][0])).toContain(`Serie ${ids[1]}`);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('inaktive serier genererer ikke', async () => {

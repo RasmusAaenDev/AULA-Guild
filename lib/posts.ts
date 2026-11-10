@@ -20,13 +20,23 @@ export type PostListItem = {
   unread: boolean;
   bookmarked: boolean;
 };
-export type CommentItem = { id: number; authorId: number; authorName: string; body: string; createdAt: Date };
+export type CommentItem = {
+  id: number;
+  authorId: number;
+  authorName: string;
+  /** Fuldt navn på forfatterens aktive karakter, ellers null. */
+  authorCharacterFullName: string | null;
+  body: string;
+  createdAt: Date;
+};
 export type PostDetail = {
   id: number;
   title: string;
   body: string;
   authorId: number;
   authorName: string;
+  /** Fuldt navn på forfatterens aktive karakter, ellers null. */
+  authorCharacterFullName: string | null;
   createdAt: Date;
   pinned: boolean;
   comments: CommentItem[];
@@ -213,7 +223,7 @@ export async function listPosts(
     })
     .from(posts)
     .innerJoin(users, eq(users.id, posts.authorId))
-    .leftJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
+    .leftJoin(characters, activeCharacterOf())
     .where(where)
     .orderBy(
       desc(posts.pinned),
@@ -233,6 +243,15 @@ export async function listPosts(
   return { items, hasMore: rows.length > size };
 }
 
+/** Join-betingelse: forfatterens aktive karakter, og kun hvis den tilhører forfatteren. */
+function activeCharacterOf() {
+  return and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id));
+}
+
+function activeFullName(name: string | null, surname: string | null, slug: string | null): string | null {
+  return name === null || slug === null ? null : fullName({ name, surname, slug });
+}
+
 export async function getPost(db: Db, userId: number, postId: number): Promise<PostDetail | null> {
   if (!validId(postId)) return null;
   const [p] = await db
@@ -242,6 +261,9 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       body: posts.body,
       authorId: posts.authorId,
       authorName: users.name,
+      characterName: characters.name,
+      characterSurname: characters.surname,
+      characterSlug: characters.slug,
       createdAt: posts.createdAt,
       pinned: posts.pinned,
       unread: unreadSql(userId),
@@ -249,6 +271,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
     })
     .from(posts)
     .innerJoin(users, eq(users.id, posts.authorId))
+    .leftJoin(characters, activeCharacterOf())
     .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
   if (!p) return null;
   const cs = await db
@@ -256,14 +279,26 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       id: comments.id,
       authorId: comments.authorId,
       authorName: users.name,
+      characterName: characters.name,
+      characterSurname: characters.surname,
+      characterSlug: characters.slug,
       body: comments.body,
       createdAt: comments.createdAt,
     })
     .from(comments)
     .innerJoin(users, eq(users.id, comments.authorId))
+    .leftJoin(characters, activeCharacterOf())
     .where(and(eq(comments.postId, postId), isNull(comments.deletedAt)))
     .orderBy(asc(comments.createdAt), asc(comments.id));
-  return { ...p, comments: cs };
+  const { characterName, characterSurname, characterSlug, ...post } = p;
+  return {
+    ...post,
+    authorCharacterFullName: activeFullName(characterName, characterSurname, characterSlug),
+    comments: cs.map(({ characterName: n, characterSurname: s, characterSlug: g, ...c }) => ({
+      ...c,
+      authorCharacterFullName: activeFullName(n, s, g),
+    })),
+  };
 }
 
 export async function countUnread(db: Db, userId: number): Promise<number> {
