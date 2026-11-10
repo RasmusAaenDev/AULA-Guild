@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  calendarMessage, countsLabel, formatClock, formatDayHeading, formatDayMonth, formatTimeRange, selectNextEvents, groupByDay, seriesKeptMessage, timeMessage,
+  calendarMessage, countsLabel, formatClock, formatDayHeading, formatDayMonth, formatTimeRange, pinnedEvent, selectNextEvents, groupByDay, seriesKeptMessage, timeMessage,
 } from '@/lib/calendar-ui';
 
 describe('kalender-hjælpere', () => {
@@ -123,5 +123,27 @@ describe('selectNextEvents', () => {
   it('sorterer ens starttidspunkter efter id', () => {
     const r = selectNextEvents([ev(9, 'raid', 2), ev(4, 'aften', 2), ev(7, 'raid', 2)], NOW);
     expect(ids(r)).toEqual([4, 7, 9]);
+  });
+});
+
+describe('pinnedEvent', () => {
+  const now = new Date('2026-11-10T12:00:00Z');
+  const ev = (id: number, hoursAhead: number, over: Partial<EventListItem> = {}): EventListItem => ({
+    id, type: 'aften', title: `e${id}`, startsAt: new Date(now.getTime() + hoursAhead * 3600_000), durationMinutes: null,
+    cancelled: false, seriesId: null, counts: { tank: 0, healer: 0, dps: 0, total: 0 } as never, myStatus: null, ...over,
+  });
+  it('vælger den næste begivenhed, når den er inden for 3 døgn (inklusive 72 timer)', () => {
+    expect(pinnedEvent([ev(2, 30), ev(1, 5)], now)?.id).toBe(1);
+    expect(pinnedEvent([ev(1, 72)], now)?.id).toBe(1);
+  });
+  it('giver null når den næste er senere end 3 døgn, aflyst eller allerede startet', () => {
+    expect(pinnedEvent([ev(1, 72.1)], now)).toBeNull();
+    expect(pinnedEvent([ev(1, 5, { cancelled: true })], now)).toBeNull();
+    expect(pinnedEvent([ev(1, -1)], now)).toBeNull();
+    expect(pinnedEvent([], now)).toBeNull();
+  });
+  it('en aflyst nær begivenhed overstyrer ikke: næste ikke-aflyste vælges', () => {
+    expect(pinnedEvent([ev(1, 5, { cancelled: true }), ev(2, 20)], now)?.id).toBe(2);
+    expect(pinnedEvent([ev(1, 5, { cancelled: true }), ev(2, 100)], now)).toBeNull();
   });
 });

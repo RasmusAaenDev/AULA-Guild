@@ -111,6 +111,16 @@ export function seriesKeptMessage(n: number): string | null {
  * Udvalget til «Næste begivenheder»: de første `max` kommende, ikke-aflyste events, plus næste raid og næste aften,
  * også hvis de ligger senere (så de altid kan få hurtig tilmelding). Højst `max` + 2 events, sorteret efter start og id.
  */
+export const PIN_WITHIN_MS = 3 * 24 * 60 * 60 * 1000;
+
+/** Den næste begivenhed (ikke aflyst, ikke startet), hvis den starter inden for 3 døgn; ellers null. Sættes fast øverst i Overblik. */
+export function pinnedEvent(events: EventListItem[], now: Date, withinMs = PIN_WITHIN_MS): EventListItem | null {
+  const next = events
+    .filter((e) => !e.cancelled && e.startsAt.getTime() > now.getTime())
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime() || a.id - b.id)[0];
+  return next && next.startsAt.getTime() - now.getTime() <= withinMs ? next : null;
+}
+
 export function selectNextEvents(
   events: EventListItem[],
   now: Date,

@@ -8,7 +8,7 @@ import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
 import { UnansweredBanner } from '@/components/UnansweredBanner';
-import { eventTypeLabel, formatDayMonth, formatTimeRange, rsvpLabel, selectNextEvents } from '@/lib/calendar-ui';
+import { eventTypeLabel, formatDayHeading, formatDayMonth, formatTimeRange, pinnedEvent, rsvpLabel, selectNextEvents } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
@@ -55,6 +55,7 @@ export default async function OverviewPage({
   ]);
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
+  const pinned = pinnedEvent(upcoming, now);
   const [row] = await db
     .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
     .from(users)
@@ -78,6 +79,26 @@ export default async function OverviewPage({
       </div>
       <div className="overview-grid">
         <div className="overview-main">
+          {pinned && (
+            <section className="card pinned-event" aria-label="Næste begivenhed, fastsat øverst">
+              <p className="pinned-label"><Icon name="kalender" size={16} /> Fastsat øverst · starter snart</p>
+              <h2><Link href={`/kalender/${pinned.id}`}>{pinned.title}</Link></h2>
+              <p>
+                {eventTypeLabel(pinned.type)} · {formatDayHeading(pinned.startsAt)} · {formatTimeRange(pinned.startsAt, pinned.durationMinutes)}
+              </p>
+              <div className="date-status">
+                <Icon name={pinned.myStatus ?? 'udraab'} size={16} />
+                {pinned.myStatus ? rsvpLabel(pinned.myStatus) : 'Ikke svaret'}
+              </div>
+              {row ? (
+                <div className="rsvp-compact">
+                  <RsvpButtons eventId={pinned.id} current={pinned.myStatus} />
+                </div>
+              ) : (
+                <p><Link href="/karakter/ny">Tilføj karakter</Link> for at tilmelde dig.</p>
+              )}
+            </section>
+          )}
           <nav className="tabs" aria-label="Opslagsfaner">
             {TAB_ORDER.filter((t) => t !== 'satire' || satireOn).map((t) => (
               <Link key={t} href={`/?fane=${t}`} className="tab" aria-current={t === tab ? 'page' : undefined}>
