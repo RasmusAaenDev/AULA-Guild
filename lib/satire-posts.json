@@ -56,7 +56,7 @@
   {
     "id": "satire-04",
     "title": "Besked fra Storms mormor",
-    "body": "Storm må gerne få kage, men kun hvis den er rund. Hilsen Storms mormor",
+    "body": "Storm må gerne få kage, men kun hvis den er rund.\nHilsen Storms mormor",
     "author": "Storms mormor (fiktiv)",
     "important": false,
     "tags": [
@@ -119,7 +119,7 @@
   },
   {
     "id": "satire-08",
-    "title": "Tak til dem, der",
+    "title": "Tak for madpakkerne",
     "body": "Tak til de forældre, der har lagt madpakker i kassen med låget nedad. Vi andre kan også se, hvem I er.\nHilsen Klasseforældrerådet",
     "author": "Klasseforældrerådet (fiktiv)",
     "important": false,
@@ -133,7 +133,7 @@
   {
     "id": "satire-09",
     "title": "Ida og den blå kuglepen",
-    "body": "Ida må godt låne blyanter, men ikke den blå kuglepen. Den er hendes. Hilsen Idas mor",
+    "body": "Ida må godt låne blyanter, men ikke den blå kuglepen. Den er hendes.\nHilsen Idas mor",
     "author": "Idas mor (fiktiv)",
     "important": false,
     "tags": [
@@ -376,7 +376,7 @@
   {
     "id": "satire-25",
     "title": "Healer søges",
-    "body": "Tankens mormor spørger, om vi har en healer. Det har vi ikke. Tanken har det fint, men hun vil gerne have, at han bliver healet. Hilsen Officer Bodil",
+    "body": "Tankens mormor har spurgt, om vi har en healer. Det har vi ikke.\nTanken har det fint, men hun vil gerne have, at han bliver healet alligevel.\nHilsen Officer Bodil",
     "author": "Officer Bodil (fiktiv)",
     "important": false,
     "tags": [
@@ -420,7 +420,7 @@
   {
     "id": "satire-28",
     "title": "Besked fra Storms far",
-    "body": "Storm vil gerne have lov til at tage sin cykel med ind. Han har lovet at den ikke vil køre. Hilsen Storms far",
+    "body": "Storm vil gerne have lov til at tage sin cykel med ind. Han har lovet at den ikke vil køre.\nHilsen Storms far",
     "author": "Storms far (fiktiv)",
     "important": false,
     "tags": [
@@ -445,8 +445,8 @@
   },
   {
     "id": "satire-30",
-    "title": "Bonusfar har ordet",
-    "body": "Maja skal hentes af mig i dag. Hendes mor ved det ikke endnu, men det er aftalt med Maja.\nHilsen Majas bonusfar",
+    "title": "Husk at melde afbud til kagen",
+    "body": "Maja har lovet at tage kage med til fredag, men kun hvis det ikke er den med flødeskum. Det er den med flødeskum, der er hendes yndlings.\nHilsen Majas bonusfar",
     "author": "Majas bonusfar (fiktiv)",
     "important": false,
     "tags": [
