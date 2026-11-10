@@ -9,7 +9,8 @@ Designreference (prototype, ikke officiel designspec): https://claude.ai/artifac
 
 | Emne | Valg |
 |---|---|
-| Placering og hosting | `~/development/AULA-Guild`, eget git-repo, Next.js (app router, TypeScript) på Vercel, Neon Postgres, Auth.js (Discord), Drizzle som ORM |
+| Placering | `~/development/AULA-Guild`, eget git-repo (`RasmusAaenDev/AULA-Guild` på GitHub), Next.js (app router, TypeScript), Auth.js (Discord), Drizzle som ORM |
+| Hosting | Selvhostet på brugerens Linux-maskine: Next.js-container + Postgres-container i én compose-fil, Cloudflare Tunnel på `aula.aaensoftware.com`. Kun prod, ingen staging. Image bygges i GitHub Actions til GHCR, Watchtower opdaterer fra `main` (samme mønster som `server-stacks`) |
 | Adgang | Medlem af guildens Discord-server. Officer = bestemt Discord-rolle. Scopes: `identify`, `guilds.members.read`. Ingen bot |
 | Server-id og officer-rolle-id | Miljøvariabler (værdier leveres af brugeren) |
 | Rolle (tank/healer/dps) | Spilleren vælger selv og kan ændre den |
@@ -25,11 +26,11 @@ Uverificeret: at Discord-scopet `guilds.members.read` giver brugerens egne rolle
 - `lib/blizzard`: token (client credentials, cachet i hukommelsen til lidt før `expires_in`) og typede kald `getCharacter(slug)` og `getGuildRoster()`. Eneste sted der kender host `eu.api.blizzard.com` og namespace `profile-forever-eu`. Resten af koden ser kun normaliserede typer.
 - `lib/discord-access`: afgør ved login om brugeren er i serveren og har officer-rollen. Resultatet gemmes i sessionen.
 - `lib/characters`: tilføj, skift aktiv, skift rolle, frakobl. Kender hverken Blizzard eller Discord direkte.
-- `app/api/cron/sync-roster`: kaldes af Vercel Cron, beskyttet med `CRON_SECRET`.
+- `lib/sync`: roster-synkroniseringen som én funktion. Kaldes af en indbygget planlægger i app-processen (hver time, kun i én instans, slås fra med miljøvariabel) og af `app/api/cron/sync-roster`, som er beskyttet med `CRON_SECRET` og bruges til manuel kørsel.
 
 Alle sider og API-ruter kræver session. Uden medlemskab af Discord-serveren vises en "ingen adgang"-side. Officer-handlinger tjekkes server-side.
 
-Hemmeligheder (Blizzard-secret, Discord-secret, `AUTH_SECRET`, `CRON_SECRET`, database-URL) er miljøvariabler i Vercel, aldrig i git eller klientkode. Den Blizzard-nøgle, der blev delt i chat, er kompromitteret og må ikke bruges. En ny oprettes af brugeren.
+Hemmeligheder (Blizzard-secret, Discord-secret, `AUTH_SECRET`, `CRON_SECRET`, database-URL) ligger i `.env` på serveren, aldrig i git, image eller klientkode. `AUTH_URL=https://aula.aaensoftware.com`, og Auth.js skal stole på værten bag tunnelen. Den Blizzard-nøgle, der blev delt i chat, er kompromitteret og må ikke bruges. En ny oprettes af brugeren.
 
 Fejl: Discord 429 eller nedetid ved login giver en tydelig fejlside, aldrig adgang. Udløbet Blizzard-token midt i et kald giver ét nyt token og ét genforsøg.
 
@@ -54,7 +55,7 @@ Slug kan afvige fra visningsnavnet (eksempel fra overdragelsen: `ezzek-svumpukke
 
 Officerer kan frakoble en karakter (`user_id` tømmes). Det er et forslag og er ikke aftalt eksplicit.
 
-## Sync (time-cron)
+## Sync (time-planlægger)
 
 1. Hent roster. Fejler kaldet, afbrydes kørslen uden ændringer, så nedetid ikke markerer nogen som forladt.
 2. For hver registreret karakter: i rosteren → `in_guild = true` og rang opdateres, ellers `in_guild = false`.
@@ -85,6 +86,9 @@ Kalender og tilmelding, opslag og kommentarer, filer, galleri, raid-parathed og 
 ## Åbne punkter
 
 - Discord-server-id og officer-rolle-id.
-- Domæne er valgt: `aula.aaensoftware.com` (DNS i Cloudflare, ikke oprettet endnu). CNAME til Vercel sættes, og Discord-redirect-URL registreres for domænet, når projektet er oprettet.
+- Domæne er valgt: `aula.aaensoftware.com` (DNS i Cloudflare, ikke oprettet endnu). Brugeren tilføjer det som Public Hostname på tunnelen (peger på `localhost:8102`), og Discord-redirect-URL registreres. Ikke verificeret: om zonen `aaensoftware.com` ligger i samme Cloudflare-konto som den eksisterende tunnel. Ligger den ikke, skal der oprettes en tunnel i den konto. `cloudflared` genstartes ikke uden en plan for at genvinde adgang.
+- Serveren er kun logget ind mod `SekvensApS`'s GHCR-pakker. Et privat image under `RasmusAaenDev` kræver en ekstra login med en PAT med `read:packages`, eller at pakken gøres offentlig (koden indeholder ingen hemmeligheder).
+- Postgres kører i en container. Der er ingen automatisk backup, så et natligt `pg_dump` til en mappe uden for containeren hører med i planen, og en gendannelse skal prøves en gang.
+- Port 8102 er næste ledige prod-port i `server-stacks/ADDING-NEW-SERVICE.md`, som opdateres, når servicen oprettes.
 - Raid-krav og attunement-quest-ID'er (først relevant i senere spec).
 - Forever er ny (lanceret 4. nov. 2026): namespace og svar kan ændre sig.

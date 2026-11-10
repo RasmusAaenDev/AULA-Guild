@@ -13,7 +13,8 @@ Hver linje er en egen spec → plan → implementering. Beslutninger er truffet 
 
 ## Fælles for alle specs
 
-- Domæne: `aula.aaensoftware.com`. DNS ligger i Cloudflare (nameservere `adele`/`amos`). `aula` er ikke oprettet endnu; CNAME til Vercel sættes, når projektet findes. Discord-login skal have redirect-URL registreret for det endelige domæne.
+- Hosting: selvhostet på brugerens Linux-maskine, Cloudflare Tunnel, kun prod (port 8102). Repo `RasmusAaenDev/AULA-Guild`, image til GHCR, Watchtower. Se spec 1 for detaljer og uverificerede punkter.
+- Domæne: `aula.aaensoftware.com`. DNS ligger i Cloudflare (nameservere `adele`/`amos`). `aula` er ikke oprettet endnu. Discord-login skal have redirect-URL registreret for det endelige domæne.
 - Tidspunkter gemmes i UTC og vises i `Europe/Copenhagen`.
 - Officer = Discord-rolle. Rettigheder tjekkes altid server-side.
 
@@ -36,13 +37,13 @@ Hver linje er en egen spec → plan → implementering. Beslutninger er truffet 
 ## 4. Filer og galleri
 
 - Begge dele kan uploades af alle. Officerer modererer (slette, omdøbe) og kan fastgøre en fil øverst, så guild-reglerne ikke drukner.
-- Lagring i Vercel Blob (forslag) med størrelsesgrænse. Kun billeder og PDF'er (forslag).
+- Lagring på en volumen på serveren (forslag), leveret gennem en autentificeret rute, ikke som offentlige filer i nginx. Med i backup. Størrelsesgrænse. Kun billeder og PDF'er (forslag).
 - Åbent: grænser og om man selv kan slette sine egne filer og billeder (forslag: ja).
 
 ## 5. Guild-chat (læs-kun)
 
 - Ny, separat Discord-bot med rettighederne "se kanal" og "læs beskedhistorik". Må ikke dele nøgle med jeres eksisterende bro mellem spil og Discord.
-- Siden poller via egen server (`GET /channels/{id}/messages`) og viser kun chatten til indloggede medlemmer. Ingen skrivning til Discord og ingen webhook.
+- Siden poller via egen server (en proces, der kører hele tiden, åbner for andre løsninger, men beslutningen er stadig polling og læs-kun) (`GET /channels/{id}/messages`) og viser kun chatten til indloggede medlemmer. Ingen skrivning til Discord og ingen webhook.
 - Skal verificeres mod Discords dokumentation: om Message Content Intent kræves, og hvordan broens beskeder ser ud (bot eller webhook), så afsenderens karakternavn vises korrekt.
 - Forsinkelse på nogle sekunder accepteres.
 
