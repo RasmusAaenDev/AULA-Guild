@@ -188,3 +188,34 @@ export const files = pgTable(
   },
   (t) => [index('files_section_created_at_idx').on(t.section, t.createdAt)],
 );
+
+// Egne chat-kanaler: findes kun i vores database, aldrig i Discord.
+export const chatChannels = pgTable(
+  'chat_channels',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [uniqueIndex('chat_channels_name_active_idx').on(sql`lower(${t.name})`).where(sql`${t.deletedAt} is null`)],
+);
+
+export const chatMessages = pgTable(
+  'chat_messages',
+  {
+    id: serial('id').primaryKey(),
+    channelId: integer('channel_id')
+      .notNull()
+      .references(() => chatChannels.id, { onDelete: 'cascade' }),
+    userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
+    characterId: integer('character_id').references(() => characters.id, { onDelete: 'set null' }),
+    // Snapshot af den aktive karakters fulde navn på sendetidspunktet.
+    authorName: text('author_name').notNull(),
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [index('chat_messages_channel_id_id_idx').on(t.channelId, t.id)],
+);

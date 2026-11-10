@@ -260,3 +260,11 @@ details.create .menu a:hover { background: var(--border); }
 .satire-toggle { margin: 0; }
 .satire-explain { background: var(--sat-bg); border: 2px dashed var(--sat-border); color: var(--text); }
 .time-field { display: inline-flex; align-items: center; gap: 6px; }
+.chat-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 8px; }
+.chat-title { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
+.chat-meta form { display: inline-flex; gap: 8px; align-items: baseline; margin-left: auto; }
+.chat-meta .btn { min-height: 32px; padding: 2px 10px; }
+.chat-channels-empty { padding: 0 10px; margin: 4px 0; }
+.chat-new-channel { margin-top: 12px; padding: 0 10px; }
+.chat-new-channel summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 700; }
+.chat-new-channel .field { margin: 8px 0; }

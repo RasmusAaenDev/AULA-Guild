@@ -3,26 +3,12 @@
 import { useActionState, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
 import type { PublicChatResult } from '@/lib/chat-authors';
-import { linkify } from '@/lib/linkify';
 import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+import { LinkedText } from './LinkedText';
 import { sendChatMessageAction, type FormState } from './actions';
 
 function isChatResult(v: unknown): v is PublicChatResult {
   return typeof v === 'object' && v !== null && Array.isArray((v as PublicChatResult).messages);
-}
-
-function LinkedText({ text }: { text: string }) {
-  return (
-    <>
-      {linkify(text).map((p, i) =>
-        p.type === 'link' && p.href ? (
-          <a key={i} className="chat-link" href={p.href} target="_blank" rel="noopener noreferrer nofollow">{p.text}</a>
-        ) : (
-          <span key={i}>{p.text}</span>
-        ),
-      )}
-    </>
-  );
 }
 
 export function ChatView({ channelId, canWrite }: { channelId: string; canWrite: boolean }) {

@@ -5,7 +5,6 @@ import { countUnansweredUpcoming } from '@/lib/events';
 import { countUnread } from '@/lib/posts';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { isChatConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +17,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     countUnansweredUpcoming(db, member.userId),
   ]);
   return (
-    <Shell member={member} characters={characters} activeId={user?.active ?? null} unreadPosts={unread} unansweredEvents={unanswered} chatEnabled={isChatConfigured()}>
+    <Shell member={member} characters={characters} activeId={user?.active ?? null} unreadPosts={unread} unansweredEvents={unanswered}>
       {children}
     </Shell>
   );
