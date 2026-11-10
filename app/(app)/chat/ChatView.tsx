@@ -1,8 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useActionState, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 import type { ChatResult } from '@/lib/chat';
 import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+import { sendChatMessageAction, type FormState } from './actions';
 
 function isChatResult(v: unknown): v is ChatResult {
   return typeof v === 'object' && v !== null && Array.isArray((v as ChatResult).messages);
@@ -18,6 +20,9 @@ export function ChatView() {
   const lastId = useRef<string | null>(null);
   const emptied = useRef(false);
   const savedTop = useRef(0);
+  const refreshRef = useRef<() => void>(() => {});
+  const [sendState, sendAction, sending] = useActionState<FormState, FormData>(sendChatMessageAction, {});
+  const { values, setValues, bind } = useFormValues({ message: '' });
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +83,13 @@ export function ChatView() {
       }
     };
 
+    refreshRef.current = () => {
+      if (cancelled || halted) return;
+      clearTimeout(timer);
+      controller?.abort();
+      controller = null;
+      void poll();
+    };
     document.addEventListener('visibilitychange', onVisibility);
     void poll();
     return () => {
@@ -123,6 +135,14 @@ export function ChatView() {
     else setNewBelow(true);
   }, [data, scrollToBottom]);
 
+  // Vellykket afsendelse: ryd feltet, følg bunden og hent listen igen.
+  useEffect(() => {
+    if (!sendState.sent) return;
+    setValues({ message: '' });
+    follow.current = true;
+    refreshRef.current();
+  }, [sendState, setValues]);
+
   const onScroll = () => {
     const el = listRef.current;
     if (!el || emptied.current || !data?.messages.length) return;
@@ -157,6 +177,14 @@ export function ChatView() {
       {newBelow && (
         <button type="button" className="btn chat-new" onClick={scrollToBottom}>Nye beskeder ↓</button>
       )}
+      <form className="chat-form" onSubmit={submitHandler(sendAction)}>
+        <div className="field">
+          <label htmlFor="chat-message">Skriv en besked</label>
+          <textarea id="chat-message" {...bind('message')} rows={2} maxLength={500} required autoComplete="off" />
+        </div>
+        {sendState.error && <p className="error" role="alert">{sendState.error}</p>}
+        <button type="submit" className="btn chat-send" disabled={sending || values.message.trim() === ''}>Send</button>
+      </form>
     </section>
   );
 }

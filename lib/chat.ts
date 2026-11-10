@@ -4,7 +4,9 @@
 export type ChatMessage = { id: string; author: string; content: string; timestamp: string; bot: boolean };
 export type ChatError = 'no_access' | 'not_found' | 'unavailable';
 export type ChatResult = { messages: ChatMessage[]; stale: boolean; error?: ChatError; hint?: 'no_content_intent' };
-export type ChatClient = { getMessages(): Promise<ChatResult> };
+export type SendError = 'no_access' | 'rate_limited' | 'unavailable' | 'invalid';
+export type SendResult = { ok: true } | { ok: false; error: SendError };
+export type ChatClient = { getMessages(): Promise<ChatResult>; sendMessage(content: string): Promise<SendResult> };
 
 const MAX_STALE_MS = 10 * 60_000;
 const DEFAULT_RETRY_S = 5;
@@ -113,7 +115,10 @@ export function createChatClient(opts: {
   const now = opts.now ?? Date.now;
   const ttl = opts.ttlMs ?? 4000;
   const timeoutMs = opts.timeoutMs ?? 8000;
-  const url = `https://discord.com/api/v10/channels/${encodeURIComponent(opts.channelId)}/messages?limit=50`;
+  const sendUrl = `https://discord.com/api/v10/channels/${encodeURIComponent(opts.channelId)}/messages`;
+  const url = `${sendUrl}?limit=50`;
+  const userAgent = 'DiscordBot (https://aula.aaensoftware.com, 1.0)';
+  let generation = 0;
 
   let good: { at: number; parsed: Parsed } | null = null;
   let last: { at: number; result: ChatResult } | null = null;
@@ -132,10 +137,11 @@ export function createChatClient(opts: {
 
   async function refresh(): Promise<ChatResult> {
     const t = now();
+    const gen = generation;
     let result: ChatResult;
     try {
       const res = await doFetch(url, {
-        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': 'DiscordBot (https://aula.aaensoftware.com, 1.0)' },
+        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent },
         cache: 'no-store',
         signal: AbortSignal.timeout(timeoutMs),
       });
@@ -164,11 +170,43 @@ export function createChatClient(opts: {
     } catch {
       result = degraded(t);
     }
-    last = { at: t, result };
+    if (gen === generation) last = { at: t, result };
     return result;
   }
 
+  async function send(content: string): Promise<SendResult> {
+    const t = now();
+    if (t < blockedUntil) return { ok: false, error: 'rate_limited' };
+    try {
+      const res = await doFetch(sendUrl, {
+        method: 'POST',
+        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+        cache: 'no-store',
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.ok) {
+        await discard(res);
+        generation++;
+        last = null; // næste læsning henter listen igen, så den nye besked ses
+        return { ok: true };
+      }
+      if (res.status === 429) {
+        const body: unknown = await res.json().catch(() => null);
+        blockedUntil = t + retrySeconds(res, body) * 1000;
+        return { ok: false, error: 'rate_limited' };
+      }
+      await discard(res);
+      if (res.status === 401 || res.status === 403 || res.status === 404) return { ok: false, error: 'no_access' };
+      if (res.status === 400) return { ok: false, error: 'invalid' };
+      return { ok: false, error: 'unavailable' };
+    } catch {
+      return { ok: false, error: 'unavailable' };
+    }
+  }
+
   return {
+    sendMessage: send,
     getMessages(): Promise<ChatResult> {
       const t = now();
       if (last && t - last.at >= 0 && t - last.at < ttl) return Promise.resolve(last.result);

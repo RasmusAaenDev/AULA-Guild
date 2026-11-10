@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ChatClient } from '@/lib/chat';
 import { chatResponse } from '@/lib/chat-http';
 
-const chat: ChatClient = { getMessages: async () => ({ messages: [], stale: false }) };
+const chat: ChatClient = { getMessages: async () => ({ messages: [], stale: false }), sendMessage: async () => ({ ok: true }) };
 
 describe('chatResponse', () => {
   it('401 JSON uden medlemssession', async () => {
@@ -27,7 +27,7 @@ describe('chatResponse', () => {
   });
   it('tjekker session før chat (ingen kald uden login)', async () => {
     let called = 0;
-    await chatResponse(undefined, { getMessages: async () => { called++; return { messages: [], stale: false }; } });
+    await chatResponse(undefined, { getMessages: async () => { called++; return { messages: [], stale: false }; }, sendMessage: async () => ({ ok: true }) });
     expect(called).toBe(0);
   });
 });
