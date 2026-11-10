@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, index, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const roles = ['tank', 'healer', 'dps'] as const;
 export type Role = (typeof roles)[number];
@@ -96,4 +96,52 @@ export const rsvps = pgTable(
     index('rsvps_user_id_idx').on(t.userId),
     index('rsvps_character_id_idx').on(t.characterId),
   ],
+);
+
+export const posts = pgTable(
+  'posts',
+  {
+    id: serial('id').primaryKey(),
+    authorId: integer('author_id')
+      .notNull()
+      .references(() => users.id),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    pinned: boolean('pinned').notNull().default(false),
+    pinnedAt: timestamp('pinned_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [index('posts_created_at_idx').on(t.createdAt), index('posts_pinned_idx').on(t.pinned, t.pinnedAt)],
+);
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: serial('id').primaryKey(),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    authorId: integer('author_id')
+      .notNull()
+      .references(() => users.id),
+    body: text('body').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  },
+  (t) => [index('comments_post_id_idx').on(t.postId, t.createdAt)],
+);
+
+export const postReads = pgTable(
+  'post_reads',
+  {
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    postId: integer('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    readAt: timestamp('read_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.postId] }), index('post_reads_post_id_idx').on(t.postId)],
 );

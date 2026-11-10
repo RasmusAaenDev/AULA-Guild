@@ -1,0 +1,221 @@
+import { and, asc, count, desc, eq, isNull, notExists, sql } from 'drizzle-orm';
+import type { Db } from '@/lib/db';
+import { comments, postReads, posts, users } from '@/lib/db/schema';
+
+export type PostTab = 'alle' | 'ulaeste' | 'vigtige';
+export type PostActor = { userId: number; isOfficer: boolean };
+export type PostListItem = {
+  id: number;
+  title: string;
+  excerpt: string;
+  authorName: string;
+  createdAt: Date;
+  pinned: boolean;
+  commentCount: number;
+  unread: boolean;
+};
+export type CommentItem = { id: number; authorId: number; authorName: string; body: string; createdAt: Date };
+export type PostDetail = {
+  id: number;
+  title: string;
+  body: string;
+  authorId: number;
+  authorName: string;
+  createdAt: Date;
+  pinned: boolean;
+  comments: CommentItem[];
+  unread: boolean;
+};
+
+const EXCERPT_LENGTH = 200;
+const DEFAULT_PAGE_SIZE = 20;
+
+const validId = (id: number) => Number.isInteger(id) && id > 0 && id <= 2147483647;
+
+function lengthOk(s: string, max: number): boolean {
+  return s.length >= 1 && s.length <= max;
+}
+
+export async function createPost(
+  db: Db,
+  userId: number,
+  input: { title: string; body: string },
+): Promise<{ ok: true; postId: number } | { ok: false; reason: 'invalid' }> {
+  const title = input.title.trim();
+  const body = input.body.trim();
+  if (!lengthOk(title, 120) || !lengthOk(body, 5000)) return { ok: false, reason: 'invalid' };
+  const postId = await db.transaction(async (tx) => {
+    const [p] = await tx.insert(posts).values({ authorId: userId, title, body }).returning({ id: posts.id });
+    await tx.insert(postReads).values({ userId, postId: p.id }).onConflictDoNothing();
+    return p.id;
+  });
+  return { ok: true, postId };
+}
+
+export async function addComment(
+  db: Db,
+  userId: number,
+  postId: number,
+  body: string,
+): Promise<{ ok: true; commentId: number } | { ok: false; reason: 'invalid' | 'not_found' }> {
+  const text = body.trim();
+  if (!lengthOk(text, 2000)) return { ok: false, reason: 'invalid' };
+  if (!validId(postId)) return { ok: false, reason: 'not_found' };
+  // Tjek og insert i ét udsagn, så et samtidigt slettet opslag ikke giver FK-fejl eller kommentar på slettet opslag.
+  const rows = await db.execute<{ id: number }>(sql`
+    insert into comments (post_id, author_id, body)
+    select p.id, ${userId}, ${text} from posts p where p.id = ${postId} and p.deleted_at is null
+    returning id`);
+  const row = rows[0];
+  if (!row) return { ok: false, reason: 'not_found' };
+  return { ok: true, commentId: row.id };
+}
+
+export async function deletePost(
+  db: Db,
+  actor: PostActor,
+  postId: number,
+): Promise<{ ok: true } | { ok: false; reason: 'forbidden' | 'not_found' }> {
+  if (!validId(postId)) return { ok: false, reason: 'not_found' };
+  const [p] = await db
+    .select({ authorId: posts.authorId })
+    .from(posts)
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+  if (!p) return { ok: false, reason: 'not_found' };
+  if (!actor.isOfficer && p.authorId !== actor.userId) return { ok: false, reason: 'forbidden' };
+  await db
+    .update(posts)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+  return { ok: true };
+}
+
+export async function deleteComment(
+  db: Db,
+  actor: PostActor,
+  commentId: number,
+): Promise<{ ok: true } | { ok: false; reason: 'forbidden' | 'not_found' }> {
+  if (!validId(commentId)) return { ok: false, reason: 'not_found' };
+  const [c] = await db
+    .select({ authorId: comments.authorId })
+    .from(comments)
+    .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)));
+  if (!c) return { ok: false, reason: 'not_found' };
+  if (!actor.isOfficer && c.authorId !== actor.userId) return { ok: false, reason: 'forbidden' };
+  await db
+    .update(comments)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(comments.id, commentId), isNull(comments.deletedAt)));
+  return { ok: true };
+}
+
+export async function setPinned(
+  db: Db,
+  actor: PostActor,
+  postId: number,
+  pinned: boolean,
+): Promise<{ ok: true } | { ok: false; reason: 'forbidden' | 'not_found' }> {
+  if (!validId(postId)) return { ok: false, reason: 'not_found' };
+  const [p] = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+  if (!p) return { ok: false, reason: 'not_found' };
+  if (!actor.isOfficer) return { ok: false, reason: 'forbidden' };
+  await db
+    .update(posts)
+    .set({ pinned, pinnedAt: pinned ? new Date() : null })
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+  return { ok: true };
+}
+
+export async function markPostRead(db: Db, userId: number, postId: number): Promise<void> {
+  if (!validId(postId)) return;
+  // Insert via select: ingen række for slettede/ukendte opslag, og ingen FK-fejl ved samtidig sletning.
+  await db.execute(sql`
+    insert into post_reads (user_id, post_id)
+    select ${userId}, p.id from posts p where p.id = ${postId} and p.deleted_at is null
+    on conflict do nothing`);
+}
+
+const unreadSql = (userId: number) =>
+  sql<boolean>`not exists (select 1 from ${postReads} where ${postReads.postId} = ${posts.id} and ${postReads.userId} = ${userId})`;
+
+export async function listPosts(
+  db: Db,
+  userId: number,
+  tab: PostTab,
+  page: number,
+  pageSize: number = DEFAULT_PAGE_SIZE,
+): Promise<{ items: PostListItem[]; hasMore: boolean }> {
+  const size = Math.max(1, Math.floor(pageSize));
+  const offset = (Math.max(1, Math.floor(page)) - 1) * size;
+  const where = and(
+    isNull(posts.deletedAt),
+    tab === 'vigtige' ? eq(posts.pinned, true) : undefined,
+    tab === 'ulaeste' ? unreadSql(userId) : undefined,
+  );
+  const rows = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      excerpt: sql<string>`left(${posts.body}, ${EXCERPT_LENGTH})`,
+      authorName: users.name,
+      createdAt: posts.createdAt,
+      pinned: posts.pinned,
+      commentCount: sql<number>`(select count(*)::int from ${comments} where ${comments.postId} = ${posts.id} and ${comments.deletedAt} is null)`,
+      unread: unreadSql(userId),
+    })
+    .from(posts)
+    .innerJoin(users, eq(users.id, posts.authorId))
+    .where(where)
+    .orderBy(
+      desc(posts.pinned),
+      sql`${posts.pinnedAt} desc nulls last`,
+      desc(posts.createdAt),
+      desc(posts.id),
+    )
+    .limit(size + 1)
+    .offset(offset);
+  return { items: rows.slice(0, size), hasMore: rows.length > size };
+}
+
+export async function getPost(db: Db, userId: number, postId: number): Promise<PostDetail | null> {
+  if (!validId(postId)) return null;
+  const [p] = await db
+    .select({
+      id: posts.id,
+      title: posts.title,
+      body: posts.body,
+      authorId: posts.authorId,
+      authorName: users.name,
+      createdAt: posts.createdAt,
+      pinned: posts.pinned,
+      unread: unreadSql(userId),
+    })
+    .from(posts)
+    .innerJoin(users, eq(users.id, posts.authorId))
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+  if (!p) return null;
+  const cs = await db
+    .select({
+      id: comments.id,
+      authorId: comments.authorId,
+      authorName: users.name,
+      body: comments.body,
+      createdAt: comments.createdAt,
+    })
+    .from(comments)
+    .innerJoin(users, eq(users.id, comments.authorId))
+    .where(and(eq(comments.postId, postId), isNull(comments.deletedAt)))
+    .orderBy(asc(comments.createdAt), asc(comments.id));
+  return { ...p, comments: cs };
+}
+
+export async function countUnread(db: Db, userId: number): Promise<number> {
+  const [r] = await db
+    .select({ n: count() })
+    .from(posts)
+    .where(and(isNull(posts.deletedAt), unreadSql(userId)));
+  return r.n;
+}

@@ -8,5 +8,5 @@ export function testDb(): { db: Db; close: () => Promise<void> } {
 }
 
 export async function resetDb(db: Db): Promise<void> {
-  await db.execute(sql`truncate table rsvps, events, event_series, characters, users restart identity cascade`);
+  await db.execute(sql`truncate table post_reads, comments, posts, rsvps, events, event_series, characters, users restart identity cascade`);
 }
