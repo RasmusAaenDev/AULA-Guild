@@ -2,7 +2,7 @@ name: aula-watchtower
 
 services:
   watchtower:
-    image: containrrr/watchtower
+    image: containrrr/watchtower:1.7.1
     container_name: aula-watchtower
     restart: unless-stopped
     environment:

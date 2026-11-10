@@ -8,6 +8,8 @@ services:
     init: true
     stop_grace_period: 15s
     env_file: .env
+    environment:
+      DATABASE_URL: postgres://aula:${DB_PASSWORD}@db:5432/aula
     labels:
       - com.centurylinklabs.watchtower.enable=true
       - com.centurylinklabs.watchtower.scope=aula

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Natligt dump af AULA-databasen. Brug: BACKUP_DIR=/srv/backups/aula deploy/backup.sh
 set -euo pipefail
+umask 077  # dumpet indeholder følsomme data: kun ejeren må læse
 
 CONTAINER="${CONTAINER:-prod-aula-guild-db}"
 BACKUP_DIR="${BACKUP_DIR:?Sæt BACKUP_DIR}"
