@@ -9,6 +9,7 @@ export type PostListItem = {
   id: number;
   title: string;
   excerpt: string;
+  authorId: number;
   authorName: string;
   /** Navnet på forfatterens aktive karakter, ellers null. */
   authorCharacter: string | null;
@@ -211,6 +212,7 @@ export async function listPosts(
       id: posts.id,
       title: posts.title,
       excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH + 1})`,
+      authorId: posts.authorId,
       authorName: users.name,
       authorCharacter: characters.name,
       authorCharacterSurname: characters.surname,

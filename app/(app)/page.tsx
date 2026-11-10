@@ -1,9 +1,11 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { and, eq } from 'drizzle-orm';
+import { deletePostAction } from '@/app/(app)/opslag/actions';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
+import { ConfirmForm } from '@/components/ConfirmForm';
 import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
@@ -152,6 +154,16 @@ export default async function OverviewPage({
                 <h3><Link href={`/opslag/${p.id}`}>{p.title}</Link></h3>
                 <p className="excerpt">{excerptText(p.excerpt)}</p>
                 <p className="muted">{p.commentCount === 1 ? '1 kommentar' : `${p.commentCount} kommentarer`}</p>
+                {(member.isOfficer || p.authorId === member.userId) && (
+                  <div className="actions">
+                    <ConfirmForm
+                      action={deletePostAction}
+                      fields={{ postId: p.id }}
+                      label="Slet opslag"
+                      confirmText="Slet opslaget og dets kommentarer? Det kan ikke fortrydes."
+                    />
+                  </div>
+                )}
               </article>
             );
           })}
