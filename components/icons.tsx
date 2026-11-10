@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'maske' | 'fake';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -39,10 +39,15 @@ const paths: Record<IconName, ReactNode> = {
   ),
   luk: <path d="M6 6l12 12M18 6L6 18" />,
   'pil-ned': <path d="M6 9l6 6 6-6" />,
-  maske: (
+  /** Klovn/narr: narrehue med tre spidser og bjælder, simpelt ansigt. */
+  klovn: (
     <>
-      <path d="M4 6c3-2 5-2 8 0 3-2 5-2 8 0v5c0 4-3 7-8 9-5-2-8-5-8-9z" />
-      <path d="M8 11h2M14 11h2M9.5 15c1.5 1 3.5 1 5 0" />
+      <path d="M5 11L4 6l5 2.5L12 5l3 3.5L20 6l-1 5z" />
+      <circle cx="4" cy="4.8" r="1" />
+      <circle cx="12" cy="3.2" r="1" />
+      <circle cx="20" cy="4.8" r="1" />
+      <path d="M6.5 11v3.5a5.5 5.5 0 0 0 11 0V11" />
+      <path d="M9.8 14.5v.01M14.2 14.5v.01M9.5 17.3c1.4 1.1 3.6 1.1 5 0" />
     </>
   ),
   fake: (
@@ -68,6 +73,7 @@ export function Icon({ name, size = 24, filled = false }: { name: IconName; size
       aria-hidden="true"
       focusable="false"
       className="icon"
+      data-icon={name}
     >
       {paths[name]}
     </svg>

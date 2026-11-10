@@ -44,7 +44,7 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-/** Deterministisk udvalg pr. dag (`YYYY-MM-DD`, dansk tid) og side; ingen dubletter; `count` afkortes til 0..24. */
+/** Deterministisk udvalg pr. dag (`YYYY-MM-DD`, dansk tid) og side; ingen dubletter; `count` afkortes til 0..satirePosts.length. */
 export function pickSatire(dateKey: string, pageNumber: number, count: number): SatirePost[] {
   const n = Math.max(0, Math.min(Math.floor(count) || 0, satirePosts.length));
   const rand = mulberry32(hashSeed(`${dateKey}#${pageNumber}`));

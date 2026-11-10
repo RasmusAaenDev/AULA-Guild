@@ -33,6 +33,9 @@ describe('SatireCard', () => {
     expect(html).not.toMatch(/<time/);
     expect(count(html, '>fiktiv<')).toBe(post.comments.length);
   });
+  it('bruger klovne/joker-ikonet som skjult avatar', () => {
+    expect(html).toMatch(/<span class="satire-mask" aria-hidden="true"><svg[^>]*aria-hidden="true"[^>]*data-icon="klovn"/);
+  });
   it('har ingen links eller knapper', () => {
     expect(html).not.toContain('<a ');
     expect(html).not.toContain('<button');

@@ -5,42 +5,49 @@ import {
 import { parseTab } from '@/lib/posts-ui';
 
 describe('satire-data', () => {
-  it('har 24 opslag med unikke id\'er og alle felter', () => {
-    expect(satirePosts).toHaveLength(24);
-    expect(new Set(satirePosts.map((p) => p.id)).size).toBe(24);
+  const N = satirePosts.length;
+  it('har 30 opslag med unikke id\'er satire-01..satire-30 og alle felter', () => {
+    expect(N).toBe(30);
+    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 30 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
+    expect(new Set(satirePosts.map((p) => p.id)).size).toBe(N);
     for (const p of satirePosts) {
-      expect(p.id).toMatch(/^satire-\d{2}$/);
       expect(p.title.trim()).not.toBe('');
+      expect(p.title.length).toBeLessThanOrEqual(60);
       expect(p.author.trim()).not.toBe('');
       expect(typeof p.important).toBe('boolean');
       expect(Array.isArray(p.comments)).toBe(true);
       expect(Array.isArray(p.tags)).toBe(true);
     }
   });
-  it('har brødtekst på 200-600 tegn og «fiktiv» i alle afsendere og kommentarforfattere', () => {
+  it('har brødtekst på 40-300 tegn, kommentarer på 10-120 tegn og «(fiktiv)» i alle afsendere og kommentarforfattere', () => {
     for (const p of satirePosts) {
-      expect(p.body.length).toBeGreaterThanOrEqual(200);
-      expect(p.body.length).toBeLessThanOrEqual(600);
-      expect(p.author).toContain('fiktiv');
+      expect(p.body.length).toBeGreaterThanOrEqual(40);
+      expect(p.body.length).toBeLessThanOrEqual(300);
+      expect(p.author).toContain('(fiktiv)');
       for (const c of p.comments) {
-        expect(c.author).toContain('fiktiv');
-        expect(c.body.trim()).not.toBe('');
+        expect(c.author).toContain('(fiktiv)');
+        expect(c.body.length).toBeGreaterThanOrEqual(10);
+        expect(c.body.length).toBeLessThanOrEqual(120);
       }
     }
   });
-  it('har præcis 6 vigtige og 8 med kommentarer', () => {
+  it('har præcis 6 vigtige og 10 med kommentarer', () => {
     expect(satirePosts.filter((p) => p.important)).toHaveLength(6);
-    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(8);
+    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(10);
   });
-  it('har ingen e-mailadresser, links eller telefonlignende tal', () => {
+  it('har ingen links, @ eller lange cifferfølger', () => {
     for (const p of satirePosts) {
-      const texts = [p.title, p.body, ...p.comments.map((c) => c.body)];
-      for (const t of texts) {
-        expect(t).not.toMatch(/\S+@\S+/);
-        expect(t).not.toMatch(/https?:\/\/|www\./i);
-        expect(t).not.toMatch(/\d[\d .-]{6,}\d/);
-        expect(t).not.toMatch(/\d{5,}/);
+      for (const t of [p.title, p.body, ...p.comments.map((c) => c.body)]) {
+        expect(t).not.toMatch(/http/i);
+        expect(t).not.toContain('@');
+        expect(t).not.toMatch(/\d{6,}/);
       }
+    }
+  });
+  it('har ikke de gamle felter inspiration/sources efter indlæsning', () => {
+    for (const p of satirePosts) {
+      expect(p).not.toHaveProperty('inspiration');
+      expect(p).not.toHaveProperty('sources');
     }
   });
 });
@@ -53,10 +60,10 @@ describe('pickSatire', () => {
     expect(a).toHaveLength(5);
     expect(new Set(a.map((p) => p.id)).size).toBe(5);
   });
-  it('afkorter til 0..24', () => {
+  it('afkorter til 0..antal opslag', () => {
     expect(pickSatire('2026-11-10', 1, 0)).toEqual([]);
     expect(pickSatire('2026-11-10', 1, -3)).toEqual([]);
-    expect(new Set(pickSatire('2026-11-10', 1, 99).map((p) => p.id)).size).toBe(24);
+    expect(new Set(pickSatire('2026-11-10', 1, 99).map((p) => p.id)).size).toBe(satirePosts.length);
   });
   it('giver forskellige valg for forskellige sider og dage', () => {
     const ids = (d: string, p: number) => pickSatire(d, p, 6).map((x) => x.id).join(',');

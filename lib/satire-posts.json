@@ -1,412 +1,459 @@
 [
   {
     "id": "satire-01",
-    "title": "Påmindelse: HUSK at ready checke!",
-    "body": "Kære alle raidere 😊\n\nVi har nu for TREDJE gang denne uge oplevet, at pull'et starter, før alle har trykket ready check. Det er ikke fordi vi vil pege fingre, men vi vil gerne minde om, at feltet er grønt, når man trykker på det.\n\nSe vedhæftet fil for en billedguide (3 sider).\n\nMed venlig hilsen\nOfficer Bodil (fiktiv), raid-pædagog",
-    "author": "Officer Bodil (fiktiv), raid-pædagog",
-    "important": true,
+    "title": "Vedr. Henriette",
+    "body": "Henriette må ikke få remulade.\nHilsen Henriettes mor",
+    "author": "Henriettes mor (fiktiv)",
+    "important": false,
     "tags": [
-      "raid",
-      "påmindelse"
+      "kost"
     ],
     "comments": [
       {
-        "author": "Healer-Henning (fiktiv)",
-        "body": "Jeg trykkede. Jeg tror. Måske var det på den forkerte skærm."
-      },
-      {
-        "author": "Dps-Dorthe (fiktiv)",
-        "body": "Tak for billedguiden. Side 2 er upåklagelig."
+        "author": "Oscars far (fiktiv)",
+        "body": "Tak for info. Hvad med ketchup?"
       }
     ],
-    "inspiration": "Venlig-aggressiv påmindelse, 'vi vil ikke pege fingre', vedhæftet vejledning, emoji.",
-    "sources": [
-      "https://www.tv2kosmopol.dk/koebenhavn/tusindvis-griner-med-nar-uhyrlige-aula-beskeder-deles-a188c"
-    ]
+    "inspiration": "Kort, uforklaret forbud uden begrundelse.",
+    "sources": []
   },
   {
     "id": "satire-02",
-    "title": "Flasker til onsdag: Ny liste (den gamle er ugyldig)",
-    "body": "Hej alle\n\nDer er lavet en ny flaskeliste. Den gamle liste er ugyldig, også selvom du allerede har skrevet dig på den. Det gælder også dig, der skrev dig på begge.\n\nHusk: Ingen nødder i konsumablerne. Vi har en tank med meget stærke holdninger til hvedemel.\n\nTak for forståelsen 🙏🙏🙏\n\nKlassens forældrerepræsentant Torben (fiktiv)",
-    "author": "Klassens forældrerepræsentant Torben (fiktiv), konsumable-koordinator",
+    "title": "Husk skiftetøj",
+    "body": "Valdemar har fået våde sokker tre gange denne uge. Vi sender nu 4 par med. Vil gerne have dem tilbage i den rækkefølge, de kom i.\nMvh Valdemars far",
+    "author": "Valdemars far (fiktiv)",
     "important": false,
     "tags": [
-      "flasker",
-      "liste"
+      "tøj"
     ],
     "comments": [],
-    "inspiration": "Kagelister og allergi-regler, 'den gamle liste er ugyldig', Torben-typen som holder styr på alting.",
-    "sources": [
-      "https://www.inputmag.dk/aula-skruer-endelig-ned-for-faellesbeskederne/"
-    ]
+    "inspiration": "Overspecifik regel om banalt tøj.",
+    "sources": []
   },
   {
     "id": "satire-03",
-    "title": "Ændring i DKP-systemet pr. mandag",
-    "body": "Kære guild\n\nFra mandag indføres nyt pointsystem. Du optjener 1 point for at møde op, 2 for at møde op til tiden og 3 for at have læst dette opslag. Opslaget har allerede 41 'set', men kun 6 har kvitteret.\n\nVi skal være tydelige: Det er ikke en straf. Det er en struktur.\n\nOfficer Kenneth (fiktiv), loot council",
-    "author": "Officer Kenneth (fiktiv), loot council",
+    "title": "VIGTIGT: Maja og pindsvinet",
+    "body": "Maja har fundet et pindsvin og vil gerne have det med i morgen. Det må IKKE ske. Hun er blevet informeret.\nVenlig hilsen Majas mor",
+    "author": "Majas mor (fiktiv)",
     "important": true,
     "tags": [
-      "dkp",
-      "regler"
+      "dyr",
+      "vigtigt"
     ],
-    "comments": [],
-    "inspiration": "Kvitteringskrav ('husk at kvittere'), skjult trussel pakket ind i struktur-sprog.",
+    "comments": [
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har ikke plads til pindsvin. Tak for forvarslen."
+      },
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Er det det samme pindsvin som i går?"
+      }
+    ],
+    "inspiration": "Dramatisk forbud mod noget, ingen har foreslået.",
     "sources": []
   },
   {
     "id": "satire-04",
-    "title": "Skiftetøj: Nu også til guild-banken",
-    "body": "Hej forældre og raidere\n\nVi oplever, at flere møder op til raid uden reserve-gear. Husk, at ting sker. Boss'en spytter, gulvet brænder, og så står man der i grundstoffer.\n\nMærk gerne dit sæt med dit navn. Ellers ryger det i guild-banken under 'Fundne sager', og de bliver desværre ikke afhentet.\n\nVenlig hilsen\nBank-Bente (fiktiv)",
-    "author": "Bank-Bente (fiktiv), guildbank-ansvarlig",
+    "title": "Besked fra Storms mormor",
+    "body": "Storm må gerne få kage, men kun hvis den er rund. Hilsen Storms mormor",
+    "author": "Storms mormor (fiktiv)",
     "important": false,
     "tags": [
-      "gear",
-      "bank"
+      "kost",
+      "kage"
     ],
     "comments": [],
-    "inspiration": "Husk skiftetøj, glemte ting i 'Fundne sager', mærk alting.",
+    "inspiration": "Mærkeligt, men høfligt og bestemt krav.",
     "sources": []
   },
   {
     "id": "satire-05",
-    "title": "VIGTIGT!!! ALLE SKAL LÆSE DETTE!!!",
-    "body": "KÆRE ALLE!!!\n\nDER ER IGEN BLEVET STÅET I ILDEN. VI HAR HAFT BESKED OM DET I TRE UGER. ILDEN ER IKKE EN SÆRLIG ZONE. DEN ER ET PROBLEM.\n\nHvis du er i tvivl, så spørg i guild-chatten (men ikke nu, den er fuld).\n\nOfficer Birthe (fiktiv)\n\nPS: Dette er ikke rettet mod nogen bestemt (det er rettet mod Brian).",
-    "author": "Officer Birthe (fiktiv), gulv-tilsyn",
-    "important": true,
+    "title": "Mistet: én vante",
+    "body": "Der er fundet én rød vante i garderoben. Ejeren bedes finde den anden og kontakte os, så vi kan se, om de passer sammen.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
     "tags": [
-      "wipe",
-      "ild"
+      "mistet"
     ],
     "comments": [
       {
-        "author": "Brian (fiktiv)",
-        "body": "Jeg tror, jeg er Brian. Men det var varmt der."
-      },
-      {
-        "author": "Tank-Tove (fiktiv)",
-        "body": "Jeg vil gerne bekræfte, at ilden er et problem."
-      },
-      {
-        "author": "Officer Birthe (fiktiv)",
-        "body": "Tak, Tove. Brian, vi snakker i voice."
+        "author": "Idas mor (fiktiv)",
+        "body": "Det er vist ikke vores. Vores er mere røde."
       }
     ],
-    "inspiration": "ALLE-VERSALER, udråbstegn, PS med skjult adressat, kommentartråd der eskalerer.",
-    "sources": [
-      "https://www.tv2kosmopol.dk/koebenhavn/tusindvis-griner-med-nar-uhyrlige-aula-beskeder-deles-a188c"
-    ]
+    "inspiration": "Fundne ting, der er blevet en opgave for forældrene.",
+    "sources": []
   },
   {
     "id": "satire-06",
-    "title": "Legeaftale: Nogen med tid til en dungeon?",
-    "body": "Hej alle\n\nMin karakter har et ledigt hul lørdag kl. 14-16 og kunne tænke sig en dungeon-aftale med en anden karakter på nogenlunde samme level. Helst en rolig healer, ingen skrigende i voice, og venligst ingen pull før jeg har drukket min kaffe.\n\nSvar gerne privat (men gerne også her, så alle kan se det).\n\nMvh Dps-Dorthe (fiktiv)",
-    "author": "Dps-Dorthe (fiktiv), medlem",
+    "title": "Vedr. aflevering",
+    "body": "Oscar afleveres fra i morgen kl. 7.52, ikke 7.50. Han skal lige nå at kigge på duen.\nHilsen Oscars bonusfar",
+    "author": "Oscars bonusfar (fiktiv)",
     "important": false,
     "tags": [
-      "dungeon",
-      "aftale"
+      "aflevering"
     ],
     "comments": [],
-    "inspiration": "Legeaftaler arrangeret som diplomati, 'svar privat men gerne også her'.",
+    "inspiration": "Meget specifikt tidspunkt med uforklaret begrundelse.",
     "sources": []
   },
   {
     "id": "satire-07",
-    "title": "Evaluering af sidste raid (se vedhæftet fil)",
-    "body": "Kære guild\n\nTak for et alt i alt udmærket raid. Vi tager det positive med: Ingen døde i første fase (som vi ved af).\n\nTil næste gang vil vi bede om, at man ikke starter sine egne strategier midt i kampen. Vi har en plan. Den er vedhæftet. Den er 14 sider. Side 9 handler om, hvad man gør, hvis man har en idé.\n\nOfficer Bodil (fiktiv)",
-    "author": "Officer Bodil (fiktiv), raid-pædagog",
-    "important": false,
+    "title": "Husk: pyjamasdag er IKKE i dag",
+    "body": "Flere børn mødte i pyjamas. Pyjamasdag er torsdag. Vi har nu ringet til alle, der skulle have haft en pyjamas på i går.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
     "tags": [
-      "evaluering",
-      "strategi"
+      "pyjamasdag",
+      "vigtigt"
     ],
     "comments": [
       {
-        "author": "Mage-Mogens (fiktiv)",
-        "body": "Side 9 mangler i min udgave."
+        "author": "Valdemars mor (fiktiv)",
+        "body": "Valdemar tog den på alligevel, han havde det godt."
       }
     ],
-    "inspiration": "Se vedhæftet fil, evalueringsrunde med 'det positive', plan som ingen har læst.",
+    "inspiration": "Misforståelse om en eller anden dag i kalenderen.",
     "sources": []
   },
   {
     "id": "satire-08",
-    "title": "Forældremøde i guilden: Dagsorden og kaffe",
-    "body": "Kære alle\n\nDer indkaldes til guildmøde torsdag i voice. Dagsorden: 1) Velkomst. 2) Hvem har ret i sidste uges loot-diskussion. 3) Eventuelt (højst 5 min). 4) Kaffe.\n\nDer er ikke kaffe i voice. Medbring selv.\n\nVi har bedt om, at ingen bruger mødet til at fremføre nye regler. Vi forventer, at det alligevel sker.\n\nMed venlig hilsen\nGuild-formand Palle (fiktiv)",
-    "author": "Guild-formand Palle (fiktiv), mødeleder",
+    "title": "Tak til dem, der",
+    "body": "Tak til de forældre, der har lagt madpakker i kassen med låget nedad. Vi andre kan også se, hvem I er.\nHilsen Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
     "important": false,
     "tags": [
-      "møde",
-      "voice"
+      "tak"
     ],
     "comments": [],
-    "inspiration": "Forældremøde-dagsorden, 'eventuelt' der æder mødet, kaffe som fast punkt.",
+    "inspiration": "Passiv-aggressiv tak til dem, der ikke gør noget galt.",
     "sources": []
   },
   {
     "id": "satire-09",
-    "title": "Ny regel: Ikke svar til alle på loot-opslag",
-    "body": "Hej alle\n\nEfter sidste opslag om en blå ring modtog vi 73 svar. De fleste var 'Tak', 'Tak i lige måde' og 'Ja, enig'. En enkelt var et billede af en kat.\n\nFra nu er 'svar til alle' lukket på loot-opslag. Vi beder om, at takken tages privat. Katten må gerne blive.\n\nVenlig hilsen\nOfficer Kenneth (fiktiv)",
-    "author": "Officer Kenneth (fiktiv), loot council",
-    "important": true,
+    "title": "Ida og den blå kuglepen",
+    "body": "Ida må godt låne blyanter, men ikke den blå kuglepen. Den er hendes. Hilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
     "tags": [
-      "loot",
-      "svar alle"
+      "skolegrej"
     ],
-    "comments": [
-      {
-        "author": "Dps-Dorthe (fiktiv)",
-        "body": "Tak for beskeden. Tak til alle. Tak."
-      },
-      {
-        "author": "Officer Kenneth (fiktiv)",
-        "body": "Dorthe."
-      }
-    ],
-    "inspiration": "Svar-til-alle-kaos, tak-kæder, uskyldigt kæledyrsbillede.",
-    "sources": [
-      "https://www.altinget.dk/artikel/foraeldreformand-aula-spam-kommer-ogsaa-fra-laererne"
-    ]
+    "comments": [],
+    "inspiration": "Forbud mod bytteobjekt i dagligdagen.",
+    "sources": []
   },
   {
     "id": "satire-10",
-    "title": "Tank-koordinator: Aftenens kampe og forventninger",
-    "body": "Kære alle\n\nI aften er der tre bosser. Jeg forventer, at man står bag mig, og ikke foran mig, og slet ikke i mig. Hvis du er i tvivl om, hvor du står, så stå stille.\n\nJeg vil gerne understrege, at jeg elsker alle jer, som er her. Også dem, som ikke har læst dette.\n\nTank-koordinator (fiktiv)",
-    "author": "Tank-koordinator (fiktiv)",
+    "title": "Oscar har ikke fødselsdag",
+    "body": "Oscar har ikke fødselsdag i dag. Han har sagt det til flere børn. Vi beder alle om at tage det med fra ham.\nMvh Oscars mor",
+    "author": "Oscars mor (fiktiv)",
     "important": false,
     "tags": [
-      "tank",
-      "positionering"
+      "fødselsdag"
     ],
     "comments": [],
-    "inspiration": "Kærlig-streng tone, 'stå stille hvis du er i tvivl', pædagog-sprog om positionering.",
+    "inspiration": "Rygte i klassen bliver en officiel besked.",
     "sources": []
   },
   {
     "id": "satire-11",
-    "title": "Tak for en hyggelig aften (og en lille bemærkning)",
-    "body": "Kære guild\n\nTak for i aftes. Det var rigtig hyggeligt, og vi nåede næsten alle bosser. Jeg vil blot nævne, helt uden at pege på nogen, at en vis healer afbrød sin heal for at skrive 'lol'. Det er helt fint. Det var bare lidt dyrt.\n\nVi ses til næste gang 🌈\n\nOfficer Birthe (fiktiv)",
-    "author": "Officer Birthe (fiktiv), gulv-tilsyn",
-    "important": false,
+    "title": "VIGTIGT: Ingen bananer",
+    "body": "Der er gået bananer ned i børnenes tasker igen. Klassen er bananfri fra og med i morgen. Det gælder også bananchips.\nHilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
     "tags": [
-      "tak",
-      "healer"
+      "kost",
+      "vigtigt"
     ],
     "comments": [
       {
-        "author": "Healer-Henning (fiktiv)",
-        "body": "Det var en meget sjov lol."
+        "author": "Storms far (fiktiv)",
+        "body": "Er æbler OK?"
       }
     ],
-    "inspiration": "Tak og ros efterfulgt af en 'lille bemærkning', regnbue-emoji over en kritik.",
-    "sources": [
-      "https://www.tv2kosmopol.dk/koebenhavn/tusindvis-griner-med-nar-uhyrlige-aula-beskeder-deles-a188c"
-    ]
+    "inspiration": "Pludseligt forbud efter én hændelse.",
+    "sources": []
   },
   {
     "id": "satire-12",
-    "title": "Klassekassen er tom: Ret henvendelse til Bank-Bente",
-    "body": "Hej alle\n\nGuild-kassen står nu på 12 kobber og et usynligt hjælpemiddel. Vi skal bruge penge til nye reparationer. Jeg beder alle om at bidrage med, hvad man kan. Også selvom man ikke deltog i reparationen.\n\nDer er oprettet en ordning, som vi ikke kan forklare her. Spørg Bente.\n\nBank-Bente (fiktiv)",
-    "author": "Bank-Bente (fiktiv), guildbank-ansvarlig",
+    "title": "Besked fra Valdemars far",
+    "body": "Valdemar skal ikke have fri til at lege, før han har spist sin rugbrød. Vi har snakket med ham derhjemme.\nMvh Valdemars far",
+    "author": "Valdemars far (fiktiv)",
     "important": false,
     "tags": [
-      "bank",
-      "bidrag"
+      "kost"
     ],
     "comments": [],
-    "inspiration": "Klassekasse og indsamlinger, uklare betalingsordninger, 'spørg X'.",
+    "inspiration": "Ønske om at få personalet til at håndhæve hjemmeregler.",
     "sources": []
   },
   {
     "id": "satire-13",
-    "title": "Attunement-status: Vi har 2 på rette spor og 1 på stien",
-    "body": "Kære alle\n\nVi har gennemgået attunements for hele holdet. To er færdige, en er i gang, og resten står i en kategori, vi kalder 'på vej'. Det er i orden at være på vej. Det er mindre i orden at have været på vej siden marts.\n\nHvis du har brug for hjælp, så spørg. Hvis du ikke ønsker hjælp, så spørg alligevel.\n\nOfficer Bodil (fiktiv)",
-    "author": "Officer Bodil (fiktiv), raid-pædagog",
+    "title": "Kagelisten",
+    "body": "Kagelisten til fredag er fyldt. Hvis nogen allerede har skrevet sig på 'mandag' og ikke er blevet spurgt, er det fordi vi ikke har mandag.\nHilsen Kageudvalget",
+    "author": "Kageudvalget (fiktiv)",
     "important": false,
     "tags": [
-      "attunement",
-      "status"
+      "kage"
     ],
-    "comments": [],
-    "inspiration": "Elevstatus i pæne ord, 'på vej' som eufemisme, hjælp-tilbud med undertone.",
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Jeg skrev mig på mandag. Hvad nu?"
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Du er sat på fredag. Det er også bedre."
+      }
+    ],
+    "inspiration": "Forvirring om kageliste.",
     "sources": []
   },
   {
     "id": "satire-14",
-    "title": "Husk: Addons opdateres INDEN raid, ikke under",
-    "body": "Hej alle\n\nI aftes opdaterede tre personer addons i opstillingen, mens boss'en stod og ventede. En af dem skrev 'bare et sekund'. Det var seks minutter.\n\nDer er sat en påmindelse op i guild-chat. Der er også sat en påmindelse op om påmindelsen.\n\nVenlig hilsen\nTekniker-Tonny (fiktiv)",
-    "author": "Tekniker-Tonny (fiktiv), addon-ansvarlig",
+    "title": "Husk gummistøvler",
+    "body": "Gummistøvler er til udendørs. Til indendørs er der hjemmesko. Gummistøvler indendørs er altså kun hvis det regner indendørs.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
     "important": false,
     "tags": [
-      "addons",
-      "tid"
+      "tøj"
     ],
     "comments": [],
-    "inspiration": "Teknik-påmindelser, påmindelse om påmindelsen, 'bare et sekund'.",
+    "inspiration": "Logisk regel, der alligevel ender uforståelig.",
     "sources": []
   },
   {
     "id": "satire-15",
-    "title": "Dagens besked fra skolen (men det er guilden)",
-    "body": "Kære forældre og raidere\n\nI morgen er der pyjamasdag. Det vil sige, at vi alle møder op i vores mest afslappede gear. Husk madpakke. Husk drikkedunk. Husk at logge ind inden kl. 20.00, for ellers kommer man for sent, og så er man ikke med.\n\nVi glæder os til en hyggelig dag i Orgrimmar.\n\nOfficer Bodil (fiktiv)",
-    "author": "Officer Bodil (fiktiv), raid-pædagog",
+    "title": "Vedr. Maja og hundeposen",
+    "body": "Maja har fået en hundepose med i skole. Det er ikke fordi, vi har fået hund. Vi har bare en pose.\nHilsen Majas far",
+    "author": "Majas far (fiktiv)",
     "important": false,
     "tags": [
-      "pyjamasdag",
-      "madpakke"
+      "dyr"
     ],
     "comments": [],
-    "inspiration": "Rent skolesprog (temadag, madpakke, drikkedunk) hvor guild-twistet først kommer til sidst.",
+    "inspiration": "Forældre forklarer uopfordret noget, ingen spurgte om.",
     "sources": []
   },
   {
     "id": "satire-16",
-    "title": "Ny kommunikationspolitik: Max 3 beskeder pr. dag",
-    "body": "Kære alle\n\nFor at skabe ro indføres en kommunikationspolitik: Man må skrive højst tre beskeder pr. dag i guild-chatten. Svar tæller også. Emojis tæller som en halv besked.\n\nDette opslag tæller ikke, for det er et opslag.\n\nBemærk: Politikken evalueres efter en uge. Evalueringen sendes som et opslag. Dette opslag tæller heller ikke.\n\nGuild-formand Palle (fiktiv)",
-    "author": "Guild-formand Palle (fiktiv), mødeleder",
-    "important": true,
+    "title": "TAK til alle",
+    "body": "Tak for en dejlig tur til skoven. Husk at vi ikke skal nævne, hvem der tabte telefonen i bækken. Han ved det selv.\nHilsen Storms mor",
+    "author": "Storms mor (fiktiv)",
+    "important": false,
     "tags": [
-      "politik",
-      "chat"
+      "tur"
     ],
-    "comments": [
-      {
-        "author": "Dps-Dorthe (fiktiv)",
-        "body": "Er en halv emoji også en halv besked? 😊"
-      },
-      {
-        "author": "Guild-formand Palle (fiktiv)",
-        "body": "Dorthe, det var nu fire."
-      }
-    ],
-    "inspiration": "Skolens kommunikationsprincipper, regler der selv bryder reglen, undtagelse for eget opslag.",
-    "sources": [
-      "https://skoleborn.dk/aula-fungerer-naar-vi-har-principperne-for-brugen-i-orden/"
-    ]
+    "comments": [],
+    "inspiration": "Gentaget tak med indirekte pegefinger.",
+    "sources": []
   },
   {
     "id": "satire-17",
-    "title": "Mistet: 1 hjelm, 2 flasker og en smule selvtillid",
-    "body": "Hej alle\n\nVi har fundet ting efter raid. En hjelm (grøn), to flasker (halvfulde) og et dagligt opslag om, hvem der har trukket den forkerte lever.\n\nHvis noget af dette er dit, så skriv endelig ikke her, men ring til mig. Jeg tager den ikke, men jeg kan godt lide, at du ved, hvor den er.\n\nBank-Bente (fiktiv)",
-    "author": "Bank-Bente (fiktiv), guildbank-ansvarlig",
-    "important": false,
+    "title": "VIGTIGT: Cykelhjelm i morgen",
+    "body": "I morgen er der cykelhjelm. Ikke cykel, kun hjelm. Det er en øvelse i at have hjelm på.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
     "tags": [
-      "mistet",
-      "fundet"
+      "hjelm"
     ],
     "comments": [],
-    "inspiration": "Efterlysning af mistede ting sendt til alle, med lidt for megen personlighed.",
-    "sources": [
-      "https://www.debatten.net/forum/viewtopic.php?t=24827"
-    ]
+    "inspiration": "Dagens påmindelse om en aktivitet, ingen forstår.",
+    "sources": []
   },
   {
     "id": "satire-18",
-    "title": "Loot-fordeling: Vi har sat det i system",
-    "body": "Kære alle\n\nLoot council har nu mødtes. Vi kan oplyse, at ringen går til den, som har mest brug for den, medmindre en anden har mere brug for den, og så går den til den, som sagde det højest i går.\n\nTil jer, som er uenige: Der er sat en formular op. Den hedder 'Klager'. Den er ikke aktiv.\n\nOfficer Kenneth (fiktiv)",
-    "author": "Officer Kenneth (fiktiv), loot council",
-    "important": true,
+    "title": "Mistet: en lille sok",
+    "body": "Der er fundet en lille sok i fællesrummet. Den kan hentes hos SFO-personalet. Den lugter ikke.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
     "tags": [
-      "loot",
-      "formular"
+      "mistet"
     ],
-    "comments": [],
-    "inspiration": "Beslutninger pakket i system-sprog, klageformular der ikke virker.",
+    "comments": [
+      {
+        "author": "Idas far (fiktiv)",
+        "body": "Kan vi få den uden lugt?"
+      }
+    ],
+    "inspiration": "Detalje, ingen bad om.",
     "sources": []
   },
   {
     "id": "satire-19",
-    "title": "Forældre-sladder: Hvem tog sidste cupcake?",
-    "body": "Hej alle\n\nSidste weekend var der cupcakes til raidet. I dag står der 11 på listen, og der var kun 12 mennesker. Det er lidt underligt, at ingen har skrevet sig på til den sidste.\n\nJeg beder ikke om en navngivning. Jeg beder om, at den, som ved det, ved det.\n\nVenlig hilsen\nKlassens forældrerepræsentant Torben (fiktiv)",
-    "author": "Klassens forældrerepræsentant Torben (fiktiv), konsumable-koordinator",
-    "important": false,
+    "title": "VIGTIGT: Ost",
+    "body": "Ost må ikke længere medbringes. Det skyldes en hændelse fredag. Vi vil ikke sige mere.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
     "tags": [
-      "mad",
-      "mysterium"
+      "kost",
+      "vigtigt"
     ],
-    "comments": [
-      {
-        "author": "Healer-Henning (fiktiv)",
-        "body": "Jeg ved ikke noget. Jeg har bare ikke kunnet sove."
-      }
-    ],
-    "inspiration": "Kagemysterium, 'jeg beder ikke om navne', passiv-aggressiv udspørgen.",
+    "comments": [],
+    "inspiration": "Forbud med en antydet baggrundshistorie.",
     "sources": []
   },
   {
     "id": "satire-20",
-    "title": "Tilbagemelding på sidste uges klager over lyd i voice",
-    "body": "Kære alle\n\nVi har modtaget 9 klager over lyd i voice. Seks handler om en person, der spiser. Tre handler om en person, der ikke spiser, men siger, at han kunne.\n\nVi beder alle om at mute, når man ikke taler. Vi beder også om, at man ikke mute-r i det øjeblik, man bliver spurgt om noget.\n\nVenlig hilsen\nTekniker-Tonny (fiktiv)",
-    "author": "Tekniker-Tonny (fiktiv), addon-ansvarlig",
+    "title": "Valdemar og regnvejr",
+    "body": "Valdemar skal gerne have lov til at gå ud, når det regner, men ikke når det regner meget. Kan I måle det?\nHilsen Valdemars mormor",
+    "author": "Valdemars mormor (fiktiv)",
     "important": false,
     "tags": [
-      "voice",
-      "lyd"
+      "vejr"
     ],
-    "comments": [],
-    "inspiration": "Opsummering af klager i neutrale tal, tilbagemelding uden navne men med tydelige hints.",
+    "comments": [
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har en lineal. Den er ikke særlig præcis."
+      }
+    ],
+    "inspiration": "Urealistisk krav til personalet.",
     "sources": []
   },
   {
     "id": "satire-21",
-    "title": "Sommerfest i guilden: Medbring selv, men ikke det der",
-    "body": "Hej alle\n\nSommerfest lørdag kl. 19 i guild-hallen. Medbring selv drikkevarer. Hvis du medbringer en salat, så skriv i kommentarfeltet, hvad den indeholder, og hvem der har lavet den.\n\nBemærk: Der er ingen fælles opvask. Alt, hvad du tager med, tager du med hjem igen. Også stemningen.\n\nOfficer Bodil (fiktiv)",
-    "author": "Officer Bodil (fiktiv), raid-pædagog",
+    "title": "Fra Oscars mormor",
+    "body": "Oscar har fået besked på ikke at sige 'nej' til kage. Hvis I tilbyder, så vil han sige ja. Det er aftalen.\nMvh Oscars mormor",
+    "author": "Oscars mormor (fiktiv)",
     "important": false,
     "tags": [
-      "fest",
-      "mad"
+      "kost",
+      "kage"
     ],
-    "comments": [
-      {
-        "author": "Alchemist-Ingrid (fiktiv)",
-        "body": "Min salat indeholder ærlighed og lidt mayonnaise."
-      }
-    ],
-    "inspiration": "Sommerfest med indholdsdeklaration og tag-selv-ansvar.",
+    "comments": [],
+    "inspiration": "Mærkelig men afdæmpet aftale.",
     "sources": []
   },
   {
     "id": "satire-22",
-    "title": "Skema for næste uge: 'Det er ikke fastlagt endnu'",
-    "body": "Kære alle\n\nSkemaet for næste uge er endnu ikke fastlagt. Det er dog ret sikkert, at vi raider tirsdag, torsdag og måske onsdag, hvis der er nogen. Det kan også være mandag. Vi lover at vende tilbage.\n\nSkemaet er vedhæftet. Det er det gamle skema med ordene 'ikke fastlagt' skrevet ovenpå.\n\nOfficer Kenneth (fiktiv)",
-    "author": "Officer Kenneth (fiktiv), loot council",
-    "important": false,
+    "title": "Raid i aften: nye regler",
+    "body": "Ready check er ikke til diskussion. Hvis du er AFK, skriv AFK. Hvis du ikke ved, om du er AFK, så er du det.\nMvh Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
+    "important": true,
     "tags": [
-      "skema",
-      "planlægning"
+      "raid",
+      "vigtigt"
     ],
-    "comments": [],
-    "inspiration": "Skema der ændrer sig, vedhæftet fil uden indhold, 'vi vender tilbage'.",
+    "comments": [
+      {
+        "author": "Healer-Henning (fiktiv)",
+        "body": "Jeg var ikke AFK. Jeg var bare stille."
+      }
+    ],
+    "inspiration": "Guild-twist på klassisk pædagog-regel.",
     "sources": []
   },
   {
     "id": "satire-23",
-    "title": "Hjælp: Min healer er gået AFK i 4 minutter",
-    "body": "Kære alle\n\nJeg skriver her, fordi jeg ikke ved, hvor jeg ellers skal skrive. Vores healer er gået AFK, og vi har ventet, mens boss'en dansede rundt. Jeg vil ikke pege på nogen, men jeg vil gerne, at I alle ved, at jeg har set det.\n\nHvis I har brug for mig, har jeg det fint.\n\nTank-koordinator (fiktiv)",
-    "author": "Tank-koordinator (fiktiv)",
+    "title": "Loot-fordeling: DKP",
+    "body": "Der er kommet DKP-uenighed efter fredagens raid. Alle, der har taget loot uden at spørge, kan godt skrive til mig. Jeg har en liste.\nMvh Guildmaster Knud",
+    "author": "Guildmaster Knud (fiktiv)",
     "important": false,
     "tags": [
-      "afk",
-      "healer"
+      "dkp",
+      "loot"
     ],
     "comments": [],
-    "inspiration": "Pludseligt personligt opslag, 'jeg har det fint' som tydeligt modsat signal.",
+    "inspiration": "Loot-drama som forældremøde.",
     "sources": []
   },
   {
     "id": "satire-24",
-    "title": "Kære alle forældre: Tak for et godt skoleår (og raid-år)",
-    "body": "Kære alle\n\nDet har været et år med mange wipes, få tabte flasker og enkelte glemte ready checks. Vi vil gerne takke alle for engagementet, især dem, der altid er online, og dem, der svarede 'tak' i et opslag, som ikke bad om svar.\n\nGod sommer. Husk at læse opslag, inden I siger, I ikke har set dem.\n\nGuild-formand Palle (fiktiv)",
-    "author": "Guild-formand Palle (fiktiv), mødeleder",
+    "title": "Husk flasker til raid",
+    "body": "Til lørdag skal alle have flasker med. Både life og mana. Vi vil ikke gentage sidste uges wipe, hvor ingen havde noget.\nMvh Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
     "important": false,
     "tags": [
-      "tak",
-      "sommer"
+      "raid",
+      "flasker"
     ],
     "comments": [],
-    "inspiration": "Årsafslutnings-tak i skolesprog med sidste lille stik.",
+    "inspiration": "Pakkeliste som madpakkeliste.",
+    "sources": []
+  },
+  {
+    "id": "satire-25",
+    "title": "Healer søges",
+    "body": "Tankens mormor spørger, om vi har en healer. Det har vi ikke. Tanken har det fint, men hun vil gerne have, at han bliver healet. Hilsen Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
+    "important": false,
+    "tags": [
+      "healer"
+    ],
+    "comments": [],
+    "inspiration": "Forældre blander sig i raid-opstilling.",
+    "sources": []
+  },
+  {
+    "id": "satire-26",
+    "title": "Wipe nummer 4",
+    "body": "Vi har wipet fire gange på samme boss. Det er ikke nogens skyld. Det er bossens.\nVenlig hilsen Guildmaster Knud",
+    "author": "Guildmaster Knud (fiktiv)",
+    "important": false,
+    "tags": [
+      "wipe"
+    ],
+    "comments": [
+      {
+        "author": "Dps-Dorthe (fiktiv)",
+        "body": "Tak for forståelsen. Jeg var ikke i nærheden."
+      }
+    ],
+    "inspiration": "Træner forklarer nederlag venligt.",
+    "sources": []
+  },
+  {
+    "id": "satire-27",
+    "title": "Vedr. Idas rygsæk",
+    "body": "Idas rygsæk er tung. Det er ikke fordi, hun har for meget med. Det er fordi rygsækken er tung.\nHilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "rygsæk"
+    ],
+    "comments": [],
+    "inspiration": "Forklaring, der ikke forklarer.",
+    "sources": []
+  },
+  {
+    "id": "satire-28",
+    "title": "Besked fra Storms far",
+    "body": "Storm vil gerne have lov til at tage sin cykel med ind. Han har lovet at den ikke vil køre. Hilsen Storms far",
+    "author": "Storms far (fiktiv)",
+    "important": false,
+    "tags": [
+      "cykel"
+    ],
+    "comments": [],
+    "inspiration": "Løfte om noget, der ikke skal ske.",
+    "sources": []
+  },
+  {
+    "id": "satire-29",
+    "title": "Husk: Turen er frivillig",
+    "body": "Turen er frivillig, men vi regner med alle. Hvis nogen ikke kan, bedes de skrive til os inden 12.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "tur"
+    ],
+    "comments": [],
+    "inspiration": "Frivilligt, men ikke rigtigt.",
+    "sources": []
+  },
+  {
+    "id": "satire-30",
+    "title": "Bonusfar har ordet",
+    "body": "Maja skal hentes af mig i dag. Hendes mor ved det ikke endnu, men det er aftalt med Maja.\nHilsen Majas bonusfar",
+    "author": "Majas bonusfar (fiktiv)",
+    "important": false,
+    "tags": [
+      "afhentning"
+    ],
+    "comments": [],
+    "inspiration": "Aftale, der kun delvist er aftalt.",
     "sources": []
   }
 ]
