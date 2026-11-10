@@ -28,6 +28,8 @@ export const characters = pgTable('characters', {
   inGuild: boolean('in_guild').notNull().default(true),
   lastLogin: timestamp('last_login', { withTimezone: true }),
   lastSynced: timestamp('last_synced', { withTimezone: true }),
+  // Tidspunkt for første highlight-baseline; null = ikke sat (så ingen historik backfilles).
+  highlightsBaselineAt: timestamp('highlights_baseline_at', { withTimezone: true }),
   userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
 });
 
@@ -218,4 +220,27 @@ export const chatMessages = pgTable(
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
   },
   (t) => [index('chat_messages_channel_id_id_idx').on(t.channelId, t.id)],
+);
+
+// Automatisk genererede begivenheder fra armory (level-up, achievements). Ryddes efter 30 dage.
+export const highlightTypes = ['level_up', 'achievement'] as const;
+export type HighlightType = (typeof highlightTypes)[number];
+
+export const highlights = pgTable(
+  'highlights',
+  {
+    id: serial('id').primaryKey(),
+    characterId: integer('character_id')
+      .notNull()
+      .references(() => characters.id, { onDelete: 'cascade' }),
+    type: text('type').$type<HighlightType>().notNull(),
+    title: text('title').notNull(),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    dedupeKey: text('dedupe_key').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('highlights_character_dedupe_idx').on(t.characterId, t.dedupeKey),
+    index('highlights_occurred_at_idx').on(t.occurredAt.desc()),
+  ],
 );

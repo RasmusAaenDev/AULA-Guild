@@ -1,6 +1,7 @@
-import { eq, isNotNull } from 'drizzle-orm';
+import { eq, isNotNull, lt } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
-import { characters } from '@/lib/db/schema';
+import { characters, highlights } from '@/lib/db/schema';
+import { fullName } from '@/lib/names';
 import { BlizzardError, type ArmoryCharacter, type BlizzardClient } from '@/lib/blizzard/types';
 
 export type SyncDeps = {
@@ -15,6 +16,8 @@ export type SyncDeps = {
 export type SyncResult = { skipped: boolean; updated: number; failed: number };
 
 const RATE_LIMIT_WAIT_MS = 2000;
+const ACHIEVEMENT_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+const HIGHLIGHT_RETENTION_MS = 30 * 24 * 3600 * 1000;
 
 async function mapLimit<T>(items: T[], limit: number, fn: (item: T) => Promise<void>): Promise<void> {
   let next = 0;
@@ -41,6 +44,45 @@ async function fetchProfile(
     }
     throw e;
   }
+}
+
+async function recordHighlights(
+  deps: SyncDeps,
+  c: { id: number; slug: string; surname: string | null },
+  p: ArmoryCharacter,
+  before: { level: number | null; baseline: Date | null } | undefined,
+  at: Date,
+  sleep: (ms: number) => Promise<void>,
+): Promise<void> {
+  const name = fullName({ name: p.name, surname: p.surname ?? c.surname, slug: c.slug });
+  if (before?.level != null && p.level !== null && p.level > before.level) {
+    await deps.db
+      .insert(highlights)
+      .values({ characterId: c.id, type: 'level_up', title: `${name} nåede level ${p.level}`, occurredAt: at, dedupeKey: `level:${p.level}` })
+      .onConflictDoNothing();
+  }
+  // Første kørsel: kun markøren sættes, ingen historik backfilles.
+  if (!before?.baseline) {
+    await deps.db.update(characters).set({ highlightsBaselineAt: at }).where(eq(characters.id, c.id));
+    return;
+  }
+  let list;
+  try {
+    list = await deps.blizzard.getRecentAchievements(c.slug);
+  } catch (e) {
+    if (!(e instanceof BlizzardError && e.kind === 'rate_limited')) throw e;
+    await sleep(RATE_LIMIT_WAIT_MS);
+    list = await deps.blizzard.getRecentAchievements(c.slug);
+  }
+  const cutoff = Math.max(at.getTime() - ACHIEVEMENT_MAX_AGE_MS, before.baseline.getTime());
+  const fresh = list.filter((a) => a.completedAt.getTime() > cutoff);
+  if (fresh.length > 0) {
+    await deps.db
+      .insert(highlights)
+      .values(fresh.map((a) => ({ characterId: c.id, type: 'achievement' as const, title: `${name}: ${a.name}`, occurredAt: a.completedAt, dedupeKey: `ach:${a.id}` })))
+      .onConflictDoNothing();
+  }
+  await deps.db.update(characters).set({ highlightsBaselineAt: at }).where(eq(characters.id, c.id));
 }
 
 export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
@@ -82,6 +124,10 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
         failed++;
         return;
       }
+      const [before] = await deps.db
+        .select({ level: characters.level, baseline: characters.highlightsBaselineAt })
+        .from(characters)
+        .where(eq(characters.id, c.id));
       await deps.db
         .update(characters)
         .set({
@@ -98,10 +144,22 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
         })
         .where(eq(characters.id, c.id));
       updated++;
+      // Highlights er sekundære: en fejl her må aldrig påvirke karakterens synkronisering eller tællingerne.
+      try {
+        await recordHighlights(deps, c, p, before, now(), sleep);
+      } catch {
+        // ignoreres bevidst
+      }
     } catch {
       failed++;
     }
   });
+
+  try {
+    await deps.db.delete(highlights).where(lt(highlights.occurredAt, new Date(now().getTime() - HIGHLIGHT_RETENTION_MS)));
+  } catch {
+    // oprydning er best effort
+  }
 
   return { skipped: false, updated, failed };
 }

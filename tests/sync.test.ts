@@ -1,8 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
+import type { RecentAchievement } from '@/lib/blizzard/types';
 import { syncRoster } from '@/lib/sync';
 import { BlizzardError } from '@/lib/blizzard/types';
-import { characters } from '@/lib/db/schema';
+import { characters, highlights } from '@/lib/db/schema';
 import { resetDb, testDb } from './db';
 import { armory, fakeBlizzard, member, seedUser } from './helpers';
 
@@ -214,5 +215,94 @@ describe('syncRoster level', () => {
     });
     await run(blizzard);
     expect(await row(1)).toMatchObject({ level: 30 });
+  });
+});
+
+describe('syncRoster: highlights', () => {
+  const DAY = 24 * 3600 * 1000;
+  const ago = (days: number) => new Date(NOW.getTime() - days * DAY);
+  const ach = (id: number, name: string, completedAt: Date): RecentAchievement => ({ id, name, completedAt });
+  const rosterA = [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Navn' })];
+  const prof = (level: number | null) => ({ alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Navn', level }) });
+  const all = () => db.select().from(highlights);
+
+  it.each([
+    [10, 11, true],
+    [10, 12, true],
+    [10, 10, false],
+    [10, 9, false],
+    [null, 12, false],
+  ])('level %s -> %s: highlight=%s', async (stored, next, expected) => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: stored, highlightsBaselineAt: OLD });
+    await run(fakeBlizzard({ roster: rosterA, characters: prof(next) }));
+    const h = await all();
+    if (!expected) return expect(h).toHaveLength(0);
+    expect(h).toHaveLength(1);
+    expect(h[0]).toMatchObject({ type: 'level_up', title: `Alpha Navn nåede level ${next}`, dedupeKey: `level:${next}`, occurredAt: NOW });
+  });
+
+  it('opretter kun achievements nyere end 7 dage, med achievementens tidspunkt', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5, highlightsBaselineAt: ago(30) });
+    const fresh = ago(2);
+    await run(fakeBlizzard({ roster: rosterA, characters: prof(5), achievements: { alpha: [ach(7, 'Udforsker', fresh), ach(8, 'Gammel', ago(8))] } }));
+    const h = await all();
+    expect(h).toHaveLength(1);
+    expect(h[0]).toMatchObject({ type: 'achievement', title: 'Alpha Navn: Udforsker', dedupeKey: 'ach:7', occurredAt: fresh });
+  });
+
+  it('baseline: første kørsel sætter kun markøren, næste kørsel tager nyere', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5 });
+    const blizzard = fakeBlizzard({ roster: rosterA, characters: prof(5), achievements: { alpha: [ach(1, 'Før', ago(1))] } });
+    await run(blizzard);
+    expect(await all()).toHaveLength(0);
+    expect((await row(1)).highlightsBaselineAt).toEqual(NOW);
+    expect(blizzard.calls.filter((c) => c.startsWith('achievements'))).toHaveLength(0);
+    const later = new Date(NOW.getTime() + 3600_000);
+    const b2 = fakeBlizzard({ roster: rosterA, characters: prof(5), achievements: { alpha: [ach(1, 'Før', ago(1)), ach(2, 'Ny', new Date(NOW.getTime() + 1800_000))] } });
+    await run(b2, { now: () => later });
+    const h = await all();
+    expect(h.map((x) => x.dedupeKey)).toEqual(['ach:2']);
+  });
+
+  it('dedupe: samme kørsel to gange giver ingen dubletter', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5, highlightsBaselineAt: ago(30) });
+    const blizzard = fakeBlizzard({ roster: rosterA, characters: prof(6), achievements: { alpha: [ach(7, 'A', ago(1))] } });
+    await run(blizzard);
+    await db.update(characters).set({ level: 5, highlightsBaselineAt: ago(30) }).where(eq(characters.blizzardId, 1));
+    await run(blizzard);
+    expect(await all()).toHaveLength(2);
+  });
+
+  it('fejl i achievements-kaldet påvirker hverken opdatering eller tællinger', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5, highlightsBaselineAt: ago(30) });
+    const blizzard = fakeBlizzard({ roster: rosterA, characters: prof(6), achievements: { alpha: new BlizzardError('unavailable', 'x') } });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 1, failed: 0 });
+    expect((await row(1)).level).toBe(6);
+    expect((await all()).map((h) => h.type)).toEqual(['level_up']);
+  });
+
+  it('ved 429 på achievements ventes og forsøges igen én gang', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5, highlightsBaselineAt: ago(30) });
+    const blizzard = fakeBlizzard({ roster: rosterA, characters: prof(5), achievements: { alpha: new BlizzardError('rate_limited', 'x') } });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 1, failed: 0 });
+    expect(blizzard.calls.filter((c) => c.startsWith('achievements'))).toHaveLength(2);
+  });
+
+  it('rydder highlights ældre end 30 dage', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { level: 5, highlightsBaselineAt: OLD });
+    const [c] = await db.select().from(characters);
+    await db.insert(highlights).values([
+      { characterId: c.id, type: 'level_up', title: 'gammel', occurredAt: ago(31), dedupeKey: 'level:2' },
+      { characterId: c.id, type: 'level_up', title: 'ny', occurredAt: ago(29), dedupeKey: 'level:3' },
+    ]);
+    await run(fakeBlizzard({ roster: rosterA, characters: prof(5) }));
+    expect((await all()).map((h) => h.title)).toEqual(['ny']);
   });
 });

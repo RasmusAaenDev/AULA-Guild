@@ -1,5 +1,5 @@
 import { nameToSlug } from '@/lib/slug';
-import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RosterMember } from './types';
+import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember } from './types';
 
 const API = 'https://eu.api.blizzard.com';
 const TOKEN_URL = 'https://oauth.battle.net/token';
@@ -61,6 +61,36 @@ function cleanSurname(v: unknown): string | null {
 // Heltal 1..100, ellers null.
 function cleanLevel(v: unknown): number | null {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 100 ? v : null;
+}
+
+// Defensiv parsing af /achievements: recent_events først, ellers achievements med completed_timestamp (nyest først). Maks 10.
+function parseRecentAchievements(raw: unknown): RecentAchievement[] {
+  if (!raw || typeof raw !== 'object') return [];
+  const r = raw as { recent_events?: unknown; achievements?: unknown };
+  const valid = (id: unknown, name: unknown, ts: unknown): RecentAchievement | null =>
+    typeof id === 'number' && Number.isInteger(id) && typeof name === 'string' && name.trim() !== '' && typeof ts === 'number' && Number.isFinite(ts) && ts > 0
+      ? { id, name: name.trim(), completedAt: new Date(ts) }
+      : null;
+  const out: RecentAchievement[] = [];
+  const collect = (list: unknown, pick: (x: Record<string, unknown>) => RecentAchievement | null) => {
+    if (!Array.isArray(list)) return;
+    for (const x of list as unknown[]) {
+      if (!x || typeof x !== 'object') continue;
+      const a = pick(x as Record<string, unknown>);
+      if (a && !out.some((o) => o.id === a.id)) out.push(a);
+    }
+  };
+  collect(r.recent_events, (x) => {
+    const a = x.achievement as { id?: unknown; name?: unknown } | null | undefined;
+    return a && typeof a === 'object' ? valid(a.id, a.name, x.timestamp) : null;
+  });
+  if (out.length === 0) {
+    collect(r.achievements, (x) => {
+      const a = x.achievement as { name?: unknown } | null | undefined;
+      return valid(x.id, a && typeof a === 'object' ? a.name : undefined, x.completed_timestamp);
+    });
+  }
+  return out.sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime()).slice(0, 10);
 }
 
 function slugFromHref(href: string | undefined): string | null {
@@ -163,6 +193,15 @@ export function createBlizzardClient(opts: {
         guildName: raw.guild?.name ?? null,
         lastLogin: raw.last_login_timestamp ? new Date(raw.last_login_timestamp) : null,
       };
+    },
+
+    async getRecentAchievements(slug: string): Promise<RecentAchievement[]> {
+      try {
+        return parseRecentAchievements(await get<unknown>(`/profile/wow/character/${encodeURIComponent(slug)}/achievements`));
+      } catch (e) {
+        if (e instanceof BlizzardError && e.kind === 'not_found') return [];
+        throw e;
+      }
     },
 
     async getGuildRoster(guildSlug: string): Promise<RosterMember[]> {

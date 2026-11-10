@@ -271,3 +271,48 @@ describe('blizzard-klient', () => {
     });
   });
 });
+
+describe('blizzard-klient: getRecentAchievements', () => {
+  const run = async (res: Response) => {
+    const { client, calls } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : res));
+    return { out: await client.getRecentAchievements('magi-far'), calls };
+  };
+
+  it('læser recent_events, nyest først', async () => {
+    const { out, calls } = await run(jsonResponse(200, {
+      total_points: 10,
+      recent_events: [
+        { achievement: { id: 1, name: 'A' }, timestamp: 1000 },
+        { achievement: { id: 2, name: 'B' }, timestamp: 3000 },
+      ],
+    }));
+    expect(out).toEqual([{ id: 2, name: 'B', completedAt: new Date(3000) }, { id: 1, name: 'A', completedAt: new Date(1000) }]);
+    expect(calls[1].url).toBe('https://eu.api.blizzard.com/profile/wow/character/magi-far/achievements?namespace=profile-forever-eu&locale=en_GB');
+  });
+
+  it('falder tilbage til achievements, maks 10, når recent_events er tom eller mangler', async () => {
+    const achievements = Array.from({ length: 12 }, (_, i) => ({ id: i + 1, achievement: { name: `N${i + 1}` }, completed_timestamp: (i + 1) * 1000 }));
+    for (const extra of [{ recent_events: [] }, {}]) {
+      const { out } = await run(jsonResponse(200, { achievements: [...achievements, { id: 99, achievement: { name: 'X' } }], ...extra }));
+      expect(out).toHaveLength(10);
+      expect(out[0]).toEqual({ id: 12, name: 'N12', completedAt: new Date(12000) });
+    }
+  });
+
+  it('ignorerer ugyldige elementer', async () => {
+    const { out } = await run(jsonResponse(200, {
+      recent_events: [null, 5, {}, { achievement: { id: 'x', name: 'A' }, timestamp: 1 }, { achievement: { id: 1 }, timestamp: 1 }, { achievement: { id: 2, name: 'Ok' }, timestamp: 'x' }, { achievement: { id: 3, name: 'Gyldig' }, timestamp: 5000 }],
+    }));
+    expect(out).toEqual([{ id: 3, name: 'Gyldig', completedAt: new Date(5000) }]);
+  });
+
+  it.each([[{}], [null], [[]], [{ recent_events: 'x', achievements: 3 }]])('giver [] ved tomt/forkert svar %j', async (body) => {
+    expect((await run(jsonResponse(200, body))).out).toEqual([]);
+  });
+
+  it('giver [] ved 404, men kaster rate_limited ved 429', async () => {
+    expect((await run(jsonResponse(404))).out).toEqual([]);
+    await expect(run(jsonResponse(429))).rejects.toMatchObject({ kind: 'rate_limited' });
+  });
+});
+

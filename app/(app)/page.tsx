@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
 import { deletePostAction } from '@/app/(app)/opslag/actions';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { SatireCard } from '@/components/SatireCard';
@@ -12,7 +12,7 @@ import { RsvpButtons } from '@/components/RsvpButtons';
 import { UnansweredBanner } from '@/components/UnansweredBanner';
 import { eventTypeLabel, formatDayHeading, formatDayMonth, formatTimeRange, pinnedEvent, rsvpLabel, selectNextEvents } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
-import { characters, users } from '@/lib/db/schema';
+import { characters, highlights, users } from '@/lib/db/schema';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
 import { roleLabel } from '@/lib/messages';
 import { fullName } from '@/lib/names';
@@ -64,6 +64,14 @@ export default async function OverviewPage({
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
+
+  const recentHighlights = await db
+    .select({ id: highlights.id, title: highlights.title, occurredAt: highlights.occurredAt })
+    .from(highlights)
+    .innerJoin(characters, eq(characters.id, highlights.characterId))
+    .where(and(eq(characters.inGuild, true), isNotNull(characters.userId)))
+    .orderBy(desc(highlights.occurredAt), desc(highlights.id))
+    .limit(8);
 
   type Entry = { kind: 'real'; item: (typeof items)[number] } | { kind: 'satire'; item: SatirePost };
   const feed: Entry[] =
@@ -220,6 +228,26 @@ export default async function OverviewPage({
                     </li>
                   );
                 })}
+              </ul>
+            )}
+          </section>
+          <section className="card" aria-label="Highlights">
+            <h2>Highlights</h2>
+            {recentHighlights.length === 0 ? (
+              <p className="muted">Ingen highlights endnu.</p>
+            ) : (
+              <ul className="date-list">
+                {recentHighlights.map((h) => (
+                  <li key={h.id} className="date-row">
+                    <Icon name="udraab" size={16} />
+                    <div>
+                      <span>{h.title}</span>
+                      <div className="muted">
+                        <time dateTime={h.occurredAt.toISOString()} title={formatAbsolute(h.occurredAt)}>{formatRelativeDay(h.occurredAt, now)}</time>
+                      </div>
+                    </div>
+                  </li>
+                ))}
               </ul>
             )}
           </section>

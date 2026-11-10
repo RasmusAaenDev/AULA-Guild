@@ -1,6 +1,6 @@
 import type { Db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RosterMember } from '@/lib/blizzard/types';
+import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember } from '@/lib/blizzard/types';
 
 export function jsonResponse(status: number, body: unknown = {}): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -30,6 +30,7 @@ export function member(over: Partial<RosterMember> = {}): RosterMember {
 export function fakeBlizzard(opts: {
   characters?: Record<string, ArmoryCharacter | BlizzardError | (ArmoryCharacter | BlizzardError)[]>;
   roster?: RosterMember[] | BlizzardError;
+  achievements?: Record<string, RecentAchievement[] | BlizzardError | Error>;
 }): BlizzardClient & { calls: string[] } {
   const calls: string[] = [];
   const counters = new Map<string, number>();
@@ -46,6 +47,12 @@ export function fakeBlizzard(opts: {
       if (v === undefined) throw new BlizzardError('not_found', slug);
       if (v instanceof BlizzardError) throw v;
       return v;
+    },
+    async getRecentAchievements(slug) {
+      calls.push(`achievements:${slug}`);
+      const v = opts.achievements?.[slug];
+      if (v instanceof Error) throw v;
+      return v ?? [];
     },
     async getGuildRoster() {
       calls.push('roster');

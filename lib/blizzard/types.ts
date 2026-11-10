@@ -15,6 +15,8 @@ export type ArmoryCharacter = {
   lastLogin: Date | null;
 };
 
+export type RecentAchievement = { id: number; name: string; completedAt: Date };
+
 export type RosterMember = { blizzardId: number; slug: string; name: string; surname: string | null; rank: number };
 
 export type BlizzardErrorKind = 'not_found' | 'rate_limited' | 'unavailable';
@@ -28,5 +30,6 @@ export class BlizzardError extends Error {
 
 export type BlizzardClient = {
   getCharacter(slug: string): Promise<ArmoryCharacter>;
+  getRecentAchievements(slug: string): Promise<RecentAchievement[]>;
   getGuildRoster(guildSlug: string): Promise<RosterMember[]>;
 };
