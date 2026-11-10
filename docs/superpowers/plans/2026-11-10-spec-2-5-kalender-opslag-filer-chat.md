@@ -348,11 +348,28 @@ export function createChatClient(opts: { token: string; channelId: string; fetch
 - Topbjælke/profil: **LOG UD**-knappen i profilmenuen får store bogstaver og sekundær stil. Ingen global søgning.
 - Relativ tid-hjælper (`formatRelative` findes): «I går 16:45», «I dag 09:05», ugedagsforkortelse for dage inden for 6 dage («Fre. 13:50»), ellers dato. Fuld dato i `title`.
 
+**Også med (fra Task 12-review):** `AddCharacterForm` (karakter/ny) bruger stadig `action={action}` med ukontrollerede felter, så navn og rolle nulstilles efter en armory-fejl; skift til `onSubmit={submitHandler(action)}` (fra `components/useFormValues.ts`) med kontrollerede felter, så det indtastede karakternavn og den valgte rolle bevares.
+
 **Moduler:** `lib/events.ts`: `countUnansweredUpcoming(db, userId, now?, days = 14): Promise<number>`; `lib/posts.ts`: `toggleBookmark`, `PostTab` udvides med `'egne' | 'gemte'`, `PostListItem.bookmarked`, `PostDetail.bookmarked`, `PostListItem.authorCharacter: string | null`; migration for `post_bookmarks`; `resetDb` tømmer den.
 
 **Tests (RED→GREEN):** `countUnansweredUpcoming` (kun kommende, ikke aflyste, ikke besvarede, inden for vinduet, 14-dages grænse, egen tilmelding tæller som besvaret uanset status); `toggleBookmark` (til/fra, ukendt/slettet opslag, kun egne bogmærker); `listPosts` for `egne` og `gemte` (rækkefølge, paging, slettede skjult, andres bogmærker ikke synlige); `bookmarked`-flag; `parseTab`; relativ tid-hjælper (I går/I dag/ugedag/dato, tidszone og sommertid); menu-rækkefølge som ren funktion (`menuItems({ chat: boolean })`) med test; kontrast-testen holdes grøn for nye farver (tilføj nye par). Pages verificeres med typecheck, build og curl (307 til /login).
 
 **Regler:** dansk UI; ingen nye pakker; autorisation i modulerne som før (`requireMember` i sider/actions); `toggleBookmarkAction` er en server action med `parseId`, `requireMember`, FormState-lignende fejlhåndtering og `revalidatePath`; formularer og knapper bevarer brugerinput (`onSubmit`-mønstret fra Task 12 hvor der er kontrollerede felter). Intet i AULAs ophavsretsbeskyttede materiale kopieres (ingen ikonskrift, ingen CSS, intet logo).
+
+### Task 14: Satire-opslag (fake AULA-opslag) i Overblik
+
+**Bygger på:** brugerens ønske om at blande «fake AULA posts» ind i Overblik, så det er tydeligt, hvad der er fake og hvad der er ægte. Indhold: `docs/superpowers/notes/aula-satire-posts.json` (24 originale, fiktive opslag; research og kilder i `docs/superpowers/notes/aula-satire-research.md`). Indholdet er skrevet fra grunden og må ikke indeholde rigtige personer, børnenavne eller kopier af rigtige opslag.
+
+**Beslutninger (controller):**
+- **Data:** kopiér JSON-filen til `lib/satire-posts.json` og læs den via en lille modul `lib/satire.ts` (`SatirePost`-type, `satirePosts: SatirePost[]`, validering ved indlæsning i en test: 24 unikke id'er, felterne fra research-filen, `body` 200–600 tegn, alle `author` indeholder «fiktiv»). Ingen database; ingen ændring af ægte opslag/ulæst-tællere.
+- **Vises kun i fanerne ALLE (indflettet) og SATIRE (alle 24, ny fane)**; aldrig i ULÆSTE, VIGTIGE, EGNE OPSLAG eller GEMTE, aldrig i ulæst-tælleren, og ikke i ægte søgning/paging-tal. I ALLE flettes ét satire-opslag ind efter hvert 3. ægte opslag på hver side; valget er deterministisk pr. dag og side (ren funktion `pickSatire(dateKey: string, pageNumber: number, count: number): SatirePost[]` + `interleave(real, satire, every = 3)`), så siden ikke skifter ved genindlæsning inden for samme dag.
+- **Tydelig mærkning (ufravigeligt):** hvert satire-kort har (a) en synlig badge **«FAKE · SATIRE»** med ikon og tekst (ikke kun farve), (b) et visuelt adskilt udseende (stiplet kant, let farvet baggrund, og ingen ægte avatar men et neutralt maske-ikon), (c) en fodlinje «Dette er et fiktivt opslag. Alle personer er opdigtede.», (d) ingen tidsstempel (viser «Satire» i stedet), ingen bogmærke-/kommentar-/læst-funktion, ingen link til detaljeside, og (e) `<article aria-label="Fake opslag (satire)">`. Kommentarer vises statisk og er også mærket «fiktiv». Fanen SATIRE har en forklaringsboks øverst. Overblik har en kort tekstlinje under fanerne: «Opslag mærket FAKE · SATIRE er opdigtede.»
+- **Skjul/vis:** brugeren kan slå satire fra/til med en knap («Skjul satire»/«Vis satire») ved fanerne. Valget gemmes i en cookie `aula_satire` (`off`/`on`, 1 år, `SameSite=Lax`, `Path=/`, ikke følsomt) sat af en server action `setSatirePreferenceAction(formData)`; siden læser cookien server-side (ingen flimmer). Er den slået fra, vises hverken indflettede opslag eller fanen SATIRE.
+- Kontrast og tilgængelighed som i Task 12 (nye farver tilføjes til kontrast-testen i begge temaer; fokusring; ikke kun farve).
+
+**Tests (RED→GREEN):** data-valideringen; `pickSatire` (deterministisk, ingen dubletter på en side, bredden `count`, forskellige sider giver forskellige valg); `interleave` (efter hvert 3. element, ender uden afsluttende satire hvis færre end 3 ægte, tom liste, `every` grænser); cookie-parse hjælper (`parseSatirePreference(value | undefined): boolean`, default true); at ulæst-/egne-/gemte-/vigtige-visninger ikke indeholder satire (rene funktioner for fane → visning); kontrastpar for den nye badge og baggrund. Pages verificeres med typecheck, build og curl (307 til /login).
+
+**Regler:** dansk UI; ingen nye pakker; ingen rigtige personer/institutioner i indholdet (hvis research-filens opslag indeholder noget sådant, fjernes det i Task 14 og noteres i rapporten); satire-opslag må ikke kunne forveksles med ægte i skærmlæsere (aria-label og skjult tekst «Fake opslag (satire)» først i kortet).
 
 ## Udrulning og afslutning
 
