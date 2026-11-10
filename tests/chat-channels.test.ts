@@ -9,7 +9,7 @@ const ALLOW_ALL = String(VIEW | HISTORY | SEND);
 const ow = (id: string, type: number, allow = 0, deny = 0) => ({ id, type, allow: String(allow), deny: String(deny) });
 const ch = (id: string, over: Partial<FakeChannel> = {}): FakeChannel => ({ id, name: `k${id}`, type: 0, position: 0, ...over });
 
-function setup(fx: Fixture, messages?: (url: string, init?: RequestInit) => Response | Promise<Response>) {
+function setup(fx: Fixture, messages?: (url: string, init?: RequestInit) => Response | Promise<Response>, extra: { visibleChannels?: string[]; readOnlyChannelIds?: string[] } = {}) {
   const msgCalls: { url: string; init?: RequestInit }[] = [];
   const other: string[] = [];
   let time = 1_000_000;
@@ -18,7 +18,7 @@ function setup(fx: Fixture, messages?: (url: string, init?: RequestInit) => Resp
     msgCalls.push({ url, init });
     return messages ? messages(url, init) : jsonResponse(200, init?.method === 'POST' ? { id: '1' } : []);
   }, () => cur, other);
-  const client = createChatClient({ token: TOKEN, channelId: CHANNEL, fetch: fetchFn, now: () => time });
+  const client = createChatClient({ token: TOKEN, channelId: CHANNEL, fetch: fetchFn, now: () => time, ...extra });
   return { client, msgCalls, other, advance: (ms: number) => { time += ms; }, set: (f: Fixture) => { cur = f; } };
 }
 const ids = async (c: ReturnType<typeof setup>) => (await c.client.listChannels()).channels.map((x) => x.id);
@@ -244,5 +244,27 @@ describe('pickChannel', () => {
     expect(pickChannel(list, undefined, '9')?.id).toBe('1');
     expect(pickChannel(list, ['2', '1'], '1')?.id).toBe('2');
     expect(pickChannel([], '1', '1')).toBeNull();
+  });
+});
+
+describe('udvalgte kanaler og skrivebeskyttet standardkanal', () => {
+  const named = (id: string, name: string, over: Partial<FakeChannel> = {}) => ch(id, { name, ...over });
+  const opts = { visibleChannels: ['general', 'generel', 'rio', 'logs', 'wow-news', 'wow'], readOnlyChannelIds: ['16'] };
+  it('viser kun de udvalgte navne i den angivne rækkefølge', async () => {
+    const s = setup(fixture({ channels: [named('11', 'wow-news', { position: 1 }), named('12', 'jeeves', { position: 2 }), named('13', 'Generel', { position: 3 }), named('14', 'rio', { position: 4 }), named('16', 'wow', { position: 5 })] }), undefined, opts);
+    expect((await s.client.listChannels()).channels.map((c) => c.name)).toEqual(['Generel', 'rio', 'wow-news', 'wow']);
+  });
+  it('standardkanalen er altid skrivebeskyttet, de andre kan skrives til', async () => {
+    const s = setup(fixture({ channels: [named('11', 'rio'), named('16', 'wow')] }), undefined, opts);
+    expect((await s.client.listChannels()).channels.map((c) => [c.name, c.canWrite])).toEqual([['rio', true], ['wow', false]]);
+  });
+  it('skjulte kanaler kan hverken læses eller skrives til', async () => {
+    const s = setup(fixture({ channels: [named('11', 'rio'), named('12', 'jeeves')] }), undefined, opts);
+    expect((await s.client.getMessages('12')).error).toBe('not_found');
+    expect(await s.client.sendMessage('12', 'hej')).toEqual({ ok: false, error: 'not_found' });
+  });
+  it('adskiller kanaler med samme navn med kategorinavn', async () => {
+    const s = setup(fixture({ channels: [{ id: '90', name: 'Server', type: 4 }, { id: '91', name: 'WoW', type: 4 }, named('11', 'logs', { parent_id: '90' }), named('12', 'logs', { parent_id: '91' })] }), undefined, opts);
+    expect((await s.client.listChannels()).channels.map((c) => c.name).sort()).toEqual(['logs (Server)', 'logs (WoW)']);
   });
 });

@@ -121,9 +121,9 @@ function retrySeconds(res: Response, body: unknown): number {
   return Math.min(Math.max(s, 1), MAX_RETRY_S);
 }
 
-type RawChannel = { id: string; name: string; type: number; position: number; nsfw: boolean; overwrites: Overwrite[] };
+type RawChannel = { id: string; name: string; type: number; position: number; nsfw: boolean; parentId: string | null; overwrites: Overwrite[] };
 type Overwrite = { id: string; type: number; allow: bigint; deny: bigint };
-type ListBase = { id: string; name: string; position: number; type: number; botWrite: boolean };
+type ListBase = { id: string; name: string; position: number; type: number; botWrite: boolean; category: string | null };
 
 function big(v: unknown): bigint {
   if (typeof v === 'string' && /^\d{1,20}$/.test(v)) return BigInt(v);
@@ -147,6 +147,7 @@ function parseChannel(c: unknown): RawChannel | null {
     type: c.type,
     position: typeof c.position === 'number' ? c.position : 0,
     nsfw: c.nsfw === true,
+    parentId: typeof c.parent_id === 'string' ? c.parent_id : null,
     overwrites,
   };
 }
@@ -188,11 +189,17 @@ export function createChatClient(opts: {
   now?: () => number;
   ttlMs?: number;
   timeoutMs?: number;
+  /** Kun kanaler med disse navne (små bogstaver) vises, i den rækkefølge; udeladt = alle offentlige. */
+  visibleChannels?: string[];
+  /** Kanal-id'er der altid er skrivebeskyttede (fx den WoW-linkede kanal). */
+  readOnlyChannelIds?: string[];
 }): ChatClient {
   const doFetch = opts.fetch ?? fetch;
   const now = opts.now ?? Date.now;
   const ttl = opts.ttlMs ?? 4000;
   const timeoutMs = opts.timeoutMs ?? 8000;
+  const visible = opts.visibleChannels?.map((n) => n.toLowerCase());
+  const forcedReadOnly = new Set(opts.readOnlyChannelIds ?? []);
   const api = 'https://discord.com/api/v10';
   const userAgent = 'DiscordBot (https://aula.aaensoftware.com, 1.0)';
   const authHeaders = { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent };
@@ -248,14 +255,19 @@ export function createChatClient(opts: {
     const botRoles = Array.isArray(memberRaw.roles) ? memberRaw.roles.filter((x): x is string => typeof x === 'string') : [];
     const seeAndRead = VIEW_CHANNEL | READ_HISTORY;
     const out: ListBase[] = [];
+    const categories = new Map<string, string>();
+    for (const raw of channelsRaw) {
+      if (isObj(raw) && raw.type === 4 && typeof raw.id === 'string') categories.set(raw.id, str(raw.name).trim());
+    }
     for (const raw of channelsRaw) {
       const c = parseChannel(raw);
       if (!c || (c.type !== 0 && c.type !== 5) || c.nsfw) continue; // aldersbegrænsede kanaler vises ikke
+      if (visible && !visible.includes(c.name.toLowerCase())) continue;
       const pub = channelPermissions({ guildId: gid, everyone, roleIds: [], rolePerms, overwrites: c.overwrites });
       if ((pub & seeAndRead) !== seeAndRead) continue;
       const bot = channelPermissions({ guildId: gid, everyone, roleIds: botRoles, rolePerms, memberId: bid, overwrites: c.overwrites });
       if ((bot & seeAndRead) !== seeAndRead) continue;
-      out.push({ id: c.id, name: c.name, position: c.position, type: c.type, botWrite: c.type === 0 && (bot & SEND_MESSAGES) !== 0n });
+      out.push({ id: c.id, name: c.name, position: c.position, type: c.type, botWrite: c.type === 0 && !forcedReadOnly.has(c.id) && (bot & SEND_MESSAGES) !== 0n, category: (c.parentId && categories.get(c.parentId)) || null });
     }
     return out;
   }
@@ -284,9 +296,11 @@ export function createChatClient(opts: {
   function toChannels(bases: ListBase[]): ChatChannel[] {
     const t = now();
     for (const [id, until] of readOnly) if (until <= t) readOnly.delete(id);
+    const order = (b: ListBase) => (visible ? visible.indexOf(b.name.toLowerCase()) : 0);
+    const dup = (b: ListBase) => bases.filter((x) => x.name.toLowerCase() === b.name.toLowerCase()).length > 1;
     return [...bases]
-      .sort((a, b) => a.position - b.position || a.name.localeCompare(b.name, 'da'))
-      .map((b) => ({ id: b.id, name: b.name, canWrite: b.botWrite && !readOnly.has(b.id) }));
+      .sort((a, b) => order(a) - order(b) || a.position - b.position || a.name.localeCompare(b.name, 'da'))
+      .map((b) => ({ id: b.id, name: dup(b) && b.category ? `${b.name} (${b.category})` : b.name, canWrite: b.botWrite && !readOnly.has(b.id) }));
   }
 
   async function lookup(channelId: unknown): Promise<{ ok: true; channel: ChatChannel } | { ok: false; error: 'not_found' | 'unavailable' }> {

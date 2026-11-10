@@ -30,6 +30,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
       {selected && (
         <div className="chat-layout">
           <nav className="card chat-channels" aria-label="Kanaler">
+            <h2 className="chat-channels-title">Kanaler</h2>
             <ul>
               {list.channels.map((c) => (
                 <li key={c.id}>

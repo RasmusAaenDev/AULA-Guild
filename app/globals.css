@@ -167,8 +167,9 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .gallery-caption { display: flex; flex-direction: column; font-size: 14px; overflow-wrap: anywhere; }
 
 .chat { position: relative; min-width: 0; }
-.chat-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
-.chat-channels { padding: 8px; }
+.chat-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; align-items: start; }
+.chat-channels { padding: 12px 8px; }
+.chat-channels-title { margin: 0 0 8px; padding: 0 10px; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--heading); }
 .chat-channels ul { list-style: none; margin: 0; padding: 0; }
 .chat-channels a { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; min-height: 44px; padding: 6px 10px; border-radius: 8px; text-decoration: none; overflow-wrap: anywhere; }
 .chat-channels a[aria-current='page'] { background: var(--border); font-weight: 800; }

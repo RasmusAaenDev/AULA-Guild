@@ -61,6 +61,12 @@ export function isChatConfigured(): boolean {
 export function getChat(): ChatClient | null {
   const cfg = chatConfig();
   if (!cfg) return null;
-  g.__aulaChat ??= createChatClient({ token: cfg.token, channelId: cfg.channelId });
+  g.__aulaChat ??= createChatClient({
+    token: cfg.token,
+    channelId: cfg.channelId,
+    // Kun disse kanaler vises. Standardkanalen er den WoW-linkede, som Discord ikke lader bots skrive i.
+    visibleChannels: ['general', 'generel', 'rio', 'logs', 'wow-news', 'wow'],
+    readOnlyChannelIds: [cfg.channelId],
+  });
   return g.__aulaChat;
 }
