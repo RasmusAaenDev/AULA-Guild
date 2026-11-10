@@ -9,6 +9,7 @@ const LOCALE = 'en_GB';
 type RawCharacter = {
   id: number;
   name: string;
+  surname?: unknown;
   character_class?: { name: string };
   guild?: { id: number; name: string };
   equipped_item_level?: number;
@@ -17,7 +18,7 @@ type RawCharacter = {
 };
 
 type RawRoster = {
-  members: { character: { id: number; name: string; slug?: string; key?: { href: string } }; rank: number }[];
+  members: { character: { id: number; name: string; surname?: unknown; slug?: string; key?: { href: string } }; rank: number }[];
 };
 
 // Forever (classic-talenter): profilen har ingen active_spec. Aktiv spec = talent-træet med flest point i den aktive gruppe.
@@ -47,6 +48,13 @@ function activeSpec(raw: unknown): string | null | undefined {
   const max = Math.max(...trees.map((t) => t.points));
   const top = trees.filter((t) => t.points === max);
   return top.length === 1 && max > 0 ? top[0].name : null;
+}
+
+// Trimmet streng, ellers null (tom, manglende eller forkert type).
+function cleanSurname(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  return t === '' ? null : t;
 }
 
 function slugFromHref(href: string | undefined): string | null {
@@ -140,6 +148,7 @@ export function createBlizzardClient(opts: {
         blizzardId: raw.id,
         slug,
         name: raw.name,
+        surname: cleanSurname(raw.surname),
         className: raw.character_class?.name ?? 'Ukendt',
         spec,
         itemLevel: raw.equipped_item_level ?? raw.average_item_level ?? null,
@@ -159,12 +168,20 @@ export function createBlizzardClient(opts: {
           throw new BlizzardError('unavailable', 'Roster-medlem mangler character.id/name eller rank');
         }
       }
-      return raw.members.map((m) => ({
-        blizzardId: m.character.id,
-        slug: (typeof m.character.slug === 'string' && m.character.slug !== '' ? m.character.slug : null) ?? slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),
-        name: m.character.name,
-        rank: m.rank,
-      }));
+      return raw.members.map((m) => {
+        const surname = cleanSurname(m.character.surname);
+        return {
+          blizzardId: m.character.id,
+          slug:
+            (typeof m.character.slug === 'string' && m.character.slug !== '' ? m.character.slug : null) ??
+            slugFromHref(m.character.key?.href) ??
+            nameToSlug(surname ? `${m.character.name} ${surname}` : m.character.name) ??
+            String(m.character.id),
+          name: m.character.name,
+          surname,
+          rank: m.rank,
+        };
+      });
     },
   };
 }

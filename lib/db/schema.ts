@@ -18,6 +18,7 @@ export const characters = pgTable('characters', {
   blizzardId: integer('blizzard_id').notNull().unique(),
   slug: text('slug').notNull(),
   name: text('name').notNull(),
+  surname: text('surname'),
   className: text('class_name').notNull(),
   spec: text('spec'),
   role: roleEnum('role').notNull(),

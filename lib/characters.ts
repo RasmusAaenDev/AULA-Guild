@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { characters, users, type Role } from '@/lib/db/schema';
-import { BlizzardError, type ArmoryCharacter, type BlizzardClient } from '@/lib/blizzard/types';
+import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RosterMember } from '@/lib/blizzard/types';
 import type { AddFailure } from '@/lib/messages';
 import { reassignUpcomingRsvps } from '@/lib/rsvps';
 import { nameToSlug, normalizeName } from '@/lib/slug';
@@ -9,17 +9,37 @@ import { nameToSlug, normalizeName } from '@/lib/slug';
 export type CharactersDeps = { db: Db; blizzard: BlizzardClient; guildId: number; guildSlug: string };
 export type AddResult = { ok: true; characterId: number } | { ok: false; reason: AddFailure };
 
-async function lookup(deps: CharactersDeps, slug: string, typedName: string): Promise<ArmoryCharacter> {
+type Looked = { found: ArmoryCharacter; roster?: RosterMember[] };
+
+// Brugeren kan skrive «Fornavn Efternavn» (slug fornavn-efternavn, direkte profilopslag) eller kun «Fornavn»
+// (matcher rosterens name) eller rosterens fulde navn, hvis rosterens slug afviger.
+async function lookup(deps: CharactersDeps, slug: string, typedName: string): Promise<Looked> {
   try {
-    return await deps.blizzard.getCharacter(slug);
+    return { found: await deps.blizzard.getCharacter(slug) };
   } catch (e) {
     if (!(e instanceof BlizzardError) || e.kind !== 'not_found') throw e;
     const roster = await deps.blizzard.getGuildRoster(deps.guildSlug);
     const wanted = normalizeName(typedName);
-    const hit = roster.find((m) => normalizeName(m.name) === wanted);
+    const hit = roster.find(
+      (m) => normalizeName(m.name) === wanted || (m.surname !== null && normalizeName(`${m.name} ${m.surname}`) === wanted),
+    );
     if (!hit || hit.slug === slug) throw e;
-    return deps.blizzard.getCharacter(hit.slug);
+    return { found: await deps.blizzard.getCharacter(hit.slug), roster };
   }
+}
+
+// Profilen først; mangler den efternavnet, bruges rosterens (best effort: en roster-fejl stopper ikke tilføjelsen).
+async function resolveSurname(deps: CharactersDeps, looked: Looked): Promise<string | null> {
+  if (looked.found.surname !== null) return looked.found.surname;
+  let roster = looked.roster;
+  if (!roster) {
+    try {
+      roster = await deps.blizzard.getGuildRoster(deps.guildSlug);
+    } catch {
+      return null;
+    }
+  }
+  return roster.find((m) => m.blizzardId === looked.found.blizzardId)?.surname ?? null;
 }
 
 export async function addCharacter(
@@ -30,8 +50,11 @@ export async function addCharacter(
   if (!slug) return { ok: false, reason: 'invalid_name' };
 
   let found: ArmoryCharacter;
+  let surname: string | null;
   try {
-    found = await lookup(deps, slug, input.name);
+    const looked = await lookup(deps, slug, input.name);
+    found = looked.found;
+    surname = found.guildId === deps.guildId ? await resolveSurname(deps, looked) : null;
   } catch (e) {
     if (e instanceof BlizzardError) return { ok: false, reason: e.kind === 'not_found' ? 'not_found' : 'unavailable' };
     throw e;
@@ -42,6 +65,7 @@ export async function addCharacter(
     blizzardId: found.blizzardId,
     slug: found.slug,
     name: found.name,
+    surname,
     className: found.className,
     spec: found.spec ?? null,
     role: input.role,
@@ -51,7 +75,9 @@ export async function addCharacter(
     lastSynced: new Date(),
     userId: input.userId,
   };
-  const { blizzardId, ...update } = values;
+  const { blizzardId, surname: _s, ...rest } = values;
+  // Aldrig overskriv et kendt efternavn med null.
+  const update = surname !== null ? { ...rest, surname } : rest;
 
   const rows = await deps.db
     .insert(characters)

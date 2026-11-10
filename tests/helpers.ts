@@ -10,7 +10,8 @@ export function armory(over: Partial<ArmoryCharacter> = {}): ArmoryCharacter {
   return {
     blizzardId: 1001,
     slug: 'magi-far',
-    name: 'Magi Far',
+    name: 'Magi',
+    surname: 'Far',
     className: 'Mage',
     spec: 'Frost',
     itemLevel: 8,
@@ -22,7 +23,7 @@ export function armory(over: Partial<ArmoryCharacter> = {}): ArmoryCharacter {
 }
 
 export function member(over: Partial<RosterMember> = {}): RosterMember {
-  return { blizzardId: 1001, slug: 'magi-far', name: 'Magi Far', rank: 3, ...over };
+  return { blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', rank: 3, ...over };
 }
 
 export function fakeBlizzard(opts: {

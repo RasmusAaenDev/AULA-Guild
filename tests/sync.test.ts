@@ -24,6 +24,50 @@ const row = async (blizzardId: number) => (await db.select().from(characters).wh
 const run = (blizzard: ReturnType<typeof fakeBlizzard>, extra = {}) =>
   syncRoster({ db, blizzard, guildSlug: 'aula', now: () => NOW, sleep: noSleep, ...extra });
 
+describe('syncRoster: efternavn', () => {
+  it('skriver efternavnet fra profilen, og rosterens som fallback når profilen mangler det', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    await seed(2, 'Beta', u);
+    const blizzard = fakeBlizzard({
+      roster: [
+        member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Roster' }),
+        member({ blizzardId: 2, slug: 'beta', name: 'Beta', surname: 'Fallback' }),
+      ],
+      characters: {
+        alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Profil' }),
+        beta: armory({ blizzardId: 2, slug: 'beta', name: 'Beta', surname: null }),
+      },
+    });
+    await run(blizzard);
+    expect((await row(1)).surname).toBe('Profil');
+    expect((await row(2)).surname).toBe('Fallback');
+  });
+
+  it('overskriver aldrig et kendt efternavn med null', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { surname: 'Kendt' });
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: null })],
+      characters: { alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: null }) },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 1, failed: 0 });
+    expect((await row(1)).surname).toBe('Kendt');
+  });
+
+  it('udfylder efternavn på en eksisterende række uden', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    expect((await row(1)).surname).toBeNull();
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Ny' })],
+      characters: { alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Ny' }) },
+    });
+    await run(blizzard);
+    expect((await row(1)).surname).toBe('Ny');
+  });
+});
+
 describe('syncRoster', () => {
   it('opdaterer rang, slug, item level, spec og last_synced for karakterer i rosteren', async () => {
     const u = await seedUser(db);

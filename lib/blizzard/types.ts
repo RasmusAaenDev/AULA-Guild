@@ -2,6 +2,8 @@ export type ArmoryCharacter = {
   blizzardId: number;
   slug: string;
   name: string;
+  // Efternavn (Blizzard: surname). null = ukendt/tomt; fuldt navn falder så tilbage til sluggen.
+  surname: string | null;
   className: string;
   // string = udledt, null = opslag lykkedes men ingen enkelt spec, undefined = opslag fejlede (ukendt)
   spec?: string | null;
@@ -11,7 +13,7 @@ export type ArmoryCharacter = {
   lastLogin: Date | null;
 };
 
-export type RosterMember = { blizzardId: number; slug: string; name: string; rank: number };
+export type RosterMember = { blizzardId: number; slug: string; name: string; surname: string | null; rank: number };
 
 export type BlizzardErrorKind = 'not_found' | 'rate_limited' | 'unavailable';
 

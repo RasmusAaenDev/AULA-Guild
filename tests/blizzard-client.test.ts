@@ -9,7 +9,9 @@ const tokenBody = { access_token: 'tok-1', expires_in: 86399 };
 
 const rawCharacter = {
   id: 1001,
-  name: 'Magi Far',
+  name: 'Magi',
+  surname: 'Far',
+  name_search: 'Magi Far',
   character_class: { name: 'Mage' },
   guild: { id: 304114, name: 'AULA' },
   equipped_item_level: 8,
@@ -34,10 +36,10 @@ const rawSpecs = {
 // Rigtig form fra /data/wow/guild/{slug}/roster: character.slug findes, og href bærer samme slug (procent-kodet).
 const rawRoster = {
   members: [
-    { character: { id: 1001, name: 'Magi Far', slug: 'magi-far', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/magi-far?namespace=profile-forever-eu' } }, rank: 3 },
-    { character: { id: 1002, name: 'Ezzek', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/ezzek-svumpukkel?namespace=profile-forever-eu' } }, rank: 0 },
-    { character: { id: 1003, name: 'Uden Href' }, rank: 5 },
-    { character: { id: 1004, name: 'Testørn', slug: 'testørn-klunkekløe', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/test%C3%B8rn-klunkekl%C3%B8e?namespace=profile-forever-eu' } }, rank: 1 },
+    { character: { id: 1001, name: 'Magi', surname: 'Far', slug: 'magi-far', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/magi-far?namespace=profile-forever-eu' } }, rank: 3 },
+    { character: { id: 1002, name: 'Ezzek', surname: 'Svumpukkel', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/ezzek-svumpukkel?namespace=profile-forever-eu' } }, rank: 0 },
+    { character: { id: 1003, name: 'Uden', surname: 'Href' }, rank: 5 },
+    { character: { id: 1004, name: 'Testørn', surname: 'Klunkekløe', slug: 'testørn-klunkekløe', key: { href: 'https://eu.api.blizzard.com/profile/wow/character/test%C3%B8rn-klunkekl%C3%B8e?namespace=profile-forever-eu' } }, rank: 1 },
   ],
 };
 
@@ -63,7 +65,7 @@ describe('blizzard-klient', () => {
     const { client, calls } = setup(byPath(jsonResponse(200, rawSpecs)));
     const c = await client.getCharacter('magi-far');
     expect(c).toEqual({
-      blizzardId: 1001, slug: 'magi-far', name: 'Magi Far', className: 'Mage', spec: 'Frost',
+      blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', spec: 'Frost',
       itemLevel: 8, guildId: 304114, guildName: 'AULA', lastLogin: new Date(1789000000000),
     });
     expect(calls[0].init?.headers).toMatchObject({ Authorization: 'Basic ' + Buffer.from('id:secret').toString('base64') });
@@ -138,6 +140,37 @@ describe('blizzard-klient', () => {
     expect((await client.getGuildRoster('aula')).map((m) => m.slug)).toEqual(['a-href', 'b-c']);
   });
 
+  it.each([
+    ['tom streng', ''],
+    ['kun mellemrum', '   '],
+    ['manglende', undefined],
+    ['ikke en streng', 7],
+    ['null', null],
+  ])('profil: surname %s giver null', async (_t, surname) => {
+    const { client } = setup((u) =>
+      isToken(u) ? jsonResponse(200, tokenBody) : u.includes('/specializations') ? jsonResponse(200, rawSpecs) : jsonResponse(200, { ...rawCharacter, surname }),
+    );
+    expect((await client.getCharacter('x')).surname).toBeNull();
+  });
+
+  it('profil: surname trimmes', async () => {
+    const { client } = setup((u) =>
+      isToken(u) ? jsonResponse(200, tokenBody) : u.includes('/specializations') ? jsonResponse(200, rawSpecs) : jsonResponse(200, { ...rawCharacter, surname: '  Far ' }),
+    );
+    expect((await client.getCharacter('x')).surname).toBe('Far');
+  });
+
+  it('roster: surname trimmes, og tom/manglende/forkert type giver null', async () => {
+    const body = { members: [
+      { character: { id: 1, name: 'A', surname: ' B ', slug: 'a-b' }, rank: 1 },
+      { character: { id: 2, name: 'C', surname: '', slug: 'c' }, rank: 1 },
+      { character: { id: 3, name: 'D', slug: 'd' }, rank: 1 },
+      { character: { id: 4, name: 'E', surname: 5, slug: 'e' }, rank: 1 },
+    ] };
+    const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, body)));
+    expect((await client.getGuildRoster('aula')).map((m) => m.surname)).toEqual(['B', null, null, null]);
+  });
+
   it('genbruger token mellem kald og henter nyt, når det er udløbet', async () => {
     const { client, calls, advance } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, rawCharacter)));
     await client.getCharacter('a');
@@ -187,10 +220,10 @@ describe('blizzard-klient', () => {
     const roster = await client.getGuildRoster('aula');
     expect(calls[1].url).toBe('https://eu.api.blizzard.com/data/wow/guild/aula/roster?namespace=profile-forever-eu&locale=en_GB');
     expect(roster).toEqual([
-      { blizzardId: 1001, slug: 'magi-far', name: 'Magi Far', rank: 3 },
-      { blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', rank: 0 },
-      { blizzardId: 1003, slug: 'uden-href', name: 'Uden Href', rank: 5 },
-      { blizzardId: 1004, slug: 'testørn-klunkekløe', name: 'Testørn', rank: 1 },
+      { blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', rank: 3 },
+      { blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel', rank: 0 },
+      { blizzardId: 1003, slug: 'uden-href', name: 'Uden', surname: 'Href', rank: 5 },
+      { blizzardId: 1004, slug: 'testørn-klunkekløe', name: 'Testørn', surname: 'Klunkekløe', rank: 1 },
     ]);
   });
 

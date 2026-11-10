@@ -62,14 +62,14 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
     .from(characters)
     .where(isNotNull(characters.userId));
 
-  const present: { id: number; blizzardId: number; slug: string }[] = [];
+  const present: { id: number; blizzardId: number; slug: string; surname: string | null }[] = [];
   for (const c of registered) {
     const m = byId.get(c.blizzardId);
     if (!m) {
       await deps.db.update(characters).set({ inGuild: false }).where(eq(characters.id, c.id));
     } else {
       await deps.db.update(characters).set({ inGuild: true, guildRank: m.rank }).where(eq(characters.id, c.id));
-      present.push({ id: c.id, blizzardId: c.blizzardId, slug: m.slug });
+      present.push({ id: c.id, blizzardId: c.blizzardId, slug: m.slug, surname: m.surname });
     }
   }
 
@@ -87,6 +87,8 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
         .set({
           slug: c.slug,
           name: p.name,
+          // Profil først, rosteren som fallback; aldrig overskriv et kendt efternavn med null.
+          ...((p.surname ?? c.surname) !== null ? { surname: p.surname ?? c.surname } : {}),
           className: p.className,
           ...(p.spec !== undefined ? { spec: p.spec } : {}),
           itemLevel: p.itemLevel,
