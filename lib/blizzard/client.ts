@@ -117,6 +117,13 @@ export function createBlizzardClient(opts: {
     async getGuildRoster(guildSlug: string): Promise<RosterMember[]> {
       const raw = await get<RawRoster>(`/data/wow/guild/${encodeURIComponent(guildSlug)}/roster`);
       if (!raw || !Array.isArray(raw.members)) throw new BlizzardError('unavailable', 'Roster-svar mangler members');
+      for (const m of raw.members as unknown[]) {
+        const mm = m as { character?: { id?: unknown; name?: unknown }; rank?: unknown } | null;
+        const ch = mm?.character;
+        if (!mm || !ch || typeof ch !== 'object' || typeof ch.id !== 'number' || typeof ch.name !== 'string' || typeof mm.rank !== 'number') {
+          throw new BlizzardError('unavailable', 'Roster-medlem mangler character.id/name eller rank');
+        }
+      }
       return raw.members.map((m) => ({
         blizzardId: m.character.id,
         slug: slugFromHref(m.character.key?.href) ?? nameToSlug(m.character.name) ?? String(m.character.id),

@@ -136,5 +136,15 @@ describe('blizzard-klient', () => {
       const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, {})));
       await expect(client.getGuildRoster('aula')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
     });
+    it('roster-medlem uden character giver unavailable', async () => {
+      const { client } = setup((u) => (isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, { members: [{ rank: 1 }] })));
+      await expect(client.getGuildRoster('aula')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
+    it('roster-medlem med ikke-numerisk rank giver unavailable', async () => {
+      const { client } = setup((u) =>
+        isToken(u) ? jsonResponse(200, tokenBody) : jsonResponse(200, { members: [{ character: { id: 1, name: 'A' }, rank: 'x' }] }),
+      );
+      await expect(client.getGuildRoster('aula')).rejects.toMatchObject({ name: 'BlizzardError', kind: 'unavailable' });
+    });
   });
 });
