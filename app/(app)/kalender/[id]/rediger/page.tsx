@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import { EventForm } from '../../EventForm';
 import { getDb } from '@/lib/db';
 import { getEvent } from '@/lib/events';
+import { parseId } from '@/lib/parse';
 import { requireMember } from '@/lib/session';
 import { utcToCopenhagen } from '@/lib/time';
 
@@ -10,8 +11,8 @@ export const dynamic = 'force-dynamic';
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const member = await requireMember();
   const { id: rawId } = await params;
-  const id = /^\d{1,9}$/.test(rawId) ? Number(rawId) : NaN;
-  if (!Number.isInteger(id) || id <= 0) notFound();
+  const id = parseId(rawId);
+  if (id === null) notFound();
   const event = await getEvent(getDb(), id);
   if (!event) notFound();
   const canManage = member.isOfficer || (event.type === 'aften' && event.createdBy === member.userId);

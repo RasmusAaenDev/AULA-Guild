@@ -79,7 +79,7 @@ const messages: Record<CalendarFailure, string> = {
   not_found: 'Eventet findes ikke længere.',
   cancelled: 'Eventet er aflyst og kan ikke ændres.',
   closed: 'Tilmeldingen er lukket.',
-  no_character: 'Du skal have en aktiv karakter for at tilmelde dig.',
+  no_character: 'Tilføj en karakter først.',
 };
 
 export function calendarMessage(reason: CalendarFailure): string {

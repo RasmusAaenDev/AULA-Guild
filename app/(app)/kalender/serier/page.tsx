@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { ConfirmForm } from '@/components/ConfirmForm';
 import { deactivateSeriesAction } from '../actions';
 import { SeriesForm } from '../SeriesForm';
 import { eventTypeLabel, seriesKeptMessage, weekdayNames } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
 import { listSeries } from '@/lib/series';
+import { parseId } from '@/lib/parse';
 import { requireMember } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
@@ -17,7 +19,7 @@ export default async function SeriesPage({
   const { kept, rediger } = await searchParams;
   const series = await listSeries(getDb());
   const keptMessage = kept && /^\d{1,6}$/.test(kept) ? seriesKeptMessage(Number(kept)) : null;
-  const editing = rediger && /^\d{1,9}$/.test(rediger) ? series.find((s) => s.id === Number(rediger)) : undefined;
+  const editing = parseId(rediger) !== null ? series.find((s) => s.id === parseId(rediger)) : undefined;
   return (
     <>
       <h1>Gentagne events</h1>
@@ -45,10 +47,12 @@ export default async function SeriesPage({
                     <div className="actions">
                       <Link href={`/kalender/serier?rediger=${s.id}`} className="btn secondary">Redigér</Link>
                       {s.active && (
-                        <form action={deactivateSeriesAction}>
-                          <input type="hidden" name="seriesId" value={s.id} />
-                          <button type="submit" className="btn danger">Deaktivér</button>
-                        </form>
+                <ConfirmForm
+                          action={deactivateSeriesAction}
+                          fields={{ seriesId: s.id }}
+                          label="Deaktivér"
+                          confirmText="Deaktivér serien? Kommende events uden tilmeldinger slettes. Er du sikker?"
+                        />
                       )}
                     </div>
                   </td>

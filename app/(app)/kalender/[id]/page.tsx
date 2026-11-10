@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { eq } from 'drizzle-orm';
+import { ConfirmForm } from '@/components/ConfirmForm';
 import { RsvpButtons } from '@/components/RsvpButtons';
 import { cancelEventAction } from '../actions';
 import { countsLabel, eventTypeLabel, formatDayHeading, formatTimeRange, rsvpLabel } from '@/lib/calendar-ui';
@@ -8,6 +9,7 @@ import { getDb } from '@/lib/db';
 import { rsvpStatuses, users } from '@/lib/db/schema';
 import { getEvent } from '@/lib/events';
 import { roleLabel } from '@/lib/messages';
+import { parseId } from '@/lib/parse';
 import { requireMember } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
@@ -15,8 +17,8 @@ export const dynamic = 'force-dynamic';
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const member = await requireMember();
   const { id: rawId } = await params;
-  const id = /^\d{1,9}$/.test(rawId) ? Number(rawId) : NaN;
-  if (!Number.isInteger(id) || id <= 0) notFound();
+  const id = parseId(rawId);
+  if (id === null) notFound();
   const db = getDb();
   const event = await getEvent(db, id);
   if (!event) notFound();
@@ -43,20 +45,25 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         {canManage && !event.cancelled && (
           <div className="actions">
             <Link href={`/kalender/${event.id}/rediger`} className="btn secondary">Redigér</Link>
-            <form action={cancelEventAction}>
-              <input type="hidden" name="eventId" value={event.id} />
-              <button type="submit" className="btn danger">Aflys</button>
-            </form>
+            <ConfirmForm
+              action={cancelEventAction}
+              fields={{ eventId: event.id }}
+              label="Aflys"
+              confirmText="Aflys eventet? Tilmeldte ser det som aflyst. Er du sikker?"
+            />
           </div>
         )}
       </section>
 
       <section className="card">
         <h2>Tilmelding</h2>
-        {event.cancelled ? (
-          <p className="muted">Eventet er aflyst, så tilmelding er lukket.</p>
-        ) : started ? (
-          <p className="muted">Eventet er begyndt, så tilmelding er lukket.</p>
+        {closed ? (
+          <>
+            <p className="muted">{mine ? `Din status: ${rsvpLabel(mine)}` : 'Du svarede ikke.'}</p>
+            <p className="muted">
+              {event.cancelled ? 'Eventet er aflyst, så tilmelding er lukket.' : 'Eventet er begyndt, så tilmelding er lukket.'}
+            </p>
+          </>
         ) : !hasCharacter ? (
           <p>
             Du skal have en aktiv karakter for at tilmelde dig. <Link href="/karakter/ny">Tilføj karakter</Link>.
@@ -64,7 +71,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         ) : (
           <>
             <p className="muted">{mine ? `Din status: ${rsvpLabel(mine)}` : 'Du har ikke svaret endnu'}</p>
-            <RsvpButtons eventId={event.id} current={mine} disabled={closed} />
+            <RsvpButtons eventId={event.id} current={mine} />
           </>
         )}
       </section>

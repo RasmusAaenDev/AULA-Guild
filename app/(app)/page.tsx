@@ -32,7 +32,7 @@ export default async function OverviewPage() {
           </p>
         )}
       </section>
-      <NextEvents userId={member.userId} />
+      <NextEvents userId={member.userId} hasCharacter={Boolean(row)} />
       <section className="card">
         <p className="muted">Opslag kommer snart.</p>
       </section>

@@ -9,6 +9,7 @@ import { eventTypes, rsvpStatuses } from '@/lib/db/schema';
 import { cancelEvent, createEvent, updateEvent } from '@/lib/events';
 import { clearRsvp, setRsvp } from '@/lib/rsvps';
 import { createSeries, deactivateSeries, updateSeries } from '@/lib/series';
+import { parseId, parseWeekday } from '@/lib/parse';
 import { requireMember, requireOfficer } from '@/lib/session';
 import { copenhagenToUtc } from '@/lib/time';
 
@@ -16,7 +17,6 @@ export type FormState = { error?: string };
 
 const FIELDS_ERROR = calendarMessage('invalid');
 const text = (max: number) => z.string().trim().max(max);
-const id = z.coerce.number().int().positive();
 const minutes = z.coerce.number().int().min(15).max(720);
 
 const eventSchema = z.object({
@@ -32,7 +32,7 @@ const seriesSchema = z.object({
   type: z.enum(eventTypes),
   title: text(100).min(1),
   description: text(2000),
-  weekday: z.coerce.number().int().min(0).max(6),
+  weekday: z.number().int().min(0).max(6),
   startTime: z.string().trim().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   durationMinutes: minutes,
 });
@@ -76,7 +76,7 @@ export async function createEventAction(_prev: FormState, formData: FormData): P
 
 export async function updateEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireMember();
-  const eventId = id.safeParse(field(formData, 'eventId'));
+  const eventId = parseId(field(formData, 'eventId'));
   const parsed = eventSchema.safeParse({
     title: field(formData, 'title'),
     description: field(formData, 'description'),
@@ -84,43 +84,52 @@ export async function updateEventAction(_prev: FormState, formData: FormData): P
     time: field(formData, 'time'),
     durationMinutes: field(formData, 'durationMinutes'),
   });
-  if (!eventId.success || !parsed.success) return { error: FIELDS_ERROR };
+  if (eventId === null || !parsed.success) return { error: FIELDS_ERROR };
   const at = copenhagenToUtc(parsed.data.date, parsed.data.time);
   if (!at.ok) return { error: timeMessage(at.reason) };
-  const result = await updateEvent(getDb(), member, eventId.data, {
+  const result = await updateEvent(getDb(), member, eventId, {
     title: parsed.data.title,
     description: parsed.data.description,
     startsAt: at.utc,
     durationMinutes: parsed.data.durationMinutes,
   });
   if (!result.ok) return { error: calendarMessage(result.reason) };
-  revalidateCalendar(eventId.data);
-  redirect(`/kalender/${eventId.data}`);
+  revalidateCalendar(eventId);
+  redirect(`/kalender/${eventId}`);
 }
 
-export async function cancelEventAction(formData: FormData): Promise<void> {
+export async function cancelEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireMember();
-  const eventId = id.safeParse(field(formData, 'eventId'));
-  if (!eventId.success) return;
-  await cancelEvent(getDb(), member, eventId.data);
-  revalidateCalendar(eventId.data);
+  const eventId = parseId(field(formData, 'eventId'));
+  if (eventId === null) return { error: calendarMessage('not_found') };
+  const result = await cancelEvent(getDb(), member, eventId);
+  if (!result.ok) return { error: calendarMessage(result.reason) };
+  revalidateCalendar(eventId);
+  return {};
 }
 
-export async function setRsvpAction(formData: FormData): Promise<void> {
+export async function setRsvpAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireMember();
-  const eventId = id.safeParse(field(formData, 'eventId'));
+  const eventId = parseId(field(formData, 'eventId'));
   const status = z.enum(rsvpStatuses).safeParse(field(formData, 'status'));
-  if (!eventId.success || !status.success) return;
-  await setRsvp(getDb(), member.userId, eventId.data, status.data);
-  revalidateCalendar(eventId.data);
+  if (eventId === null || !status.success) return { error: FIELDS_ERROR };
+  const result = await setRsvp(getDb(), member.userId, eventId, status.data);
+  if (!result.ok) {
+    revalidateCalendar(eventId);
+    return { error: calendarMessage(result.reason) };
+  }
+  revalidateCalendar(eventId);
+  return {};
 }
 
-export async function clearRsvpAction(formData: FormData): Promise<void> {
+export async function clearRsvpAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireMember();
-  const eventId = id.safeParse(field(formData, 'eventId'));
-  if (!eventId.success) return;
-  await clearRsvp(getDb(), member.userId, eventId.data);
-  revalidateCalendar(eventId.data);
+  const eventId = parseId(field(formData, 'eventId'));
+  if (eventId === null) return { error: FIELDS_ERROR };
+  const result = await clearRsvp(getDb(), member.userId, eventId);
+  revalidateCalendar(eventId);
+  if (!result.ok) return { error: calendarMessage(result.reason) };
+  return {};
 }
 
 function seriesInput(formData: FormData) {
@@ -128,7 +137,7 @@ function seriesInput(formData: FormData) {
     type: field(formData, 'type'),
     title: field(formData, 'title'),
     description: field(formData, 'description'),
-    weekday: field(formData, 'weekday'),
+    weekday: parseWeekday(field(formData, 'weekday')),
     startTime: field(formData, 'startTime'),
     durationMinutes: field(formData, 'durationMinutes'),
   });
@@ -146,20 +155,21 @@ export async function createSeriesAction(_prev: FormState, formData: FormData): 
 
 export async function updateSeriesAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireOfficer();
-  const seriesId = id.safeParse(field(formData, 'seriesId'));
+  const seriesId = parseId(field(formData, 'seriesId'));
   const parsed = seriesInput(formData);
-  if (!seriesId.success || !parsed.success) return { error: FIELDS_ERROR };
-  const result = await updateSeries(getDb(), member, seriesId.data, parsed.data);
+  if (seriesId === null || !parsed.success) return { error: FIELDS_ERROR };
+  const result = await updateSeries(getDb(), member, seriesId, parsed.data);
   if (!result.ok) return { error: calendarMessage(result.reason) };
   revalidateCalendar();
   redirect(`/kalender/serier?kept=${result.keptWithRsvps}`);
 }
 
-export async function deactivateSeriesAction(formData: FormData): Promise<void> {
+export async function deactivateSeriesAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireOfficer();
-  const seriesId = id.safeParse(field(formData, 'seriesId'));
-  if (!seriesId.success) return;
-  const result = await deactivateSeries(getDb(), member, seriesId.data);
+  const seriesId = parseId(field(formData, 'seriesId'));
+  if (seriesId === null) return { error: calendarMessage('not_found') };
+  const result = await deactivateSeries(getDb(), member, seriesId);
+  if (!result.ok) return { error: calendarMessage(result.reason) };
   revalidateCalendar();
-  redirect(`/kalender/serier?kept=${result.ok ? result.keptWithRsvps : 0}`);
+  redirect(`/kalender/serier?kept=${result.keptWithRsvps}`);
 }
