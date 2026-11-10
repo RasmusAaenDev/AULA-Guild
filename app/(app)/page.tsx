@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
+import { NextEvents } from '@/components/NextEvents';
 import { roleLabel } from '@/lib/messages';
 import { requireMember } from '@/lib/session';
 
@@ -31,8 +32,9 @@ export default async function OverviewPage() {
           </p>
         )}
       </section>
+      <NextEvents userId={member.userId} />
       <section className="card">
-        <p className="muted">Opslag og næste raid kommer snart.</p>
+        <p className="muted">Opslag kommer snart.</p>
       </section>
     </>
   );

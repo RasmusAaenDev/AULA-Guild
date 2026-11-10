@@ -68,3 +68,12 @@ details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; b
   .logo { width: 64px; }
   .table-wrap { overflow-x: auto; }
 }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { text-decoration: none; display: inline-block; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+a.btn.secondary { color: var(--heading); }
+.field textarea { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; resize: vertical; }
+a.event-card { display: block; text-decoration: none; }
+.cancelled { opacity: 0.55; }
+h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }

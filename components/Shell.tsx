@@ -19,6 +19,7 @@ export function Shell({
       <div className="layout">
         <nav className="sidenav" aria-label="Hovedmenu">
           <NavLink href="/">Overblik</NavLink>
+          <NavLink href="/kalender">Kalender</NavLink>
           <NavLink href="/kontakter">Kontakter</NavLink>
         </nav>
         <main className="content">{children}</main>
