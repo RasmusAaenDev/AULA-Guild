@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { deletePostAction } from '@/app/(app)/opslag/actions';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { SatireCard } from '@/components/SatireCard';
@@ -58,6 +58,7 @@ export default async function OverviewPage({
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
   const pinned = pinnedEvent(upcoming, now);
+  const [{ n: characterCount }] = await db.select({ n: count() }).from(characters).where(eq(characters.userId, member.userId));
   const [row] = await db
     .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
     .from(users)
@@ -74,6 +75,14 @@ export default async function OverviewPage({
 
   return (
     <>
+      {characterCount === 0 && (
+        <div className="alert-banner" role="status">
+          <Icon name="udraab" size={22} />
+          <p>
+            Du har ikke oprettet nogen WoW-karakter endnu. <Link href="/karakter/ny">Opret din karakter</Link> for at kunne tilmelde dig begivenheder.
+          </p>
+        </div>
+      )}
       <UnansweredBanner count={unanswered} />
       <div className="section-head">
         <h1>Overblik</h1>
