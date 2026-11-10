@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
 import { roleLabel } from '@/lib/messages';
 import { requireMember } from '@/lib/session';
+import { RefreshButton } from './RefreshButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,10 @@ export default async function ContactsPage() {
   const contacts = await listContacts(getDb());
   return (
     <>
-      <h1>Kontakter</h1>
+      <div className="section-head">
+        <h1>Kontakter</h1>
+        <RefreshButton />
+      </div>
       <div className="card table-wrap">
         {contacts.length === 0 ? (
           <p>Ingen karakterer endnu.</p>

@@ -13,7 +13,7 @@ import { generateSeriesEvents } from '@/lib/series';
 import { syncRoster, type SyncResult } from '@/lib/sync';
 import { upsertUser } from '@/lib/users';
 
-const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient };
+const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient; __aulaSync?: Promise<SyncResult> };
 
 export function getBlizzard(): BlizzardClient {
   g.__aulaBlizzard ??= createBlizzardClient({
@@ -27,8 +27,12 @@ export function charactersDeps(): CharactersDeps {
   return { db: getDb(), blizzard: getBlizzard(), guildId: env().BLIZZARD_GUILD_ID, guildSlug: env().BLIZZARD_GUILD_SLUG };
 }
 
+/** Kun én synkronisering ad gangen: en anmodning under en igangværende kørsel (planlagt eller manuel) får samme resultat. */
 export function runSync(): Promise<SyncResult> {
-  return syncRoster({ db: getDb(), blizzard: getBlizzard(), guildSlug: env().BLIZZARD_GUILD_SLUG });
+  g.__aulaSync ??= syncRoster({ db: getDb(), blizzard: getBlizzard(), guildSlug: env().BLIZZARD_GUILD_SLUG }).finally(() => {
+    g.__aulaSync = undefined;
+  });
+  return g.__aulaSync;
 }
 
 export function runScheduledJobs(): Promise<JobsResult> {
