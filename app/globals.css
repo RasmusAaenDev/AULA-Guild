@@ -1,32 +1,44 @@
 :root {
   --topbar: #00788c;
   --logo: #005b6b;
-  --nav: #6c8593;
+  --nav: #566f7d;
   --nav-active: #1f4d5c;
   --badge: #a30b52;
   --bg: #e9eff2;
   --card: #ffffff;
   --text: #1c2b33;
   --heading: #00505f;
-  --muted: #5d7280;
+  --muted: #4d6370;
   --border: #d3dde2;
   --danger: #a30b52;
+  --focus: #005b6b;
+  --focus-inverse: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --bg: #0f1a1f; --card: #172830; --text: #e3edf1; --heading: #7fd0e0;
     --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
+    --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
   }
 }
 :root[data-theme='dark'] {
   --bg: #0f1a1f; --card: #172830; --text: #e3edf1; --heading: #7fd0e0;
   --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
+  --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
 }
 
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: Lato, system-ui, sans-serif; }
 h1, h2 { color: var(--heading); font-weight: 800; margin: 0 0 12px; }
 a { color: inherit; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.topbar :focus-visible, .sidenav :focus-visible { outline-color: var(--focus-inverse); }
+details.profile .menu :focus-visible { outline-color: var(--focus); }
+.sidenav .navlink:focus-visible { outline-offset: -4px; }
+.skip-link { position: absolute; left: 8px; top: -100px; z-index: 100; background: var(--card); color: var(--heading); padding: 10px 16px; border-radius: 8px; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); }
+.skip-link:focus { top: 8px; }
+main:focus { outline: none; }
 
 .topbar { display: flex; align-items: center; height: 56px; background: var(--topbar); color: #fff; }
 .logo { width: 100px; height: 100%; background: var(--logo); display: grid; place-items: center; font-weight: 800; font-size: 22px; }
@@ -55,12 +67,11 @@ table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
 th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
 tr.left-guild td { opacity: 0.55; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--border); font-size: 12px; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--border); color: var(--text); font-size: 12px; }
 
 details.profile { position: relative; }
 details.profile summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
 details.profile summary::-webkit-details-marker { display: none; }
-details.profile summary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; background: var(--card); color: var(--text); border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); padding: 14px; z-index: 10; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--logo); object-fit: cover; }
 
@@ -86,7 +97,8 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .tab { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); color: var(--heading); text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
-.tab[aria-current='page'] { background: var(--topbar); color: #fff; border-color: var(--topbar); }
+.tab:hover { background: var(--border); }
+.tab[aria-current='page'], .tab[aria-current='page']:hover { background: var(--topbar); color: #fff; border-color: var(--topbar); }
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .section-head h2 { margin: 0; }
 a.post-card { display: block; text-decoration: none; color: inherit; }

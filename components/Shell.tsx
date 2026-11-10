@@ -11,6 +11,7 @@ export function Shell({
   const unread = unreadLabel(unreadPosts);
   return (
     <>
+      <a className="skip-link" href="#main">Spring til indhold</a>
       <header className="topbar">
         <div className="logo">Aula</div>
         <div className="topbar-right">
@@ -40,7 +41,7 @@ export function Shell({
           {chatEnabled && <NavLink href="/chat" icon="chat">Chat</NavLink>}
           <NavLink href="/kontakter" icon="kontakter">Kontakter</NavLink>
         </nav>
-        <main className="content">{children}</main>
+        <main id="main" tabIndex={-1} className="content">{children}</main>
       </div>
     </>
   );
