@@ -6,3 +6,7 @@ node_modules
 docs
 tests
 data
+**/.env
+**/.env.*
+!**/.env.example
+.superpowers
