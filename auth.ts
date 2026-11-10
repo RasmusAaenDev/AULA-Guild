@@ -8,7 +8,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Discord({ authorization: { params: { scope: 'identify guilds.members.read' } } })],
   session: { strategy: 'jwt', maxAge: 60 * 60 * 12 },
   trustHost: true,
-  pages: { signIn: '/login' },
+  pages: { signIn: '/login', error: '/login' },
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account?.access_token && profile) {
