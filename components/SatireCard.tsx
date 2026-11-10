@@ -1,27 +1,28 @@
 import { Icon } from '@/components/icons';
 import type { SatirePost } from '@/lib/satire';
 
+const displayName = (name: string) => name.replace(/\s*\(fiktiv\)\s*$/i, '');
+
 /**
- * Fiktivt opslag. Mærkningen er permanent og ligger inde i selve kortet (badge, fodlinje, stiplet kant), så et
+ * Fiktivt opslag. Mærkningen er permanent og ligger inde i selve kortet (ikon i overskriften, fodlinje, stiplet kant, «Fiktive kommentarer»), så et
  * skærmbillede ikke kan forveksles med et ægte opslag. Ingen bogmærke, kommentarformular, læst-status eller detaljeside.
  */
 export function SatireCard({ post }: { post: SatirePost }) {
   const paragraphs = post.body.split(/\n+/);
   return (
     <article className="card post-card satire-card" aria-label="Fake opslag (satire)">
-      <div className="satire-head">
-        <span className="satire-mask" aria-hidden="true"><Icon name="klovn" size={26} /></span>
-        <span className="satire-badge">
-          <Icon name="fake" size={16} />
-          FAKE · SATIRE
-        </span>
-        {post.important && <span className="badge">Vigtig (fiktivt)</span>}
-      </div>
+      {post.important && (
+        <div className="satire-head">
+          <span className="badge">Vigtig (fiktivt)</span>
+        </div>
+      )}
       <p className="satire-meta">
-        <strong>{post.author}</strong>
-        <span className="satire-label">Satire</span>
+        <strong>{displayName(post.author)}</strong>
       </p>
-      <h3>{post.title}</h3>
+      <h3 className="satire-title">
+        <span className="satire-mask" aria-hidden="true"><Icon name="klovn" size={26} /></span>
+        {post.title}
+      </h3>
       {paragraphs.map((p, i) => (
         <p key={i} className="satire-body">{p}</p>
       ))}
@@ -30,7 +31,7 @@ export function SatireCard({ post }: { post: SatirePost }) {
           <h4>Fiktive kommentarer ({post.comments.length})</h4>
           {post.comments.map((c, i) => (
             <p key={i}>
-              <strong>{c.author}</strong> <span className="badge">fiktiv</span>
+              <strong>{displayName(c.author)}</strong> <span className="badge">fiktiv</span>
               <br />
               {c.body}
             </p>

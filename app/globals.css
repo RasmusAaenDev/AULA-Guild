@@ -227,10 +227,9 @@ details.create .menu a:hover { background: var(--border); }
 .satire-card { position: relative; background: var(--sat-bg); border: 2px dashed var(--sat-border); box-shadow: none; color: var(--text); }
 .satire-card h3, .satire-card h3 a { color: var(--heading); }
 .satire-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
-.satire-mask { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; border: 2px dashed var(--sat-border); color: var(--sat-ink); }
-.satire-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--sat-badge); color: var(--sat-badge-fg); border-radius: 6px; padding: 3px 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
+.satire-mask { flex: none; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; width: 40px; height: 40px; margin-right: 10px; border-radius: 8px; border: 2px dashed var(--sat-border); color: var(--sat-ink); }
+.satire-title { display: flex; align-items: center; }
 .satire-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin: 0; }
-.satire-meta .satire-label { color: var(--sat-ink); font-weight: 700; }
 .satire-body { white-space: pre-line; overflow-wrap: anywhere; margin: 0 0 8px; }
 .satire-card .muted { color: var(--muted); }
 .satire-comments { border-top: 1px dashed var(--sat-border); margin-top: 10px; padding-top: 8px; }

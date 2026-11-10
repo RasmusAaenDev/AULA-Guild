@@ -92,14 +92,12 @@ for (const [name, t] of Object.entries(themes)) {
       ['fokusring (hvid) mod topbjælken', t['focus-inverse'], t.topbar, 3],
     ];
     pairs.push(
-      ['satire: badge-tekst på --sat-badge', t['sat-badge-fg'], t['sat-badge'], 4.5],
       ['satire: --text på --sat-bg', t.text, t['sat-bg'], 4.5],
       ['satire: --heading på --sat-bg', t.heading, t['sat-bg'], 4.5],
       ['satire: --muted på --sat-bg', t.muted, t['sat-bg'], 4.5],
       ['satire: --sat-ink (etiket) på --sat-bg', t['sat-ink'], t['sat-bg'], 4.5],
       ['satire: stiplet kant mod --bg', t['sat-border'], t.bg, 3],
       ['satire: stiplet kant mod --sat-bg', t['sat-border'], t['sat-bg'], 3],
-      ['satire: --sat-badge som ikon mod --sat-bg', t['sat-badge'], t['sat-bg'], 3],
     );
     const clsKeys = [...classKeys, 'ukendt'];
     for (const k of clsKeys) {
