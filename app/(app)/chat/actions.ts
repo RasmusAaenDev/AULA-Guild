@@ -28,6 +28,7 @@ export async function sendChatMessageAction(_prev: FormState, formData: FormData
   const result = await submitChatMessage(
     { userId: member.userId, configured, chat: getChat(), characterName, limiter, now: Date.now() },
     message,
+    formData.get('channelId'),
   );
   return result.error ? { error: result.error } : { sent: true };
 }

@@ -7,6 +7,7 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 export async function chatResponse(
   user: { isMember?: boolean; id?: string } | undefined,
   chat: ChatClient | null,
+  channelId: string | null,
 ): Promise<Response> {
   if (!user?.isMember || !user.id) {
     return NextResponse.json({ error: 'Du skal være logget ind.' }, { status: 401, headers: NO_STORE });
@@ -14,5 +15,8 @@ export async function chatResponse(
   if (!chat) {
     return NextResponse.json({ error: 'Chatten er ikke sat op.' }, { status: 404, headers: NO_STORE });
   }
-  return NextResponse.json(await chat.getMessages(), { headers: NO_STORE });
+  if (!channelId) {
+    return NextResponse.json({ error: 'Kanal mangler.' }, { status: 400, headers: NO_STORE });
+  }
+  return NextResponse.json(await chat.getMessages(channelId), { headers: NO_STORE });
 }

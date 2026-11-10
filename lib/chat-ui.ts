@@ -1,4 +1,4 @@
-import type { ChatError, ChatResult } from '@/lib/chat';
+import type { ChatChannel, ChatError, ChatResult } from '@/lib/chat';
 
 const TZ = 'Europe/Copenhagen';
 const parts = new Intl.DateTimeFormat('da-DK', {
@@ -30,7 +30,7 @@ export function isNearBottom(el: { scrollTop: number; clientHeight: number; scro
 export function chatErrorMessage(error: ChatError | undefined): string | null {
   switch (error) {
     case 'no_access': return 'Botten har ikke adgang til kanalen.';
-    case 'not_found': return 'Kanalen blev ikke fundet. Tjek kanal-id\'et i opsætningen.';
+    case 'not_found': return 'Kanalen blev ikke fundet. Vælg en anden kanal.';
     case 'unavailable': return 'Discord kan ikke nås lige nu. Prøver igen om lidt.';
     default: return null;
   }
@@ -45,4 +45,10 @@ export function chatHintMessage(hint: ChatResult['hint']): string | null {
 /** Ventetid til næste hentning: 5 s, fordoblet for hver fejl i træk, højst 60 s. */
 export function nextPollDelay(failures: number): number {
   return Math.min(5000 * 2 ** Math.max(0, failures), 60000);
+}
+
+/** Vælger kanal ud fra ?kanal=: ukendt/ugyldigt id giver standardkanalen, ellers den første. */
+export function pickChannel(channels: ChatChannel[], requested: unknown, defaultId: string): ChatChannel | null {
+  const id = typeof requested === 'string' ? requested : Array.isArray(requested) && typeof requested[0] === 'string' ? requested[0] : '';
+  return channels.find((c) => c.id === id) ?? channels.find((c) => c.id === defaultId) ?? channels[0] ?? null;
 }

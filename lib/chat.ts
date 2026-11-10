@@ -1,14 +1,32 @@
-// Læs-kun-visning af en Discord-kanal. Al netværk går gennem den injicerede `fetch`, og tokenet
+// Visning af (og skrivning i) serverens offentlige Discord-tekstkanaler. Al netværk går gennem den injicerede `fetch`, og tokenet
 // forlader aldrig modulet: resultater og fejl er kun data og faste koder, aldrig svar- eller fejltekst.
 
 export type ChatMessage = { id: string; author: string; content: string; timestamp: string; bot: boolean };
 export type ChatError = 'no_access' | 'not_found' | 'unavailable';
+export type ChatChannel = { id: string; name: string; canWrite: boolean };
+export type ChannelsResult = { channels: ChatChannel[]; error?: 'unavailable' };
 export type ChatResult = { messages: ChatMessage[]; stale: boolean; error?: ChatError; hint?: 'no_content_intent' };
-export type SendError = 'no_access' | 'rate_limited' | 'unavailable' | 'invalid';
+export type SendError = 'no_access' | 'rate_limited' | 'unavailable' | 'invalid' | 'not_found' | 'read_only';
 export type SendResult = { ok: true } | { ok: false; error: SendError };
-export type ChatClient = { getMessages(): Promise<ChatResult>; sendMessage(content: string): Promise<SendResult> };
+export type ChatClient = {
+  listChannels(): Promise<ChannelsResult>;
+  getMessages(channelId: string): Promise<ChatResult>;
+  sendMessage(channelId: string, content: string): Promise<SendResult>;
+};
 
 const MAX_STALE_MS = 10 * 60_000;
+const LIST_TTL_MS = 5 * 60_000;
+const LIST_MAX_STALE_MS = 30 * 60_000;
+const LIST_RETRY_MS = 5000;
+const READ_ONLY_MS = 60 * 60_000;
+const MAX_CHANNEL_STATES = 50;
+const WOW_LINKED_CODE = 20062;
+const ID_RE = /^\d{1,20}$/;
+const ADMINISTRATOR = 8n;
+const VIEW_CHANNEL = 1024n;
+const SEND_MESSAGES = 2048n;
+const READ_HISTORY = 65536n;
+const ALL = (1n << 64n) - 1n;
 const DEFAULT_RETRY_S = 5;
 const MAX_RETRY_S = 10 * 60;
 const DISCORD_EPOCH = 1420070400000n;
@@ -103,6 +121,65 @@ function retrySeconds(res: Response, body: unknown): number {
   return Math.min(Math.max(s, 1), MAX_RETRY_S);
 }
 
+type RawChannel = { id: string; name: string; type: number; position: number; overwrites: Overwrite[] };
+type Overwrite = { id: string; type: number; allow: bigint; deny: bigint };
+type ListBase = { id: string; name: string; position: number; type: number; botWrite: boolean };
+
+function big(v: unknown): bigint {
+  if (typeof v === 'string' && /^\d{1,20}$/.test(v)) return BigInt(v);
+  if (typeof v === 'number' && Number.isSafeInteger(v) && v >= 0) return BigInt(v);
+  return 0n;
+}
+
+function parseChannel(c: unknown): RawChannel | null {
+  if (!isObj(c) || typeof c.id !== 'string' || !ID_RE.test(c.id) || typeof c.type !== 'number') return null;
+  const overwrites: Overwrite[] = [];
+  if (Array.isArray(c.permission_overwrites)) {
+    for (const o of c.permission_overwrites) {
+      if (isObj(o) && typeof o.id === 'string') {
+        overwrites.push({ id: o.id, type: Number(o.type), allow: big(o.allow), deny: big(o.deny) });
+      }
+    }
+  }
+  return {
+    id: c.id,
+    name: str(c.name).trim() || 'kanal',
+    type: c.type,
+    position: typeof c.position === 'number' ? c.position : 0,
+    overwrites,
+  };
+}
+
+/** Rettighederne for en rolleliste (med @everyone som basis) i en kanal. Rækkefølge som Discord: @everyone, roller, medlem. */
+export function channelPermissions(opts: {
+  guildId: string;
+  everyone: bigint;
+  roleIds: string[];
+  rolePerms: Map<string, bigint>;
+  memberId?: string;
+  overwrites: Overwrite[];
+}): bigint {
+  let perms = opts.everyone;
+  for (const r of opts.roleIds) perms |= opts.rolePerms.get(r) ?? 0n;
+  if ((perms & ADMINISTRATOR) !== 0n) return ALL;
+  const ev = opts.overwrites.find((o) => o.type === 0 && o.id === opts.guildId);
+  if (ev) perms = (perms & ~ev.deny) | ev.allow;
+  let deny = 0n;
+  let allow = 0n;
+  for (const o of opts.overwrites) {
+    if (o.type === 0 && opts.roleIds.includes(o.id) && o.id !== opts.guildId) {
+      deny |= o.deny;
+      allow |= o.allow;
+    }
+  }
+  perms = (perms & ~deny) | allow;
+  if (opts.memberId) {
+    const m = opts.overwrites.find((o) => o.type === 1 && o.id === opts.memberId);
+    if (m) perms = (perms & ~m.deny) | m.allow;
+  }
+  return perms;
+}
+
 export function createChatClient(opts: {
   token: string;
   channelId: string;
@@ -115,33 +192,151 @@ export function createChatClient(opts: {
   const now = opts.now ?? Date.now;
   const ttl = opts.ttlMs ?? 4000;
   const timeoutMs = opts.timeoutMs ?? 8000;
-  const sendUrl = `https://discord.com/api/v10/channels/${encodeURIComponent(opts.channelId)}/messages`;
-  const url = `${sendUrl}?limit=50`;
+  const api = 'https://discord.com/api/v10';
   const userAgent = 'DiscordBot (https://aula.aaensoftware.com, 1.0)';
-  let generation = 0;
+  const authHeaders = { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent };
 
-  let good: { at: number; parsed: Parsed } | null = null;
-  let last: { at: number; result: ChatResult } | null = null;
   let blockedUntil = 0;
-  let inflight: Promise<ChatResult> | null = null;
+
+  // ---- kanalliste ----
+  let guildId: string | null = null;
+  let botId: string | null = null;
+  let listGood: { at: number; bases: ListBase[] } | null = null;
+  let listRetryAt = 0;
+  let listInflight: Promise<ListBase[] | null> | null = null;
+  const readOnly = new Map<string, number>(); // kanal-id -> udløb
+
+  async function getJson(path: string): Promise<unknown> {
+    const res = await doFetch(`${api}${path}`, {
+      headers: authHeaders,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) {
+      await discard(res);
+      throw new Error('discord');
+    }
+    return res.json();
+  }
+
+  async function buildList(): Promise<ListBase[]> {
+    if (!guildId) {
+      const ch = await getJson(`/channels/${encodeURIComponent(opts.channelId)}`);
+      const g = isObj(ch) ? ch.guild_id : undefined;
+      if (typeof g !== 'string' || !ID_RE.test(g)) throw new Error('guild');
+      guildId = g;
+    }
+    if (!botId) {
+      const me = await getJson('/users/@me');
+      const id = isObj(me) ? me.id : undefined;
+      if (typeof id !== 'string' || !ID_RE.test(id)) throw new Error('bot');
+      botId = id;
+    }
+    const gid = guildId;
+    const bid = botId;
+    const [rolesRaw, channelsRaw, memberRaw] = await Promise.all([
+      getJson(`/guilds/${gid}/roles`),
+      getJson(`/guilds/${gid}/channels`),
+      getJson(`/guilds/${gid}/members/${bid}`),
+    ]);
+    if (!Array.isArray(rolesRaw) || !Array.isArray(channelsRaw) || !isObj(memberRaw)) throw new Error('shape');
+    const rolePerms = new Map<string, bigint>();
+    for (const r of rolesRaw) if (isObj(r) && typeof r.id === 'string') rolePerms.set(r.id, big(r.permissions));
+    const everyone = rolePerms.get(gid);
+    if (everyone === undefined) throw new Error('roles');
+    const botRoles = Array.isArray(memberRaw.roles) ? memberRaw.roles.filter((x): x is string => typeof x === 'string') : [];
+    const seeAndRead = VIEW_CHANNEL | READ_HISTORY;
+    const out: ListBase[] = [];
+    for (const raw of channelsRaw) {
+      const c = parseChannel(raw);
+      if (!c || (c.type !== 0 && c.type !== 5)) continue;
+      const pub = channelPermissions({ guildId: gid, everyone, roleIds: [], rolePerms, overwrites: c.overwrites });
+      if ((pub & seeAndRead) !== seeAndRead) continue;
+      const bot = channelPermissions({ guildId: gid, everyone, roleIds: botRoles, rolePerms, memberId: bid, overwrites: c.overwrites });
+      if ((bot & seeAndRead) !== seeAndRead) continue;
+      out.push({ id: c.id, name: c.name, position: c.position, type: c.type, botWrite: c.type === 0 && (bot & SEND_MESSAGES) !== 0n });
+    }
+    return out;
+  }
+
+  /** Den aktuelle offentlige liste (cachet), eller null når den hverken kan hentes eller er gammel nok til at bruge. */
+  async function currentBases(): Promise<ListBase[] | null> {
+    const t = now();
+    if (listGood && t - listGood.at >= 0 && t - listGood.at < LIST_TTL_MS) return listGood.bases;
+    const stale = () => (listGood && t - listGood.at <= LIST_MAX_STALE_MS ? listGood.bases : null);
+    if (t < listRetryAt) return stale();
+    listInflight ??= buildList()
+      .then((bases) => {
+        listGood = { at: t, bases };
+        return bases;
+      })
+      .catch(() => {
+        listRetryAt = t + LIST_RETRY_MS;
+        return stale();
+      })
+      .finally(() => {
+        listInflight = null;
+      });
+    return listInflight;
+  }
+
+  function toChannels(bases: ListBase[]): ChatChannel[] {
+    const t = now();
+    for (const [id, until] of readOnly) if (until <= t) readOnly.delete(id);
+    return [...bases]
+      .sort((a, b) => a.position - b.position || a.name.localeCompare(b.name, 'da'))
+      .map((b) => ({ id: b.id, name: b.name, canWrite: b.botWrite && !readOnly.has(b.id) }));
+  }
+
+  async function lookup(channelId: unknown): Promise<{ ok: true; channel: ChatChannel } | { ok: false; error: 'not_found' | 'unavailable' }> {
+    if (typeof channelId !== 'string' || !ID_RE.test(channelId)) return { ok: false, error: 'not_found' };
+    const bases = await currentBases();
+    if (!bases) return { ok: false, error: 'unavailable' };
+    const channel = toChannels(bases).find((c) => c.id === channelId);
+    return channel ? { ok: true, channel } : { ok: false, error: 'not_found' };
+  }
+
+  // ---- beskeder pr. kanal ----
+  type State = {
+    good: { at: number; parsed: Parsed } | null;
+    last: { at: number; result: ChatResult } | null;
+    inflight: Promise<ChatResult> | null;
+    generation: number;
+  };
+  const states = new Map<string, State>();
+
+  function stateFor(id: string): State {
+    let s = states.get(id);
+    if (s) {
+      states.delete(id); // flyt bagest (LRU)
+    } else {
+      s = { good: null, last: null, inflight: null, generation: 0 };
+      while (states.size >= MAX_CHANNEL_STATES) {
+        const oldest = states.keys().next().value;
+        if (oldest === undefined) break;
+        states.delete(oldest);
+      }
+    }
+    states.set(id, s);
+    return s;
+  }
 
   function fresh(parsed: Parsed): ChatResult {
     return { messages: parsed.messages, stale: false, ...(parsed.hint ? { hint: parsed.hint } : {}) };
   }
 
-  /** Midlertidig fejl: seneste gode svar som forældet, hvis det ikke er for gammelt. */
-  function degraded(t: number): ChatResult {
-    if (good && t - good.at <= MAX_STALE_MS) return { ...fresh(good.parsed), stale: true };
+  function degraded(s: State, t: number): ChatResult {
+    if (s.good && t - s.good.at <= MAX_STALE_MS) return { ...fresh(s.good.parsed), stale: true };
     return { messages: [], stale: false, error: 'unavailable' };
   }
 
-  async function refresh(): Promise<ChatResult> {
+  async function refresh(id: string, s: State): Promise<ChatResult> {
     const t = now();
-    const gen = generation;
+    const gen = s.generation;
     let result: ChatResult;
     try {
-      const res = await doFetch(url, {
-        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent },
+      const res = await doFetch(`${api}/channels/${encodeURIComponent(id)}/messages?limit=50`, {
+        headers: authHeaders,
         cache: 'no-store',
         signal: AbortSignal.timeout(timeoutMs),
       });
@@ -154,41 +349,59 @@ export function createChatClient(opts: {
       } else if (res.status === 429) {
         const body: unknown = await res.json().catch(() => null);
         blockedUntil = t + retrySeconds(res, body) * 1000;
-        return degraded(t);
+        return degraded(s, t);
       } else if (!res.ok) {
         await discard(res);
-        result = degraded(t);
+        result = degraded(s, t);
       } else {
         const parsed = parse(await res.json().catch(() => null));
         if (!parsed) {
-          result = degraded(t);
+          result = degraded(s, t);
         } else {
-          good = { at: t, parsed };
+          s.good = { at: t, parsed };
           result = fresh(parsed);
         }
       }
     } catch {
-      result = degraded(t);
+      result = degraded(s, t);
     }
-    if (gen === generation) last = { at: t, result };
+    if (gen === s.generation) s.last = { at: t, result };
     return result;
   }
 
-  async function send(content: string): Promise<SendResult> {
+  async function getMessages(channelId: string): Promise<ChatResult> {
+    const found = await lookup(channelId);
+    if (!found.ok) return { messages: [], stale: false, error: found.error };
+    const s = stateFor(channelId);
+    const t = now();
+    if (s.last && t - s.last.at >= 0 && t - s.last.at < ttl) return s.last.result;
+    if (t < blockedUntil) return degraded(s, t);
+    s.inflight ??= refresh(channelId, s).finally(() => {
+      s.inflight = null;
+    });
+    return s.inflight;
+  }
+
+  async function send(channelId: string, content: string): Promise<SendResult> {
+    const found = await lookup(channelId);
+    if (!found.ok) return { ok: false, error: found.error };
+    if (readOnly.has(channelId)) return { ok: false, error: 'read_only' };
+    if (!found.channel.canWrite) return { ok: false, error: 'no_access' };
     const t = now();
     if (t < blockedUntil) return { ok: false, error: 'rate_limited' };
     try {
-      const res = await doFetch(sendUrl, {
+      const res = await doFetch(`${api}/channels/${encodeURIComponent(channelId)}/messages`, {
         method: 'POST',
-        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent, 'Content-Type': 'application/json' },
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
         cache: 'no-store',
         signal: AbortSignal.timeout(timeoutMs),
       });
       if (res.ok) {
         await discard(res);
-        generation++;
-        last = null; // næste læsning henter listen igen, så den nye besked ses
+        const s = stateFor(channelId);
+        s.generation++;
+        s.last = null; // næste læsning henter listen igen, så den nye besked ses
         return { ok: true };
       }
       if (res.status === 429) {
@@ -196,8 +409,16 @@ export function createChatClient(opts: {
         blockedUntil = t + retrySeconds(res, body) * 1000;
         return { ok: false, error: 'rate_limited' };
       }
+      if (res.status === 403) {
+        const body: unknown = await res.json().catch(() => null);
+        if (isObj(body) && body.code === WOW_LINKED_CODE) {
+          readOnly.set(channelId, now() + READ_ONLY_MS);
+          return { ok: false, error: 'read_only' };
+        }
+        return { ok: false, error: 'no_access' };
+      }
       await discard(res);
-      if (res.status === 401 || res.status === 403 || res.status === 404) return { ok: false, error: 'no_access' };
+      if (res.status === 401 || res.status === 404) return { ok: false, error: 'no_access' };
       if (res.status === 400) return { ok: false, error: 'invalid' };
       return { ok: false, error: 'unavailable' };
     } catch {
@@ -206,15 +427,11 @@ export function createChatClient(opts: {
   }
 
   return {
-    sendMessage: send,
-    getMessages(): Promise<ChatResult> {
-      const t = now();
-      if (last && t - last.at >= 0 && t - last.at < ttl) return Promise.resolve(last.result);
-      if (t < blockedUntil) return Promise.resolve(degraded(t));
-      inflight ??= refresh().finally(() => {
-        inflight = null;
-      });
-      return inflight;
+    async listChannels(): Promise<ChannelsResult> {
+      const bases = await currentBases();
+      return bases ? { channels: toChannels(bases) } : { channels: [], error: 'unavailable' };
     },
+    getMessages,
+    sendMessage: send,
   };
 }

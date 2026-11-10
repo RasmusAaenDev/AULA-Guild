@@ -10,7 +10,7 @@ function isChatResult(v: unknown): v is ChatResult {
   return typeof v === 'object' && v !== null && Array.isArray((v as ChatResult).messages);
 }
 
-export function ChatView() {
+export function ChatView({ channelId, canWrite }: { channelId: string; canWrite: boolean }) {
   const [data, setData] = useState<ChatResult | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [now, setNow] = useState<Date>(() => new Date());
@@ -42,7 +42,7 @@ export function ChatView() {
       const mine = new AbortController();
       controller = mine;
       try {
-        const res = await fetch('/api/chat', { cache: 'no-store', signal: mine.signal });
+        const res = await fetch(`/api/chat?kanal=${encodeURIComponent(channelId)}`, { cache: 'no-store', signal: mine.signal });
         const body: unknown = await res.json().catch(() => null);
         if (cancelled || mine.signal.aborted) return;
         if (res.ok && isChatResult(body)) {
@@ -98,7 +98,7 @@ export function ChatView() {
       controller?.abort();
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, []);
+  }, [channelId]);
 
   const scrollToBottom = useCallback(() => {
     const el = listRef.current;
@@ -177,7 +177,9 @@ export function ChatView() {
       {newBelow && (
         <button type="button" className="btn chat-new" onClick={scrollToBottom}>Nye beskeder ↓</button>
       )}
+      {canWrite ? (
       <form className="chat-form" onSubmit={submitHandler(sendAction)}>
+        <input type="hidden" name="channelId" value={channelId} />
         <div className="field">
           <label htmlFor="chat-message">Skriv en besked</label>
           <textarea id="chat-message" {...bind('message')} rows={2} maxLength={500} required autoComplete="off" />
@@ -185,6 +187,9 @@ export function ChatView() {
         {sendState.error && <p className="error" role="alert">{sendState.error}</p>}
         <button type="submit" className="btn chat-send" disabled={sending || values.message.trim() === ''}>Send</button>
       </form>
+      ) : (
+        <p className="muted chat-readonly">Du kan kun læse i denne kanal.</p>
+      )}
     </section>
   );
 }

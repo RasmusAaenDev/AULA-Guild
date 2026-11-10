@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createChatClient, type ChatClient } from '@/lib/chat';
 import { buildContent, createSendLimiter, escapeDiscord, submitChatMessage, validateMessage } from '@/lib/chat-send';
 import { jsonResponse } from './helpers';
+import { fixture, withGuild } from './discord-fake';
 
 const TOKEN = 'SECRET-TOKEN-abc.def.ghi';
 const CHANNEL = '123456789012345678';
@@ -9,10 +10,10 @@ const CHANNEL = '123456789012345678';
 function setup(responder: (init?: RequestInit) => Response | Promise<Response>) {
   const calls: { url: string; init?: RequestInit }[] = [];
   let time = 1_000_000;
-  const fetchFn = (async (url: string | URL | Request, init?: RequestInit) => {
-    calls.push({ url: String(url), init });
+  const fetchFn = withGuild((url, init) => {
+    calls.push({ url, init });
     return responder(init);
-  }) as typeof fetch;
+  }, () => fixture());
   const client = createChatClient({ token: TOKEN, channelId: CHANNEL, fetch: fetchFn, now: () => time, ttlMs: 4000 });
   return { client, calls, advance: (ms: number) => { time += ms; } };
 }
@@ -20,7 +21,7 @@ function setup(responder: (init?: RequestInit) => Response | Promise<Response>) 
 describe('sendMessage', () => {
   it('POSTer til kanalen med Bot-header, content og allowed_mentions.parse=[]', async () => {
     const { client, calls } = setup(() => jsonResponse(200, { id: '1' }));
-    expect(await client.sendMessage('**[Aula] Magi Far:** hej')).toEqual({ ok: true });
+    expect(await client.sendMessage(CHANNEL, '**[Aula] Magi Far:** hej')).toEqual({ ok: true });
     expect(calls[0].url).toBe(`https://discord.com/api/v10/channels/${CHANNEL}/messages`);
     expect(calls[0].init?.method).toBe('POST');
     const h = calls[0].init?.headers as Record<string, string>;
@@ -33,7 +34,7 @@ describe('sendMessage', () => {
     const cases: [number, string][] = [[401, 'no_access'], [403, 'no_access'], [429, 'rate_limited'], [400, 'invalid'], [500, 'unavailable'], [503, 'unavailable']];
     for (const [status, code] of cases) {
       const { client } = setup(() => jsonResponse(status, { message: `hemmelig ${TOKEN}`, retry_after: 2 }));
-      const r = await client.sendMessage('x');
+      const r = await client.sendMessage(CHANNEL, 'x');
       expect(r).toEqual({ ok: false, error: code });
       expect(JSON.stringify(r)).not.toContain(TOKEN);
       expect(JSON.stringify(r)).not.toContain('hemmelig');
@@ -42,7 +43,7 @@ describe('sendMessage', () => {
 
   it('netværksfejl og timeout giver unavailable', async () => {
     const a = setup(() => { throw new Error(`boom ${TOKEN}`); });
-    expect(await a.client.sendMessage('x')).toEqual({ ok: false, error: 'unavailable' });
+    expect(await a.client.sendMessage(CHANNEL, 'x')).toEqual({ ok: false, error: 'unavailable' });
     const c = createChatClient({
       token: TOKEN,
       channelId: CHANNEL,
@@ -50,26 +51,26 @@ describe('sendMessage', () => {
       fetch: ((_u: string, i?: RequestInit) =>
         new Promise((_, rej) => i?.signal?.addEventListener('abort', () => rej(new Error('abort'))))) as unknown as typeof fetch,
     });
-    expect(await c.sendMessage('x')).toEqual({ ok: false, error: 'unavailable' });
+    expect(await c.sendMessage(CHANNEL, 'x')).toEqual({ ok: false, error: 'unavailable' });
   });
 
   it('429 spærrer for flere kald indtil retry_after er gået', async () => {
     const { client, calls, advance } = setup(() => jsonResponse(429, { retry_after: 3 }));
-    expect(await client.sendMessage('x')).toEqual({ ok: false, error: 'rate_limited' });
-    expect(await client.sendMessage('x')).toEqual({ ok: false, error: 'rate_limited' });
+    expect(await client.sendMessage(CHANNEL, 'x')).toEqual({ ok: false, error: 'rate_limited' });
+    expect(await client.sendMessage(CHANNEL, 'x')).toEqual({ ok: false, error: 'rate_limited' });
     expect(calls).toHaveLength(1);
     advance(3100);
-    await client.sendMessage('x');
+    await client.sendMessage(CHANNEL, 'x');
     expect(calls).toHaveLength(2);
   });
 
   it('ugyldiggør cachen efter vellykket send', async () => {
     const { client, calls } = setup((init) => (init?.method === 'POST' ? jsonResponse(200, { id: '1' }) : jsonResponse(200, [])));
-    await client.getMessages();
-    await client.getMessages();
+    await client.getMessages(CHANNEL);
+    await client.getMessages(CHANNEL);
     expect(calls).toHaveLength(1);
-    await client.sendMessage('x');
-    await client.getMessages();
+    await client.sendMessage(CHANNEL, 'x');
+    await client.getMessages(CHANNEL);
     expect(calls.filter((c) => c.init?.method !== 'POST')).toHaveLength(2);
   });
 });
@@ -130,35 +131,36 @@ describe('createSendLimiter', () => {
 describe('submitChatMessage', () => {
   const sent: string[] = [];
   const chat: ChatClient = {
+    listChannels: async () => ({ channels: [] }),
     getMessages: async () => ({ messages: [], stale: false }),
-    sendMessage: async (c) => { sent.push(c); return { ok: true }; },
+    sendMessage: async (_ch, c) => { sent.push(c); return { ok: true }; },
   };
   const base = { userId: 1, configured: true, chat, characterName: 'Magi Far', limiter: createSendLimiter(), now: 0 };
 
   it('afviser uden aktiv karakter og sender intet', async () => {
     sent.length = 0;
-    expect(await submitChatMessage({ ...base, characterName: null }, 'hej')).toEqual({ error: 'Vælg en karakter først.' });
+    expect(await submitChatMessage({ ...base, characterName: null }, 'hej', CHANNEL)).toEqual({ error: 'Vælg en karakter først.' });
     expect(sent).toHaveLength(0);
   });
   it('afviser når chatten ikke er sat op', async () => {
-    expect((await submitChatMessage({ ...base, configured: false, chat: null }, 'hej')).error).toBeTruthy();
+    expect((await submitChatMessage({ ...base, configured: false, chat: null }, 'hej', CHANNEL)).error).toBeTruthy();
   });
   it('afviser ugyldig tekst uden at tælle i rate-limit', async () => {
     const limiter = createSendLimiter();
-    expect((await submitChatMessage({ ...base, limiter }, '  ')).error).toBeTruthy();
-    expect(await submitChatMessage({ ...base, limiter }, 'hej')).toEqual({});
+    expect((await submitChatMessage({ ...base, limiter }, '  ', CHANNEL)).error).toBeTruthy();
+    expect(await submitChatMessage({ ...base, limiter }, 'hej', CHANNEL)).toEqual({});
   });
   it('sender med præfiks og oversætter fejlkoder til dansk', async () => {
     sent.length = 0;
-    expect(await submitChatMessage({ ...base, limiter: createSendLimiter() }, 'hej')).toEqual({});
+    expect(await submitChatMessage({ ...base, limiter: createSendLimiter() }, 'hej', CHANNEL)).toEqual({});
     expect(sent).toEqual(['**[Aula] Magi Far:** hej']);
     const failing: ChatClient = { ...chat, sendMessage: async () => ({ ok: false, error: 'no_access' }) };
-    const r = await submitChatMessage({ ...base, chat: failing, limiter: createSendLimiter() }, 'hej');
+    const r = await submitChatMessage({ ...base, chat: failing, limiter: createSendLimiter() }, 'hej', CHANNEL);
     expect(r.error).toMatch(/rettighed/);
   });
   it('rate-limit afviser anden besked med det samme', async () => {
     const limiter = createSendLimiter();
-    await submitChatMessage({ ...base, limiter }, 'a');
-    expect((await submitChatMessage({ ...base, limiter, now: 500 }, 'b')).error).toBeTruthy();
+    await submitChatMessage({ ...base, limiter }, 'a', CHANNEL);
+    expect((await submitChatMessage({ ...base, limiter, now: 500 }, 'b', CHANNEL)).error).toBeTruthy();
   });
 });

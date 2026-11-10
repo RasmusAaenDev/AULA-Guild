@@ -81,6 +81,8 @@ export type SendLimiter = ReturnType<typeof createSendLimiter>;
 export function sendErrorMessage(error: Exclude<SendResult, { ok: true }>['error']): string {
   switch (error) {
     case 'no_access': return 'Botten har ikke rettigheden til at skrive i kanalen.';
+    case 'read_only': return 'Denne kanal kan ikke skrives til fra Aula (den er koblet til WoW).';
+    case 'not_found': return 'Kanalen findes ikke.';
     case 'rate_limited': return 'Discord beder om lidt ro. Prøv igen om lidt.';
     case 'invalid': return 'Discord afviste beskeden.';
     default: return 'Beskeden kunne ikke sendes lige nu. Prøv igen om lidt.';
@@ -98,8 +100,9 @@ export type SubmitDeps = {
 };
 
 /** Hele afsendelsesforløbet uden Next/DB, så det kan testes. Returnerer kun en dansk fejltekst eller ingenting. */
-export async function submitChatMessage(deps: SubmitDeps, raw: unknown): Promise<{ error?: string }> {
+export async function submitChatMessage(deps: SubmitDeps, raw: unknown, channelId: unknown): Promise<{ error?: string }> {
   if (!deps.configured || !deps.chat) return { error: 'Chatten er ikke sat op.' };
+  if (typeof channelId !== 'string') return { error: sendErrorMessage('not_found') };
   if (!deps.characterName) return { error: 'Vælg en karakter først.' };
   const valid = validateMessage(raw);
   if (!valid.ok) return { error: valid.error };
@@ -107,6 +110,6 @@ export async function submitChatMessage(deps: SubmitDeps, raw: unknown): Promise
   if (!content.ok) return { error: content.error };
   const limit = deps.limiter.take(deps.userId, deps.now);
   if (!limit.ok) return { error: limit.error };
-  const result = await deps.chat.sendMessage(content.text);
+  const result = await deps.chat.sendMessage(channelId, content.text);
   return result.ok ? {} : { error: sendErrorMessage(result.error) };
 }
