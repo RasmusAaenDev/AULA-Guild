@@ -1,0 +1,37 @@
+name: prod-aula-guild
+
+services:
+  app:
+    image: ghcr.io/rasmusaaendev/aula-guild:main
+    container_name: prod-aula-guild
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 15s
+    env_file: .env
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=aula
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8102:3000"
+
+  db:
+    image: postgres:16-alpine
+    container_name: prod-aula-guild-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aula
+      POSTGRES_USER: aula
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aula -d aula"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
