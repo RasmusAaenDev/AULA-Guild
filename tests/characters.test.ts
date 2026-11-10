@@ -1,11 +1,11 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import {
   addCharacter, listContacts, listMyCharacters, setActiveCharacter, setRole, unlinkCharacter,
   type CharactersDeps,
 } from '@/lib/characters';
 import { BlizzardError } from '@/lib/blizzard/types';
-import { characters, users } from '@/lib/db/schema';
+import { characters, events, rsvps, users } from '@/lib/db/schema';
 import { resetDb, testDb } from './db';
 import { armory, fakeBlizzard, member, seedUser } from './helpers';
 
@@ -215,5 +215,110 @@ describe('listContacts', () => {
     expect(contacts.map((c) => c.name)).toEqual(['Abe', 'Bob', 'Zed']);
     expect(contacts[0]).toMatchObject({ ownerName: 'Bruger b', inGuild: true });
     expect(contacts[2].inGuild).toBe(false);
+  });
+});
+
+describe('tilmeldinger følger karakterskift og frakobling', () => {
+  const NOW = new Date('2026-11-10T12:00:00Z');
+  const hours = (h: number) => new Date(NOW.getTime() + h * 3600_000);
+
+  async function setup() {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const blizzard = fakeBlizzard({
+      characters: {
+        'magi-far': armory(),
+        ezzek: armory({ blizzardId: 1002, slug: 'ezzek', name: 'Ezzek' }),
+        zorro: armory({ blizzardId: 1003, slug: 'zorro', name: 'Zorro' }),
+        bob: armory({ blizzardId: 1004, slug: 'bob', name: 'Bob' }),
+      },
+    });
+    const add = async (u: number, name: string) => {
+      const r = await addCharacter(deps(blizzard), { userId: u, name, role: 'dps' });
+      if (!r.ok) throw new Error('forventede ok');
+      return r.characterId;
+    };
+    const magi = await add(a, 'Magi Far');
+    const ezzek = await add(a, 'Ezzek');
+    const zorro = await add(a, 'Zorro');
+    const bob = await add(b, 'Bob');
+    const ev = async (h: number, cancelled = false) => {
+      const [e] = await db.insert(events).values({
+        type: 'aften', title: 'Aften', startsAt: hours(h), cancelledAt: cancelled ? NOW : null, createdBy: a,
+      }).returning({ id: events.id });
+      return e.id;
+    };
+    const rs = async (eventId: number, userId: number, characterId: number) => {
+      await db.insert(rsvps).values({ eventId, userId, characterId, status: 'deltager' });
+    };
+    const charOf = async (eventId: number, userId: number) => {
+      const [r] = await db.select().from(rsvps).where(and(eq(rsvps.eventId, eventId), eq(rsvps.userId, userId)));
+      return r?.characterId ?? null;
+    };
+    return { a, b, magi, ezzek, zorro, bob, ev, rs, charOf };
+  }
+
+  it('skift af aktiv karakter flytter kommende tilmeldinger, men ikke tidligere eller aflyste', async () => {
+    const t = await setup();
+    const up = await t.ev(5);
+    const past = await t.ev(-5);
+    const cancelled = await t.ev(6, true);
+    for (const e of [up, past, cancelled]) await t.rs(e, t.a, t.magi);
+    await t.rs(up, t.b, t.bob);
+    expect(await setActiveCharacter(db, t.a, t.ezzek, NOW)).toBe(true);
+    expect(await t.charOf(up, t.a)).toBe(t.ezzek);
+    expect(await t.charOf(past, t.a)).toBe(t.magi);
+    expect(await t.charOf(cancelled, t.a)).toBe(t.magi);
+    expect(await t.charOf(up, t.b)).toBe(t.bob);
+  });
+
+  it('afvist skift (fremmed karakter) rører ikke tilmeldinger', async () => {
+    const t = await setup();
+    const up = await t.ev(5);
+    await t.rs(up, t.a, t.magi);
+    expect(await setActiveCharacter(db, t.a, t.bob, NOW)).toBe(false);
+    expect(await t.charOf(up, t.a)).toBe(t.magi);
+  });
+
+  it('frakobling af den aktive karakter flytter kommende tilmeldinger til ejerens næste karakter', async () => {
+    const t = await setup();
+    const up = await t.ev(5);
+    const past = await t.ev(-5);
+    await t.rs(up, t.a, t.magi);
+    await t.rs(past, t.a, t.magi);
+    await t.rs(up, t.b, t.bob);
+    await unlinkCharacter(db, t.magi, NOW);
+    expect(await activeOf(t.a)).toBe(t.ezzek);
+    expect(await t.charOf(up, t.a)).toBe(t.ezzek);
+    expect(await t.charOf(past, t.a)).toBe(t.magi);
+    expect(await t.charOf(up, t.b)).toBe(t.bob);
+  });
+
+  it('frakobling uden anden karakter sletter kommende tilmeldinger', async () => {
+    const t = await setup();
+    const up = await t.ev(5);
+    const past = await t.ev(-5);
+    await t.rs(up, t.b, t.bob);
+    await t.rs(past, t.b, t.bob);
+    await t.rs(up, t.a, t.magi);
+    await unlinkCharacter(db, t.bob, NOW);
+    expect(await t.charOf(up, t.b)).toBeNull();
+    expect(await t.charOf(past, t.b)).toBe(t.bob);
+    expect(await t.charOf(up, t.a)).toBe(t.magi);
+  });
+
+  it('frakobling af en ikke-aktiv karakter flytter kun tilmeldinger med netop den karakter', async () => {
+    const t = await setup();
+    const e1 = await t.ev(5);
+    const e2 = await t.ev(6);
+    const e3 = await t.ev(7);
+    await t.rs(e1, t.a, t.zorro);
+    await t.rs(e2, t.a, t.magi);
+    await t.rs(e3, t.a, t.ezzek);
+    await unlinkCharacter(db, t.zorro, NOW);
+    expect(await activeOf(t.a)).toBe(t.magi);
+    expect(await t.charOf(e1, t.a)).toBe(t.magi);
+    expect(await t.charOf(e2, t.a)).toBe(t.magi);
+    expect(await t.charOf(e3, t.a)).toBe(t.ezzek);
   });
 });

@@ -3,6 +3,7 @@ import type { Db } from '@/lib/db';
 import { characters, users, type Role } from '@/lib/db/schema';
 import { BlizzardError, type ArmoryCharacter, type BlizzardClient } from '@/lib/blizzard/types';
 import type { AddFailure } from '@/lib/messages';
+import { reassignUpcomingRsvps } from '@/lib/rsvps';
 import { nameToSlug, normalizeName } from '@/lib/slug';
 
 export type CharactersDeps = { db: Db; blizzard: BlizzardClient; guildId: number; guildSlug: string };
@@ -73,18 +74,27 @@ export async function addCharacter(
   return { ok: true, characterId: rows[0].id };
 }
 
-export async function setActiveCharacter(db: Db, userId: number, characterId: number): Promise<boolean> {
-  const rows = await db
-    .update(users)
-    .set({ activeCharacterId: characterId })
-    .where(
-      and(
-        eq(users.id, userId),
-        sql`exists (select 1 from ${characters} where ${characters.id} = ${characterId} and ${characters.userId} = ${userId})`,
-      ),
-    )
-    .returning({ id: users.id });
-  return rows.length > 0;
+export async function setActiveCharacter(
+  db: Db,
+  userId: number,
+  characterId: number,
+  now: Date = new Date(),
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const rows = await tx
+      .update(users)
+      .set({ activeCharacterId: characterId })
+      .where(
+        and(
+          eq(users.id, userId),
+          sql`exists (select 1 from ${characters} where ${characters.id} = ${characterId} and ${characters.userId} = ${userId})`,
+        ),
+      )
+      .returning({ id: users.id });
+    if (rows.length === 0) return false;
+    await reassignUpcomingRsvps(tx, { userId, toCharacterId: characterId, now });
+    return true;
+  });
 }
 
 export async function setRole(db: Db, userId: number, characterId: number, role: Role): Promise<boolean> {
@@ -96,8 +106,13 @@ export async function setRole(db: Db, userId: number, characterId: number, role:
   return rows.length > 0;
 }
 
-export async function unlinkCharacter(db: Db, characterId: number): Promise<void> {
+export async function unlinkCharacter(db: Db, characterId: number, now: Date = new Date()): Promise<void> {
   await db.transaction(async (tx) => {
+    const [owned] = await tx
+      .select({ userId: characters.userId })
+      .from(characters)
+      .where(eq(characters.id, characterId))
+      .for('update');
     await tx.update(characters).set({ userId: null }).where(eq(characters.id, characterId));
     // Peg ejerens aktive pointer på en anden af hans egne karakterer (laveste navn), ellers NULL.
     await tx
@@ -106,6 +121,15 @@ export async function unlinkCharacter(db: Db, characterId: number): Promise<void
         activeCharacterId: sql`(select ${characters.id} from ${characters} where ${characters.userId} = ${users.id} order by ${characters.name} asc, ${characters.id} asc limit 1)`,
       })
       .where(eq(users.activeCharacterId, characterId));
+    if (!owned?.userId) return;
+    // Tilmeldinger med den frakoblede karakter følger ejerens aktive karakter efter frakoblingen.
+    const [owner] = await tx.select({ active: users.activeCharacterId }).from(users).where(eq(users.id, owned.userId));
+    await reassignUpcomingRsvps(tx, {
+      userId: owned.userId,
+      fromCharacterId: characterId,
+      toCharacterId: owner?.active ?? null,
+      now,
+    });
   });
 }
 
