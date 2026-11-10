@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { RsvpButtons } from '@/components/RsvpButtons';
 import { formatDayHeading, formatTimeRange, rsvpLabel } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
+import { statusClass } from '@/lib/rsvp-ui';
 import { listUpcomingEvents, type EventListItem } from '@/lib/events';
 
 function Next({ title, empty, event, hasCharacter }: { title: string; empty: string; event: EventListItem | undefined; hasCharacter: boolean }) {
   return (
-    <section className="card">
+    <section className={event ? `card event-card ${statusClass(event.myStatus)}` : 'card'}>
       <h2>{title}</h2>
       {event ? (
         <>

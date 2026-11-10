@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { clearRsvpAction, setRsvpAction, type FormState } from '@/app/(app)/kalender/actions';
 import { rsvpLabel } from '@/lib/calendar-ui';
+import { Icon } from '@/components/icons';
 import { rsvpStatuses, type RsvpStatus } from '@/lib/db/schema';
 
 /** Tre tilmeldingsknapper (aktiv status fremhævet) og «Fjern tilmelding»; viser serverens fejl. */
@@ -21,10 +22,11 @@ export function RsvpButtons({ eventId, current }: { eventId: number; current: Rs
             type="submit"
             name="status"
             value={s}
-            className={current === s ? 'btn' : 'btn secondary'}
+            className={`btn rsvp rsvp-${s}`}
             aria-pressed={current === s}
             disabled={pending}
           >
+            <Icon name={s} size={18} />
             {rsvpLabel(s)}
           </button>
         ))}

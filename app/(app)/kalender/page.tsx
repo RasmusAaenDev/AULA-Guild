@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { countsLabel, eventTypeLabel, formatTimeRange, groupByDay, rsvpLabel } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
 import { listUpcomingEvents } from '@/lib/events';
+import { statusClass } from '@/lib/rsvp-ui';
 import { requireMember } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,7 @@ export default async function CalendarPage() {
         <section key={day.date}>
           <h2>{day.label}</h2>
           {day.items.map((e) => (
-            <Link key={e.id} href={`/kalender/${e.id}`} className={e.cancelled ? 'card event-card cancelled' : 'card event-card'}>
+            <Link key={e.id} href={`/kalender/${e.id}`} className={`card event-card ${statusClass(e.myStatus)}${e.cancelled ? ' cancelled' : ''}`}>
               <div>
                 <span className="badge">{eventTypeLabel(e.type)}</span>{' '}
                 <strong>{e.title}</strong>
