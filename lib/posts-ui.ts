@@ -1,4 +1,5 @@
 import type { PostTab } from '@/lib/posts';
+import { todayInCopenhagen, utcToCopenhagen } from '@/lib/time';
 
 const TABS: readonly PostTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte'];
 
@@ -56,6 +57,26 @@ export function formatRelative(d: Date, now: Date): string {
   if (minutes < 60) return `for ${minutes} min. siden`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return hours === 1 ? 'for 1 time siden' : `for ${hours} timer siden`;
+  return formatAbsolute(d);
+}
+
+const weekdayShort = ['Man.', 'Tir.', 'Ons.', 'Tor.', 'Fre.', 'Lør.', 'Søn.'] as const;
+
+function dayNumber(date: string): number {
+  const [y, m, d] = date.split('-').map(Number);
+  return Date.UTC(y, m - 1, d) / 86_400_000;
+}
+
+/**
+ * AULA-lignende relativ tid efter danske kalenderdage: «I dag 09:05», «I går 16:45», «Fre. 13:50» for de
+ * næste fem dage bagud (2–6 dage siden), ellers dato og tid. Fremtidige tidspunkter vises som dato og tid.
+ */
+export function formatRelativeDay(d: Date, now: Date): string {
+  const local = utcToCopenhagen(d);
+  const diff = dayNumber(todayInCopenhagen(now)) - dayNumber(local.date);
+  if (diff === 0 && d.getTime() <= now.getTime()) return `I dag ${local.time}`;
+  if (diff === 1) return `I går ${local.time}`;
+  if (diff >= 2 && diff <= 6) return `${weekdayShort[local.weekday]} ${local.time}`;
   return formatAbsolute(d);
 }
 

@@ -38,7 +38,7 @@ export function ProfileMenu({
           </form>
         )}
         <p><Link href="/karakter/ny">Tilføj karakter</Link></p>
-        <form action={signOutAction}><button type="submit" className="btn secondary">Log ud</button></form>
+        <form action={signOutAction}><button type="submit" className="btn secondary logout">Log ud</button></form>
       </div>
     </DetailsMenu>
   );

@@ -1,14 +1,26 @@
 import type { MyCharacter } from '@/lib/characters';
 import type { Member } from '@/lib/session';
+import { menuItems } from '@/lib/menu';
 import { unreadLabel } from '@/lib/posts-ui';
 import { NavLink } from './NavLink';
 import { ProfileMenu } from './ProfileMenu';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Shell({
-  member, characters, activeId, unreadPosts = 0, chatEnabled = false, children,
-}: { member: Member; characters: MyCharacter[]; activeId: number | null; unreadPosts?: number; chatEnabled?: boolean; children: React.ReactNode }) {
-  const unread = unreadLabel(unreadPosts);
+  member, characters, activeId, unreadPosts = 0, unansweredEvents = 0, chatEnabled = false, children,
+}: {
+  member: Member;
+  characters: MyCharacter[];
+  activeId: number | null;
+  unreadPosts?: number;
+  unansweredEvents?: number;
+  chatEnabled?: boolean;
+  children: React.ReactNode;
+}) {
+  const badges = {
+    posts: { label: unreadLabel(unreadPosts), sr: ' ulæste' },
+    events: { label: unreadLabel(unansweredEvents), sr: ' ubesvarede' },
+  };
   return (
     <>
       <a className="skip-link" href="#main">Spring til indhold</a>
@@ -21,25 +33,26 @@ export function Shell({
       </header>
       <div className="layout">
         <nav className="sidenav" aria-label="Hovedmenu">
-          <NavLink
-            href="/"
-            icon="overblik"
-            badge={
-              unread && (
-                <span className="unread-count nav-badge">
-                  {unread}
-                  <span className="sr-only"> ulæste</span>
-                </span>
-              )
-            }
-          >
-            Overblik
-          </NavLink>
-          <NavLink href="/kalender" icon="kalender">Kalender</NavLink>
-          <NavLink href="/filer" icon="filer">Filer</NavLink>
-          <NavLink href="/galleri" icon="galleri">Galleri</NavLink>
-          {chatEnabled && <NavLink href="/chat" icon="chat">Chat</NavLink>}
-          <NavLink href="/kontakter" icon="kontakter">Kontakter</NavLink>
+          {menuItems({ chat: chatEnabled }).map((item) => {
+            const b = item.badge ? badges[item.badge] : null;
+            return (
+              <NavLink
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                badge={
+                  b?.label && (
+                    <span className="unread-count nav-badge">
+                      {b.label}
+                      <span className="sr-only">{b.sr}</span>
+                    </span>
+                  )
+                }
+              >
+                {item.label}
+              </NavLink>
+            );
+          })}
         </nav>
         <main id="main" tabIndex={-1} className="content">{children}</main>
       </div>
