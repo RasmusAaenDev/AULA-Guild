@@ -1,0 +1,459 @@
+[
+  {
+    "id": "satire-01",
+    "title": "Vedr. Henriette",
+    "body": "Henriette må ikke få remulade.\nHilsen Henriettes mor",
+    "author": "Henriettes mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Tak for info. Hvad med ketchup?"
+      }
+    ],
+    "inspiration": "Kort, uforklaret forbud uden begrundelse.",
+    "sources": []
+  },
+  {
+    "id": "satire-02",
+    "title": "Husk skiftetøj",
+    "body": "Valdemar har fået våde sokker tre gange denne uge. Vi sender nu 4 par med. Vil gerne have dem tilbage i den rækkefølge, de kom i.\nMvh Valdemars far",
+    "author": "Valdemars far (fiktiv)",
+    "important": false,
+    "tags": [
+      "tøj"
+    ],
+    "comments": [],
+    "inspiration": "Overspecifik regel om banalt tøj.",
+    "sources": []
+  },
+  {
+    "id": "satire-03",
+    "title": "VIGTIGT: Maja og pindsvinet",
+    "body": "Maja har fundet et pindsvin og vil gerne have det med i morgen. Det må IKKE ske. Hun er blevet informeret.\nVenlig hilsen Majas mor",
+    "author": "Majas mor (fiktiv)",
+    "important": true,
+    "tags": [
+      "dyr",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har ikke plads til pindsvin. Tak for forvarslen."
+      },
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Er det det samme pindsvin som i går?"
+      }
+    ],
+    "inspiration": "Dramatisk forbud mod noget, ingen har foreslået.",
+    "sources": []
+  },
+  {
+    "id": "satire-04",
+    "title": "Besked fra Storms mormor",
+    "body": "Storm må gerne få kage, men kun hvis den er rund. Hilsen Storms mormor",
+    "author": "Storms mormor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost",
+      "kage"
+    ],
+    "comments": [],
+    "inspiration": "Mærkeligt, men høfligt og bestemt krav.",
+    "sources": []
+  },
+  {
+    "id": "satire-05",
+    "title": "Mistet: én vante",
+    "body": "Der er fundet én rød vante i garderoben. Ejeren bedes finde den anden og kontakte os, så vi kan se, om de passer sammen.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet"
+    ],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Det er vist ikke vores. Vores er mere røde."
+      }
+    ],
+    "inspiration": "Fundne ting, der er blevet en opgave for forældrene.",
+    "sources": []
+  },
+  {
+    "id": "satire-06",
+    "title": "Vedr. aflevering",
+    "body": "Oscar afleveres fra i morgen kl. 7.52, ikke 7.50. Han skal lige nå at kigge på duen.\nHilsen Oscars bonusfar",
+    "author": "Oscars bonusfar (fiktiv)",
+    "important": false,
+    "tags": [
+      "aflevering"
+    ],
+    "comments": [],
+    "inspiration": "Meget specifikt tidspunkt med uforklaret begrundelse.",
+    "sources": []
+  },
+  {
+    "id": "satire-07",
+    "title": "Husk: pyjamasdag er IKKE i dag",
+    "body": "Flere børn mødte i pyjamas. Pyjamasdag er torsdag. Vi har nu ringet til alle, der skulle have haft en pyjamas på i går.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "pyjamasdag",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Valdemars mor (fiktiv)",
+        "body": "Valdemar tog den på alligevel, han havde det godt."
+      }
+    ],
+    "inspiration": "Misforståelse om en eller anden dag i kalenderen.",
+    "sources": []
+  },
+  {
+    "id": "satire-08",
+    "title": "Tak til dem, der",
+    "body": "Tak til de forældre, der har lagt madpakker i kassen med låget nedad. Vi andre kan også se, hvem I er.\nHilsen Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
+    "important": false,
+    "tags": [
+      "tak"
+    ],
+    "comments": [],
+    "inspiration": "Passiv-aggressiv tak til dem, der ikke gør noget galt.",
+    "sources": []
+  },
+  {
+    "id": "satire-09",
+    "title": "Ida og den blå kuglepen",
+    "body": "Ida må godt låne blyanter, men ikke den blå kuglepen. Den er hendes. Hilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "skolegrej"
+    ],
+    "comments": [],
+    "inspiration": "Forbud mod bytteobjekt i dagligdagen.",
+    "sources": []
+  },
+  {
+    "id": "satire-10",
+    "title": "Oscar har ikke fødselsdag",
+    "body": "Oscar har ikke fødselsdag i dag. Han har sagt det til flere børn. Vi beder alle om at tage det med fra ham.\nMvh Oscars mor",
+    "author": "Oscars mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "fødselsdag"
+    ],
+    "comments": [],
+    "inspiration": "Rygte i klassen bliver en officiel besked.",
+    "sources": []
+  },
+  {
+    "id": "satire-11",
+    "title": "VIGTIGT: Ingen bananer",
+    "body": "Der er gået bananer ned i børnenes tasker igen. Klassen er bananfri fra og med i morgen. Det gælder også bananchips.\nHilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "kost",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Er æbler OK?"
+      }
+    ],
+    "inspiration": "Pludseligt forbud efter én hændelse.",
+    "sources": []
+  },
+  {
+    "id": "satire-12",
+    "title": "Besked fra Valdemars far",
+    "body": "Valdemar skal ikke have fri til at lege, før han har spist sin rugbrød. Vi har snakket med ham derhjemme.\nMvh Valdemars far",
+    "author": "Valdemars far (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [],
+    "inspiration": "Ønske om at få personalet til at håndhæve hjemmeregler.",
+    "sources": []
+  },
+  {
+    "id": "satire-13",
+    "title": "Kagelisten",
+    "body": "Kagelisten til fredag er fyldt. Hvis nogen allerede har skrevet sig på 'mandag' og ikke er blevet spurgt, er det fordi vi ikke har mandag.\nHilsen Kageudvalget",
+    "author": "Kageudvalget (fiktiv)",
+    "important": false,
+    "tags": [
+      "kage"
+    ],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Jeg skrev mig på mandag. Hvad nu?"
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Du er sat på fredag. Det er også bedre."
+      }
+    ],
+    "inspiration": "Forvirring om kageliste.",
+    "sources": []
+  },
+  {
+    "id": "satire-14",
+    "title": "Husk gummistøvler",
+    "body": "Gummistøvler er til udendørs. Til indendørs er der hjemmesko. Gummistøvler indendørs er altså kun hvis det regner indendørs.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "tøj"
+    ],
+    "comments": [],
+    "inspiration": "Logisk regel, der alligevel ender uforståelig.",
+    "sources": []
+  },
+  {
+    "id": "satire-15",
+    "title": "Vedr. Maja og hundeposen",
+    "body": "Maja har fået en hundepose med i skole. Det er ikke fordi, vi har fået hund. Vi har bare en pose.\nHilsen Majas far",
+    "author": "Majas far (fiktiv)",
+    "important": false,
+    "tags": [
+      "dyr"
+    ],
+    "comments": [],
+    "inspiration": "Forældre forklarer uopfordret noget, ingen spurgte om.",
+    "sources": []
+  },
+  {
+    "id": "satire-16",
+    "title": "TAK til alle",
+    "body": "Tak for en dejlig tur til skoven. Husk at vi ikke skal nævne, hvem der tabte telefonen i bækken. Han ved det selv.\nHilsen Storms mor",
+    "author": "Storms mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tur"
+    ],
+    "comments": [],
+    "inspiration": "Gentaget tak med indirekte pegefinger.",
+    "sources": []
+  },
+  {
+    "id": "satire-17",
+    "title": "VIGTIGT: Cykelhjelm i morgen",
+    "body": "I morgen er der cykelhjelm. Ikke cykel, kun hjelm. Det er en øvelse i at have hjelm på.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "hjelm"
+    ],
+    "comments": [],
+    "inspiration": "Dagens påmindelse om en aktivitet, ingen forstår.",
+    "sources": []
+  },
+  {
+    "id": "satire-18",
+    "title": "Mistet: en lille sok",
+    "body": "Der er fundet en lille sok i fællesrummet. Den kan hentes hos SFO-personalet. Den lugter ikke.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet"
+    ],
+    "comments": [
+      {
+        "author": "Idas far (fiktiv)",
+        "body": "Kan vi få den uden lugt?"
+      }
+    ],
+    "inspiration": "Detalje, ingen bad om.",
+    "sources": []
+  },
+  {
+    "id": "satire-19",
+    "title": "VIGTIGT: Ost",
+    "body": "Ost må ikke længere medbringes. Det skyldes en hændelse fredag. Vi vil ikke sige mere.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "kost",
+      "vigtigt"
+    ],
+    "comments": [],
+    "inspiration": "Forbud med en antydet baggrundshistorie.",
+    "sources": []
+  },
+  {
+    "id": "satire-20",
+    "title": "Valdemar og regnvejr",
+    "body": "Valdemar skal gerne have lov til at gå ud, når det regner, men ikke når det regner meget. Kan I måle det?\nHilsen Valdemars mormor",
+    "author": "Valdemars mormor (fiktiv)",
+    "important": false,
+    "tags": [
+      "vejr"
+    ],
+    "comments": [
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har en lineal. Den er ikke særlig præcis."
+      }
+    ],
+    "inspiration": "Urealistisk krav til personalet.",
+    "sources": []
+  },
+  {
+    "id": "satire-21",
+    "title": "Fra Oscars mormor",
+    "body": "Oscar har fået besked på ikke at sige 'nej' til kage. Hvis I tilbyder, så vil han sige ja. Det er aftalen.\nMvh Oscars mormor",
+    "author": "Oscars mormor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost",
+      "kage"
+    ],
+    "comments": [],
+    "inspiration": "Mærkelig men afdæmpet aftale.",
+    "sources": []
+  },
+  {
+    "id": "satire-22",
+    "title": "Raid i aften: nye regler",
+    "body": "Ready check er ikke til diskussion. Hvis du er AFK, skriv AFK. Hvis du ikke ved, om du er AFK, så er du det.\nMvh Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
+    "important": true,
+    "tags": [
+      "raid",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Healer-Henning (fiktiv)",
+        "body": "Jeg var ikke AFK. Jeg var bare stille."
+      }
+    ],
+    "inspiration": "Guild-twist på klassisk pædagog-regel.",
+    "sources": []
+  },
+  {
+    "id": "satire-23",
+    "title": "Loot-fordeling: DKP",
+    "body": "Der er kommet DKP-uenighed efter fredagens raid. Alle, der har taget loot uden at spørge, kan godt skrive til mig. Jeg har en liste.\nMvh Guildmaster Knud",
+    "author": "Guildmaster Knud (fiktiv)",
+    "important": false,
+    "tags": [
+      "dkp",
+      "loot"
+    ],
+    "comments": [],
+    "inspiration": "Loot-drama som forældremøde.",
+    "sources": []
+  },
+  {
+    "id": "satire-24",
+    "title": "Husk flasker til raid",
+    "body": "Til lørdag skal alle have flasker med. Både life og mana. Vi vil ikke gentage sidste uges wipe, hvor ingen havde noget.\nMvh Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
+    "important": false,
+    "tags": [
+      "raid",
+      "flasker"
+    ],
+    "comments": [],
+    "inspiration": "Pakkeliste som madpakkeliste.",
+    "sources": []
+  },
+  {
+    "id": "satire-25",
+    "title": "Healer søges",
+    "body": "Tankens mormor spørger, om vi har en healer. Det har vi ikke. Tanken har det fint, men hun vil gerne have, at han bliver healet. Hilsen Officer Bodil",
+    "author": "Officer Bodil (fiktiv)",
+    "important": false,
+    "tags": [
+      "healer"
+    ],
+    "comments": [],
+    "inspiration": "Forældre blander sig i raid-opstilling.",
+    "sources": []
+  },
+  {
+    "id": "satire-26",
+    "title": "Wipe nummer 4",
+    "body": "Vi har wipet fire gange på samme boss. Det er ikke nogens skyld. Det er bossens.\nVenlig hilsen Guildmaster Knud",
+    "author": "Guildmaster Knud (fiktiv)",
+    "important": false,
+    "tags": [
+      "wipe"
+    ],
+    "comments": [
+      {
+        "author": "Dps-Dorthe (fiktiv)",
+        "body": "Tak for forståelsen. Jeg var ikke i nærheden."
+      }
+    ],
+    "inspiration": "Træner forklarer nederlag venligt.",
+    "sources": []
+  },
+  {
+    "id": "satire-27",
+    "title": "Vedr. Idas rygsæk",
+    "body": "Idas rygsæk er tung. Det er ikke fordi, hun har for meget med. Det er fordi rygsækken er tung.\nHilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "rygsæk"
+    ],
+    "comments": [],
+    "inspiration": "Forklaring, der ikke forklarer.",
+    "sources": []
+  },
+  {
+    "id": "satire-28",
+    "title": "Besked fra Storms far",
+    "body": "Storm vil gerne have lov til at tage sin cykel med ind. Han har lovet at den ikke vil køre. Hilsen Storms far",
+    "author": "Storms far (fiktiv)",
+    "important": false,
+    "tags": [
+      "cykel"
+    ],
+    "comments": [],
+    "inspiration": "Løfte om noget, der ikke skal ske.",
+    "sources": []
+  },
+  {
+    "id": "satire-29",
+    "title": "Husk: Turen er frivillig",
+    "body": "Turen er frivillig, men vi regner med alle. Hvis nogen ikke kan, bedes de skrive til os inden 12.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "tur"
+    ],
+    "comments": [],
+    "inspiration": "Frivilligt, men ikke rigtigt.",
+    "sources": []
+  },
+  {
+    "id": "satire-30",
+    "title": "Bonusfar har ordet",
+    "body": "Maja skal hentes af mig i dag. Hendes mor ved det ikke endnu, men det er aftalt med Maja.\nHilsen Majas bonusfar",
+    "author": "Majas bonusfar (fiktiv)",
+    "important": false,
+    "tags": [
+      "afhentning"
+    ],
+    "comments": [],
+    "inspiration": "Aftale, der kun delvist er aftalt.",
+    "sources": []
+  }
+]

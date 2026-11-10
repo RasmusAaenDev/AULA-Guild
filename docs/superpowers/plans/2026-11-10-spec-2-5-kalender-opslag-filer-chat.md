@@ -386,6 +386,14 @@ export function createChatClient(opts: { token: string; channelId: string; fetch
 
 **Regler:** dansk UI; ingen nye pakker; ingen AULA-ikoner/CSS kopieres (egne SVG-ikoner); autorisation uændret (`setActiveAction` bruger `requireMember` og modulets ejerskabstjek); intet i switcheren må kunne skifte en andens karakter.
 
+### Task 16: Satire v2 — korte forældrebesked-opslag og klovne/joker-ikon
+
+**Bygger på:** brugerens feedback: de fake opslag må gerne have klovne/joker-ikonet, men skal være mere som «Henriette må ikke få remulade. Hilsen Henriettes mor» (korte, tørre, overspecifikke forældrebeskeder). Nyt indhold: `docs/superpowers/notes/aula-satire-posts-v2.json` (30 opslag, 5 med guild-twist, resten ren forældrebesked-humor; fiktive afsendere; opdigtede almindelige fornavne på børn er nu tilladt, uden efternavne eller andre personoplysninger).
+
+**Beslutninger:** erstat `lib/satire-posts.json` med v2-indholdet (felterne `inspiration` og `sources` strippes som før); opdatér datavaliderings-testen til de nye regler: 30 unikke id'er `satire-01`…`satire-30`, `body` 40–300 tegn, `title` højst 60 tegn, alle `author` (og kommentarforfattere) indeholder «(fiktiv)», præcis 6 `important`, præcis 10 med kommentarer, kommentarer 10–120 tegn, ingen `http`, `@` eller cifferfølge på 6+ i title/body/kommentarer; fjern alle hårdkodede «24»-antal i kode og tekster/tests (brug `satirePosts.length`). Skift det neutrale maske-ikon i `SatireCard` (og evt. andre steder, hvor masken bruges som avatar) til et **klovne/joker-ikon**: eget inline-SVG (narrehue med to-tre spidser og bjælder, simpelt ansigt; `currentColor`, `aria-hidden`), ingen kopier af eksisterende ikonsæt. Al mærkning og alle isolationsregler fra Task 14 er UÆNDREDE (badge «FAKE · SATIRE», stiplet kant, fodlinje, «Satire» i stedet for tid, ingen links/bogmærke/kommentarformular, ét tilgængeligt label, osv.), og render-testen opdateres til det nye ikon uden at svække assertions. Kontrastpar for nye farver (hvis nogen) tilføjes.
+
+**Tests:** datavalidering (nye regler), `pickSatire`/`interleave` med 30, SATIRE-fanen viser alle, render-test af kort, uændrede isolationstests, kontrast. Verificér med typecheck, build og `curl` (307 til /login).
+
 ## Udrulning og afslutning
 
 ### Task 11: Udrulningsfiler og dokumentation
