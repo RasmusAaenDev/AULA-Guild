@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
-  composeAlleFeed, interleave, parseSatirePreference, pickSatire, satireMode, effectiveTab, satirePosts,
+  activeSatire, composeAlleFeed, interleave, SATIRE_VISIBLE, parseSatirePreference, pickSatire, satireMode, effectiveTab, satirePosts,
 } from '@/lib/satire';
 import { parseTab } from '@/lib/posts-ui';
 
 describe('satire-data', () => {
   const N = satirePosts.length;
-  it('har 30 opslag med unikke id\'er satire-01..satire-30 og alle felter', () => {
-    expect(N).toBe(30);
-    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 30 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
+  it('har 60 opslag med unikke id\'er satire-01..satire-60 og alle felter', () => {
+    expect(N).toBe(60);
+    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 60 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
     expect(new Set(satirePosts.map((p) => p.id)).size).toBe(N);
     for (const p of satirePosts) {
       expect(p.title.trim()).not.toBe('');
@@ -31,9 +31,9 @@ describe('satire-data', () => {
       }
     }
   });
-  it('har præcis 6 vigtige og 10 med kommentarer', () => {
-    expect(satirePosts.filter((p) => p.important)).toHaveLength(6);
-    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(10);
+  it('har 11 vigtige og 19 med kommentarer', () => {
+    expect(satirePosts.filter((p) => p.important)).toHaveLength(11);
+    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(19);
   });
   it('har ingen links, @ eller lange cifferfølger', () => {
     for (const p of satirePosts) {
@@ -63,12 +63,36 @@ describe('pickSatire', () => {
   it('afkorter til 0..antal opslag', () => {
     expect(pickSatire('2026-11-10', 1, 0)).toEqual([]);
     expect(pickSatire('2026-11-10', 1, -3)).toEqual([]);
-    expect(new Set(pickSatire('2026-11-10', 1, 99).map((p) => p.id)).size).toBe(satirePosts.length);
+    expect(new Set(pickSatire('2026-11-10', 1, 99).map((p) => p.id)).size).toBe(SATIRE_VISIBLE);
   });
   it('giver forskellige valg for forskellige sider og dage', () => {
     const ids = (d: string, p: number) => pickSatire(d, p, 6).map((x) => x.id).join(',');
     expect(ids('2026-11-10', 1)).not.toBe(ids('2026-11-10', 2));
     expect(ids('2026-11-10', 1)).not.toBe(ids('2026-11-11', 1));
+  });
+});
+
+describe('activeSatire (rotation)', () => {
+  const ids = (d: string) => activeSatire(d).map((p) => p.id);
+  it('har 40 unikke opslag', () => {
+    expect(SATIRE_VISIBLE).toBe(40);
+    expect(new Set(ids('2026-11-10')).size).toBe(40);
+  });
+  it('glider ét opslag frem pr. dag: ét ud, ét ind', () => {
+    const a = ids('2026-11-10');
+    const b = ids('2026-11-11');
+    expect(b.slice(0, 39)).toEqual(a.slice(1));
+    expect(b[39]).not.toBe(a[39]);
+  });
+  it('kommer rundt efter 60 dage og dækker alle opslag over 21 dage', () => {
+    expect(ids('2027-01-09')).toEqual(ids('2026-11-10'));
+    const seen = new Set<string>();
+    for (let d = 0; d < 21; d++) ids(new Date(Date.UTC(2026, 10, 10 + d)).toISOString().slice(0, 10)).forEach((i) => seen.add(i));
+    expect(seen.size).toBe(60);
+  });
+  it('går rent over årsskifte og skuddag', () => {
+    expect(new Set(ids('2028-02-29')).size).toBe(40);
+    expect(ids('2027-01-01').slice(0, 39)).toEqual(ids('2026-12-31').slice(1));
   });
 });
 

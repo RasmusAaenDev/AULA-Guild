@@ -44,16 +44,34 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-/** Deterministisk udvalg pr. dag (`YYYY-MM-DD`, dansk tid) og side; ingen dubletter; `count` afkortes til 0..satirePosts.length. */
+/** Antal opslag i den aktive pulje. Puljen glider ét opslag frem pr. dag, så alle opslag roterer ind og ud i en evig løkke. */
+export const SATIRE_VISIBLE = 40;
+
+/** Dagnummer (UTC-midnat) for en `YYYY-MM-DD`-nøgle i dansk tid; ugyldig nøgle giver 0. */
+export function dayNumber(dateKey: string): number {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateKey);
+  return m ? Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 86400000) : 0;
+}
+
+/** Dagens aktive pulje: SATIRE_VISIBLE opslag i rækkefølge fra position (dagnummer mod antal), med wrap-around. */
+export function activeSatire(dateKey: string): SatirePost[] {
+  const n = satirePosts.length;
+  const size = Math.min(SATIRE_VISIBLE, n);
+  const start = ((dayNumber(dateKey) % n) + n) % n;
+  return Array.from({ length: size }, (_, k) => satirePosts[(start + k) % n]);
+}
+
+/** Deterministisk udvalg pr. dag (`YYYY-MM-DD`, dansk tid) og side; ingen dubletter; `count` afkortes til 0..puljens størrelse; vælger kun blandt dagens aktive pulje. */
 export function pickSatire(dateKey: string, pageNumber: number, count: number): SatirePost[] {
-  const n = Math.max(0, Math.min(Math.floor(count) || 0, satirePosts.length));
+  const pool = activeSatire(dateKey);
+  const n = Math.max(0, Math.min(Math.floor(count) || 0, pool.length));
   const rand = mulberry32(hashSeed(`${dateKey}#${pageNumber}`));
-  const idx = satirePosts.map((_, i) => i);
+  const idx = pool.map((_, i) => i);
   for (let i = idx.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [idx[i], idx[j]] = [idx[j], idx[i]];
   }
-  return idx.slice(0, n).map((i) => satirePosts[i]);
+  return idx.slice(0, n).map((i) => pool[i]);
 }
 
 export type FeedItem<T, S> = { kind: 'real'; item: T } | { kind: 'satire'; item: S };

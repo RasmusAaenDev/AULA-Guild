@@ -19,7 +19,7 @@ import type { PostTab } from '@/lib/posts';
 import type { OverviewTab } from '@/lib/posts-ui';
 import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
-import { SATIRE_COOKIE, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satirePosts, satireNeeded } from '@/lib/satire';
+import { SATIRE_COOKIE, activeSatire, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satireNeeded, type SatirePost } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
 import { requireMember } from '@/lib/session';
 
@@ -61,12 +61,12 @@ export default async function OverviewPage({
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
 
-  type Entry = { kind: 'real'; item: (typeof items)[number] } | { kind: 'satire'; item: (typeof satirePosts)[number] };
+  type Entry = { kind: 'real'; item: (typeof items)[number] } | { kind: 'satire'; item: SatirePost };
   const feed: Entry[] =
     mode === 'interleaved'
       ? composeAlleFeed(items, pickSatire(dateKey, page, satireNeeded(items.length, page)), page)
       : mode === 'all'
-        ? satirePosts.map((item) => ({ kind: 'satire' as const, item }))
+        ? activeSatire(dateKey).map((item) => ({ kind: 'satire' as const, item }))
         : items.map((item) => ({ kind: 'real' as const, item }));
 
   return (

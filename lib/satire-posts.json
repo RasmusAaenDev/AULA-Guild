@@ -455,5 +455,450 @@
     "comments": [],
     "inspiration": "Aftale, der kun delvist er aftalt.",
     "sources": []
+  },
+  {
+    "id": "satire-31",
+    "title": "Vedr. Sofie og gaffelen",
+    "body": "Sofie må godt bruge ske til spaghetti. Det er aftalt derhjemme. Gaffelen er ikke gået i stykker, den hviler.\nHilsen Sofies mor",
+    "author": "Sofies mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-32",
+    "title": "Besked fra Emils farmor",
+    "body": "Emil må ikke få juice med pulp. Han ved godt hvorfor. Vi snakker ikke om torsdag.\nHilsen Emils farmor",
+    "author": "Emils farmor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Det er mig der ikke snakker om torsdag."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-33",
+    "title": "VIGTIGT: Der er en snegl i garderoben",
+    "body": "Der er fundet en snegl i garderoben ved hylde 7. Den må ikke flyttes. Den er kommet af sig selv og tager sig selv af sig selv.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "dyr",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Sofies mor (fiktiv)",
+        "body": "Er det samme snegl som i september?"
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-34",
+    "title": "Husk indesko",
+    "body": "Indesko er sko man har på indenfor. Udesko er sko man har på udenfor. Det er altså to forskellige par, også selvom de ligner hinanden.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "tøj"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-35",
+    "title": "Mistet: en tegning af en hest",
+    "body": "Der er fundet en tegning af en hest. Eller en hund. Ejeren bedes henvende sig og fortælle, hvad det er, så vi kan hænge den rigtigt.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet"
+    ],
+    "comments": [
+      {
+        "author": "Majas mor (fiktiv)",
+        "body": "Det er en hest. Hun er meget stolt af den."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-36",
+    "title": "Vedr. Lucas og tirsdag",
+    "body": "Lucas har fået at vide, at tirsdag kommer efter mandag. Han tror ikke på det. Vi beder alle om ikke at modsige ham.\nHilsen Lucas' far",
+    "author": "Lucas' far (fiktiv)",
+    "important": false,
+    "tags": [
+      "mandag"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-37",
+    "title": "Tak for boller",
+    "body": "Tak for bollerne til fredagsmorgenmaden. De var gode. De var dog lidt hårde. Vi fandt ud af, at de var legetøj, men vi spiste dem alligevel.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "tak",
+      "kost"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-38",
+    "title": "VIGTIGT: Ingen glimmer",
+    "body": "Der er kommet glimmer i klassen. Vi ved ikke hvorfra. Det sidder i håret, i bøgerne og i en af hamstrene. Glimmer er herefter forbudt.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "glimmer",
+      "vigtigt"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-39",
+    "title": "Besked fra Idas morfar",
+    "body": "Ida må gerne cykle selv hjem, men kun hvis hun vinker til alle bilerne. Det er bare høfligt.\nHilsen Idas morfar",
+    "author": "Idas morfar (fiktiv)",
+    "important": false,
+    "tags": [
+      "cykel"
+    ],
+    "comments": [
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Hun vinkede til mig i går. Jeg vinkede tilbage. Vi er venner nu."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-40",
+    "title": "Vedr. Alberts tandfé",
+    "body": "Albert har mistet en tand i frikvarteret. Tanden er ikke mistet, den er bare ikke fundet. Tandfeen kommer alligevel. Det er aftalt.\nHilsen Alberts mor",
+    "author": "Alberts mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tand"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-41",
+    "title": "Husk: Fotograf i morgen",
+    "body": "Fotografen kommer i morgen. Alle skal have deres egen ansigt på. Der er ikke plads til at låne en grimasse.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "foto"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-42",
+    "title": "Besked fra Wilmas far",
+    "body": "Wilma må ikke få lov til at fortælle, hvad vi har til aftensmad. Det er en overraskelse. Det er altid pasta.\nHilsen Wilmas far",
+    "author": "Wilmas far (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-43",
+    "title": "VIGTIGT: Fælles madpakkedag",
+    "body": "Fredag er der fælles madpakkedag. Alle tager en madpakke med, og alle spiser den fra en anden. Ingen må bytte tilbage.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "kost",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Jeg har allerede lavet min. Den er til én der kan lide sennep."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-44",
+    "title": "Vedr. Noahs nøgle",
+    "body": "Noah har fået en nøgle med. Vi ved ikke, hvad den passer til. Det gør Noah heller ikke. Han vil gerne finde ud af det i skoletiden.\nHilsen Noahs mor",
+    "author": "Noahs mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "nøgle"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-45",
+    "title": "Mistet: en meget lille handske",
+    "body": "Der er fundet en meget lille handske. Den er til et barn, der er mindre end klassens mindste. Vi leder efter ejeren, eller hendes mor.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet"
+    ],
+    "comments": [
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er den blå? Så er det nok min."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-46",
+    "title": "Besked fra Frejas mormor",
+    "body": "Freja må gerne få is, men kun den slags, der er kold. Vi har haft problemer med den anden slags.\nHilsen Frejas mormor",
+    "author": "Frejas mormor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost",
+      "is"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-47",
+    "title": "Vedr. Villads og skraldespanden",
+    "body": "Villads har fundet en skraldespand, han kan lide. Den må godt være hans, men kun i frikvarteret. Efter frikvarteret skal den tilbage.\nHilsen Villads' far",
+    "author": "Villads' far (fiktiv)",
+    "important": false,
+    "tags": [
+      "skrald"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-48",
+    "title": "Husk: Terminsprøve i måneskin",
+    "body": "Der er ingen terminsprøve i måneskin. Der er kun en almindelig terminsprøve. Vi beder forældre om at stoppe med at spørge om måneskin.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "prøve"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-49",
+    "title": "Besked fra Oscars morfar",
+    "body": "Oscar har fået lov til at have sin egen stol. Det er fordi, han har en meget bestemt mening om stole. Resten af klassen har ikke bedt om det.\nHilsen Oscars morfar",
+    "author": "Oscars morfar (fiktiv)",
+    "important": false,
+    "tags": [
+      "stol"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-50",
+    "title": "VIGTIGT: Skolegårdens gynge",
+    "body": "Gyngen i skolegården er ikke i stykker. Den har bare mistet interessen. Vi tager den op til genovervejelse efter ferien.\nMvh Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
+    "important": true,
+    "tags": [
+      "gynge",
+      "vigtigt"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-51",
+    "title": "Vedr. Esther og kjolen",
+    "body": "Esther vil gerne have kjole på hver dag. Det må hun godt. Det er kun, når hun cykler baglæns, at vi beder hende tænke over det.\nHilsen Esthers mor",
+    "author": "Esthers mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tøj"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-52",
+    "title": "Tak for kalenderen",
+    "body": "Tak til forældrene for kalenderen. Vi fandt ud af, at den var fra sidste år, men vi har alligevel brugt den. Vi er på vej tilbage til januar.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "tak"
+    ],
+    "comments": [
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Nu forstår jeg hvorfor mandag føltes underligt."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-53",
+    "title": "Husk: Rolig morgen",
+    "body": "Morgenen skal være rolig. Det betyder, at ingen må råbe, løbe eller have en mening før kl. 8.15. Vi starter med at kigge ud af vinduet.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "morgen"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-54",
+    "title": "Besked fra Malthes far",
+    "body": "Malthe har spurgt, om han må få en ekstra frikvarter. Svaret er nej. Han har spurgt os alle sammen. Svaret er nej fra os alle.\nHilsen Malthes far",
+    "author": "Malthes far (fiktiv)",
+    "important": false,
+    "tags": [
+      "frikvarter"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-55",
+    "title": "Vedr. Agnes og papegøjen",
+    "body": "Agnes har ikke en papegøje. Hun har en pen, der siger piiip. Vi beder jer ikke at sige noget til hende om det.\nHilsen Agnes' mor",
+    "author": "Agnes' mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "dyr"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-56",
+    "title": "Husk: Tag tøj med til svømning",
+    "body": "Husk badetøj til svømning. Både overdel og underdel. Vi har haft en episode, hvor et barn kun tog overdelen af en dragt med. Det var en hel episode.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "svømning",
+      "tøj"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-57",
+    "title": "Raid-besked: Healeren er kommet",
+    "body": "Healeren er kommet. Hun er fint tilfreds med at heale. Vi beder tanken om ikke at gå ind før hun er klar. Det er ikke en kritik, det er en besked.\nVenlig hilsen Guildmaster Kristian",
+    "author": "Guildmaster Kristian (fiktiv)",
+    "important": false,
+    "tags": [
+      "raid",
+      "healer"
+    ],
+    "comments": [
+      {
+        "author": "Tankens mormor (fiktiv)",
+        "body": "Det skal nok gå. Han spiser godt."
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-58",
+    "title": "Loot: Hvem tog stolen?",
+    "body": "Der er forsvundet en stol fra loot-listen. Den er ikke droppet, den er ikke solgt. Den er bare væk. Skriv til Guildmaster hvis du har set den.\nVenlig hilsen Guildmaster Kristian",
+    "author": "Guildmaster Kristian (fiktiv)",
+    "important": false,
+    "tags": [
+      "loot"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-59",
+    "title": "VIGTIGT: Buff-regler til lørdag",
+    "body": "Lørdag er det food og flask før pull. Ikke efter pull. Ikke under pull. Før pull. Hvis du er i tvivl, er det før pull.\nVenlig hilsen Guildmaster Kristian",
+    "author": "Guildmaster Kristian (fiktiv)",
+    "important": true,
+    "tags": [
+      "raid",
+      "buff",
+      "vigtigt"
+    ],
+    "comments": [],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
+  },
+  {
+    "id": "satire-60",
+    "title": "Vedr. Karl og termokanden",
+    "body": "Karl har en termokande med kakao. Den må godt stå på bordet, men ikke tændes. Den er ikke elektrisk. Vi ved det godt, men Karl er i tvivl.\nHilsen Karls mor",
+    "author": "Karls mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "kost"
+    ],
+    "comments": [
+      {
+        "author": "Frejas mormor (fiktiv)",
+        "body": "Er det den samme kande som i julefrokosten?"
+      }
+    ],
+    "inspiration": "Rotationspulje (runde 2).",
+    "sources": []
   }
 ]
