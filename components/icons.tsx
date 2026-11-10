@@ -1,0 +1,52 @@
+import type { ReactNode } from 'react';
+
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud';
+
+const paths: Record<IconName, ReactNode> = {
+  overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
+  kalender: <path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" />,
+  filer: <path d="M4 5h6l2 2h8v12H4z" />,
+  galleri: (
+    <>
+      <path d="M3 5h18v14H3z" />
+      <path d="M3 16l5-5 4 4 3-3 6 6" />
+      <circle cx="16" cy="9" r="1.5" />
+    </>
+  ),
+  chat: <path d="M4 5h16v11H9l-5 4z" />,
+  kontakter: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6M16 5a3.5 3.5 0 010 7M18 14c2.2.6 3.5 2.4 3.5 6" />
+    </>
+  ),
+  deltager: <path d="M5 12.5l4.5 4.5L19 7" />,
+  maaske: (
+    <>
+      <path d="M9 9a3 3 0 115 2c-1.2.9-2 1.4-2 3" />
+      <path d="M12 18v.5" />
+    </>
+  ),
+  afbud: <path d="M6 6l12 12M18 6L6 18" />,
+};
+
+/** Simpelt 24×24 stregikon i currentColor; skjult for skærmlæsere (teksten ved siden af bærer meningen). */
+export function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      className="icon"
+    >
+      {paths[name]}
+    </svg>
+  );
+}

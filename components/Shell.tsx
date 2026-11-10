@@ -20,20 +20,25 @@ export function Shell({
       </header>
       <div className="layout">
         <nav className="sidenav" aria-label="Hovedmenu">
-          <NavLink href="/">
+          <NavLink
+            href="/"
+            icon="overblik"
+            badge={
+              unread && (
+                <span className="unread-count nav-badge">
+                  {unread}
+                  <span className="sr-only"> ulæste</span>
+                </span>
+              )
+            }
+          >
             Overblik
-            {unread && (
-              <span className="unread-count">
-                {unread}
-                <span className="sr-only"> ulæste</span>
-              </span>
-            )}
           </NavLink>
-          <NavLink href="/kalender">Kalender</NavLink>
-          <NavLink href="/filer">Filer</NavLink>
-          <NavLink href="/galleri">Galleri</NavLink>
-          {chatEnabled && <NavLink href="/chat">Chat</NavLink>}
-          <NavLink href="/kontakter">Kontakter</NavLink>
+          <NavLink href="/kalender" icon="kalender">Kalender</NavLink>
+          <NavLink href="/filer" icon="filer">Filer</NavLink>
+          <NavLink href="/galleri" icon="galleri">Galleri</NavLink>
+          {chatEnabled && <NavLink href="/chat" icon="chat">Chat</NavLink>}
+          <NavLink href="/kontakter" icon="kontakter">Kontakter</NavLink>
         </nav>
         <main className="content">{children}</main>
       </div>

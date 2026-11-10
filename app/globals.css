@@ -34,6 +34,9 @@ a { color: inherit; }
 .layout { display: flex; min-height: calc(100vh - 56px); }
 .sidenav { width: 100px; background: var(--nav); display: flex; flex-direction: column; }
 .navlink { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 4px; color: #fff; text-decoration: none; font-size: 13px; }
+.navicon { position: relative; display: inline-flex; }
+.navicon .icon { display: block; }
+.nav-badge { position: absolute; top: -6px; left: 60%; min-width: 18px; text-align: center; line-height: 1.3; }
 .navlink[aria-current='page'] { background: var(--nav-active); }
 .content { flex: 1; padding: 24px 16px; max-width: 1100px; margin: 0 auto; width: 100%; }
 .card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12); margin-bottom: 16px; }
@@ -64,7 +67,8 @@ details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; b
 @media (max-width: 700px) {
   .layout { flex-direction: column-reverse; }
   .sidenav { width: 100%; flex-direction: row; position: sticky; bottom: 0; }
-  .navlink { flex: 1; min-width: 0; padding: 12px 2px; font-size: 12px; }
+  .navlink { flex: 1; min-width: 0; padding: 8px 2px; font-size: 12px; gap: 2px; }
+  .navlink .icon { width: 24px; height: 24px; }
   .logo { width: 64px; }
   .table-wrap { overflow-x: auto; }
 }
