@@ -2,6 +2,10 @@
 
 Hver linje er en egen spec → plan → implementering. Beslutninger er truffet af brugeren 2026-11-10 under brainstorming, medmindre andet er angivet.
 
+## Status (2026-11-10)
+
+Spec 1 er bygget. Spec 2–5 (kalender, opslag, filer og galleri, chat) er bygget på grenen `feature/spec-2-5` med udrulningsfiler i server-stacks-repoet; slutreview, merge og udrulning mangler. Spec 6 venter stadig på reglerne. Gennemgang af brugerfladen er Task 12 i planen.
+
 ## Rækkefølge
 
 1. **Spec 1: skelet, login, karakter, roster** – skrevet, se `specs/2026-11-10-skelet-login-karakter-roster-design.md`.
