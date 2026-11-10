@@ -85,6 +85,6 @@ Kalender og tilmelding, opslag og kommentarer, filer, galleri, raid-parathed og 
 ## Åbne punkter
 
 - Discord-server-id og officer-rolle-id.
-- Domæne.
+- Domæne er valgt: `aula.aaensoftware.com` (DNS i Cloudflare, ikke oprettet endnu). CNAME til Vercel sættes, og Discord-redirect-URL registreres for domænet, når projektet er oprettet.
 - Raid-krav og attunement-quest-ID'er (først relevant i senere spec).
 - Forever er ny (lanceret 4. nov. 2026): namespace og svar kan ændre sig.
