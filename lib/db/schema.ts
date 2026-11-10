@@ -34,8 +34,10 @@ export const eventTypes = ['raid', 'aften'] as const;
 export type EventType = (typeof eventTypes)[number];
 export const eventTypeEnum = pgEnum('event_type', eventTypes);
 
-export const rsvpStatuses = ['deltager', 'maaske', 'afbud'] as const;
-export type RsvpStatus = (typeof rsvpStatuses)[number];
+import { rsvpStatuses, type RsvpStatus } from '@/lib/rsvp-ui';
+
+export { rsvpStatuses };
+export type { RsvpStatus };
 export const rsvpStatusEnum = pgEnum('rsvp_status', rsvpStatuses);
 
 export const eventSeries = pgTable('event_series', {

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, isNull, notExists, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { fullName } from '@/lib/names';
 import { characters, comments, postBookmarks, postReads, posts, users } from '@/lib/db/schema';

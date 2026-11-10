@@ -16,10 +16,13 @@ describe('formatDateTime', () => {
 
 describe('beskeder', () => {
   it('har en dansk tekst for hver fejl', () => {
-    for (const r of ['invalid_name', 'not_found', 'wrong_guild', 'taken', 'already_yours', 'unavailable'] as const) {
+    for (const r of ['invalid_name', 'invalid_characters', 'not_found', 'wrong_guild', 'taken', 'already_yours', 'unavailable'] as const) {
       expect(addCharacterMessage(r).length).toBeGreaterThan(10);
     }
     expect(addCharacterMessage('invalid_name')).toBe('Skriv både fornavn og efternavn.');
+    expect(addCharacterMessage('invalid_characters')).toBe(
+      'Karakternavne må kun indeholde bogstaver, mellemrum, bindestreg og apostrof.',
+    );
     expect(addCharacterMessage('wrong_guild')).toBe('Karakteren er ikke i guilden AULA.');
     expect(roleLabel('dps')).toBe('DPS');
   });

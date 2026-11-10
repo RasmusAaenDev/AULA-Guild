@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { statusClass } from '@/lib/rsvp-ui';
+import { rsvpStatuses, statusClass } from '@/lib/rsvp-ui';
+
+import { rsvpStatuses as schemaStatuses } from '@/lib/db/schema';
+
+describe('rsvpStatuses', () => {
+  it('er den samme liste som schemaet bruger', () => {
+    expect(rsvpStatuses).toEqual(['deltager', 'maaske', 'afbud']);
+    expect(schemaStatuses).toBe(rsvpStatuses);
+  });
+});
 
 describe('statusClass', () => {
   it('mapper hver status til sin klasse', () => {

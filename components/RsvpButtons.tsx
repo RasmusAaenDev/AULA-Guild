@@ -4,7 +4,7 @@ import { useActionState } from 'react';
 import { clearRsvpAction, setRsvpAction, type FormState } from '@/app/(app)/kalender/actions';
 import { rsvpLabel } from '@/lib/calendar-ui';
 import { Icon } from '@/components/icons';
-import { rsvpStatuses, type RsvpStatus } from '@/lib/db/schema';
+import { rsvpStatuses, type RsvpStatus } from '@/lib/rsvp-ui';
 
 /** Tre tilmeldingsknapper (aktiv status fremhævet) og «Fjern tilmelding»; viser serverens fejl. */
 export function RsvpButtons({ eventId, current }: { eventId: number; current: RsvpStatus | null }) {

@@ -7,15 +7,11 @@ import { addCharacter, setActiveCharacter, setRole, unlinkCharacter } from '@/li
 import { getDb } from '@/lib/db';
 import { roles, type Role } from '@/lib/db/schema';
 import { addCharacterMessage } from '@/lib/messages';
+import { parseId } from '@/lib/parse';
 import { charactersDeps } from '@/lib/services';
 import { requireMember, requireOfficer } from '@/lib/session';
 
 export type AddState = { error?: string };
-
-function toId(value: FormDataEntryValue | null): number | null {
-  const n = Number(value);
-  return Number.isInteger(n) && n > 0 ? n : null;
-}
 
 function toRole(value: FormDataEntryValue | null): Role | null {
   return roles.find((r) => r === value) ?? null;
@@ -23,14 +19,14 @@ function toRole(value: FormDataEntryValue | null): Role | null {
 
 export async function setActiveAction(formData: FormData): Promise<void> {
   const member = await requireMember();
-  const id = toId(formData.get('characterId'));
+  const id = parseId(formData.get('characterId'));
   if (id) await setActiveCharacter(getDb(), member.userId, id);
   revalidatePath('/', 'layout');
 }
 
 export async function setRoleAction(formData: FormData): Promise<void> {
   const member = await requireMember();
-  const id = toId(formData.get('characterId'));
+  const id = parseId(formData.get('characterId'));
   const role = toRole(formData.get('role'));
   if (id && role) await setRole(getDb(), member.userId, id, role);
   revalidatePath('/', 'layout');
@@ -38,7 +34,7 @@ export async function setRoleAction(formData: FormData): Promise<void> {
 
 export async function unlinkAction(formData: FormData): Promise<void> {
   await requireOfficer();
-  const id = toId(formData.get('characterId'));
+  const id = parseId(formData.get('characterId'));
   if (id) await unlinkCharacter(getDb(), id);
   revalidatePath('/', 'layout');
 }

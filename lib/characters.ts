@@ -15,8 +15,8 @@ export type AddResult = { ok: true; characterId: number } | { ok: false; reason:
 
 type Looked = { found: ArmoryCharacter; roster?: RosterMember[] };
 
-// Brugeren kan skrive «Fornavn Efternavn» (slug fornavn-efternavn, direkte profilopslag) eller kun «Fornavn»
-// (matcher rosterens name) eller rosterens fulde navn, hvis rosterens slug afviger.
+// Brugeren skriver «Fornavn Efternavn» (slug fornavn-efternavn, direkte profilopslag). Findes profilen ikke under
+// den slug, matches kun rosterens fulde navn (fornavn + efternavn), hvis rosterens slug afviger. Kun fornavn afvises før opslag.
 async function lookup(deps: CharactersDeps, slug: string, typedName: string): Promise<Looked> {
   try {
     return { found: await deps.blizzard.getCharacter(slug) };
@@ -51,7 +51,8 @@ export async function addCharacter(
 ): Promise<AddResult> {
   const slug = nameToSlug(input.name);
   // Både fornavn og efternavn kræves (afvises før noget Blizzard-kald).
-  if (!slug || normalizeName(input.name).split(' ').length < 2) return { ok: false, reason: 'invalid_name' };
+  if (normalizeName(input.name).split(' ').length < 2) return { ok: false, reason: 'invalid_name' };
+  if (!slug) return { ok: false, reason: 'invalid_characters' };
 
   let found: ArmoryCharacter;
   let surname: string | null;

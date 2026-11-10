@@ -266,6 +266,20 @@ describe('listMyCharacters: fuldt navn og rækkefølge', () => {
   });
 });
 
+describe('addCharacter: ugyldige tegn', () => {
+  it.each(['Ezz3k Svump', 'Ezzek Sv.umpukkel', 'Ezzek 2'])('afviser %j med invalid_characters uden at kalde Blizzard', async (name) => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({});
+    expect(await addCharacter(deps(blizzard), { userId, name, role: 'dps' })).toEqual({ ok: false, reason: 'invalid_characters' });
+    expect(blizzard.calls).toEqual([]);
+  });
+  it('tjekker antal ord før tegn', async () => {
+    const userId = await seedUser(db);
+    const blizzard = fakeBlizzard({});
+    expect(await addCharacter(deps(blizzard), { userId, name: 'Ezz3k', role: 'dps' })).toEqual({ ok: false, reason: 'invalid_name' });
+  });
+});
+
 describe('addCharacter: kræver fornavn og efternavn', () => {
   it.each(['Ezzek', '  Ezzek  ', ''])('afviser %j med invalid_name uden at kalde Blizzard', async (name) => {
     const userId = await seedUser(db);
