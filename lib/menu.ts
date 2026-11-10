@@ -7,7 +7,7 @@ export function menuItems({ chat }: { chat: boolean }): MenuItem[] {
   return [
     { href: '/', icon: 'overblik', label: 'Overblik', badge: 'posts' },
     { href: '/kalender', icon: 'kalender', label: 'Kalender', badge: 'events' },
-    ...(chat ? [{ href: '/chat', icon: 'chat' as const, label: 'Chat' }] : []),
+    ...(chat ? [{ href: '/chat', icon: 'chat' as const, label: 'Beskeder' }] : []),
     { href: '/galleri', icon: 'galleri', label: 'Galleri' },
     { href: '/kontakter', icon: 'kontakter', label: 'Kontakter' },
     { href: '/filer', icon: 'filer', label: 'Filer' },

@@ -6,7 +6,7 @@ describe('menuItems', () => {
     expect(menuItems({ chat: false }).map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Galleri', 'Kontakter', 'Filer']);
   });
   it('sætter Chat efter Kalender når den er sat op', () => {
-    expect(menuItems({ chat: true }).map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Chat', 'Galleri', 'Kontakter', 'Filer']);
+    expect(menuItems({ chat: true }).map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Galleri', 'Kontakter', 'Filer']);
   });
   it('har tæller på Overblik (opslag) og Kalender (events), ellers ingen', () => {
     const items = menuItems({ chat: true });

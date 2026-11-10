@@ -8,7 +8,7 @@ export default async function ChatPage() {
   await requireMember();
   return (
     <>
-      <h1>Chat</h1>
+      <h1>Beskeder</h1>
       {isChatConfigured() ? (
         <ChatView />
       ) : (
