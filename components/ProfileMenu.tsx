@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DetailsMenu } from './DetailsMenu';
 import { roles, type Role } from '@/lib/db/schema';
 import { roleLabel } from '@/lib/messages';
 import type { MyCharacter } from '@/lib/characters';
@@ -9,7 +10,7 @@ export function ProfileMenu({
 }: { name: string; image: string | null; characters: MyCharacter[]; activeId: number | null }) {
   const active = characters.find((c) => c.id === activeId) ?? null;
   return (
-    <details className="profile">
+    <DetailsMenu className="profile">
       <summary>
         {image ? <img className="avatar" src={image} alt="" /> : <span className="avatar" />}
         <span>{active ? active.name : name}</span>
@@ -27,7 +28,7 @@ export function ProfileMenu({
           </form>
         ))}
         {active && (
-          <form action={setRoleAction} className="field">
+          <form key={`${active.id}-${active.role}`} action={setRoleAction} className="field">
             <input type="hidden" name="characterId" value={active.id} />
             <label htmlFor="role">Rolle for {active.name}</label>
             <select id="role" name="role" defaultValue={active.role}>
@@ -39,6 +40,6 @@ export function ProfileMenu({
         <p><Link href="/karakter/ny">Tilføj karakter</Link></p>
         <form action={signOutAction}><button type="submit" className="btn secondary">Log ud</button></form>
       </div>
-    </details>
+    </DetailsMenu>
   );
 }

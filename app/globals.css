@@ -40,6 +40,7 @@ a { color: inherit; }
 
 .btn { background: var(--topbar); color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font: inherit; font-weight: 700; cursor: pointer; }
 .btn.secondary { background: transparent; color: var(--heading); border: 1px solid var(--border); }
+.topbar-right > .btn.secondary { color: #fff; border-color: rgba(255, 255, 255, 0.6); }
 .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 10px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .field input, .field select { padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; }
@@ -55,6 +56,8 @@ tr.left-guild td { opacity: 0.55; }
 
 details.profile { position: relative; }
 details.profile summary { cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
+details.profile summary::-webkit-details-marker { display: none; }
+details.profile summary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; background: var(--card); color: var(--text); border-radius: 12px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25); padding: 14px; z-index: 10; }
 .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--logo); object-fit: cover; }
 

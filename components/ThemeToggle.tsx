@@ -13,7 +13,7 @@ export function ThemeToggle() {
     } catch {}
   }
   return (
-    <button type="button" className="btn secondary" onClick={toggle} aria-label="Skift mellem lys og mørk tilstand">
+    <button type="button" className="btn secondary" onClick={toggle} aria-label="Lys/mørk: skift tema">
       Lys/mørk
     </button>
   );
