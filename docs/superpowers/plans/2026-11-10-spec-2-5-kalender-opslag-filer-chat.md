@@ -334,6 +334,26 @@ export function createChatClient(opts: { token: string; channelId: string; fetch
 
 **Tests:** rene hjælpere (fx statusklasse-mapning) får enhedstests. Ellers typecheck, build og kørsel af dev-serveren; kontrast beregnes med en lille testbar funktion. Skærmbilleder kan ikke tages uden login — det siges ærligt i rapporten.
 
+### Task 13: UI-pas 2 — AULA-struktur (efter Task 12, før slutreview)
+
+**Bygger på:** `docs/superpowers/notes/aula-html-struktur.md` (struktur aflæst af brugerens HTML fra det rigtige AULA; ingen CSS, så farver/ikoner er vores egne) og brugerens ønske «tag det med». Vi kopierer ikke AULAs ikoner, logo eller CSS.
+
+**Beslutninger (controller):**
+- Menuen får rækkefølgen **Overblik, Kalender, (Chat), Galleri, Kontakter, Filer** (Chat spejler AULAs «Beskeder» og vises kun når den er sat op). Tæller-bobler på **Overblik** (ulæste opslag, findes) og **Kalender** (antal kommende, ikke-aflyste events inden for 14 dage, som brugeren IKKE har svaret på). Ingen boble på Galleri (kræver «set»-sporing; udeladt).
+- Én **«Opret»-dropdown** (sekundær knap, bruger `DetailsMenu`-mønstret) på Overblik og Kalender med punkter: Opslag (`/opslag/ny`), Begivenhed (`/kalender/ny`), Fil (`/filer`), Billede (`/galleri`). Ingen ny funktion bag punkterne.
+- Faner på Overblik: **ALLE, ULÆSTE, VIGTIGE, EGNE OPSLAG, GEMTE** (store bogstaver). «PERSONALE»/«FORÆLDRE» udelades (vi har ikke de roller). **EGNE OPSLAG** = opslag skrevet af brugeren. **GEMTE** = bogmærker: ny tabel `post_bookmarks (user_id, post_id, created_at)` med primærnøgle `(user_id, post_id)` (cascade), modulfunktioner `toggleBookmark(db, userId, postId): Promise<{ ok: true; bookmarked: boolean } | { ok: false; reason: 'not_found' }>`, fane `gemte`/`egne` i `listPosts`, og et `bookmarked`-felt på `PostListItem`/`PostDetail`; bogmærke-knap (ikon + `aria-pressed`, Danish label «Gem opslag»/«Fjern fra gemte») på opslagskort og opslagsside. Fanernes URL-værdier: `alle`, `ulaeste`, `vigtige`, `egne`, `gemte`; `parseTab` udvides.
+- Opslagskort: afsender vises som «Discord-navn (aktiv karakter)» hvis brugeren har en aktiv karakter, ellers kun navnet (join på `users.active_character_id`); «Delt med hele guilden» som fast tekst; «oprettet» som relativ tid med fuld dato i `title`; badgen hedder **«Vigtig»** (fastgjort); bogmærkeknap; opslag har ingen vedhæftninger (udelades).
+- **Højre kolonne** (`aside`) på Overblik fra bredde ≥ 1100 px (CSS grid: hovedkolonne + 320 px aside; under 1100 px lægges asiden under hovedindholdet): kort «Næste begivenheder» (de næste op til 5 kommende, ikke-aflyste events: stor dato + måned kort (`nov`), titel, tidsrum i dansk tid, brugerens status som ikon+tekst, link til eventet; tom tilstand), og kort «Dine karakterer» (aktiv karakter + rolle) — ingen fødselsdage/widgets/søgning.
+- **Notifikationsbånd** øverst på Overblik/Kalender når brugeren har ubesvarede kommende events (≤ 14 dage): rundt udråbstegn-ikon, tekst «Du har ikke svaret på N kommende begivenheder» med link til `/kalender`, og en lukkeknap (klientkomponent; afvist tilstand gemmes pr. fane-session i `sessionStorage`, med try/catch).
+- Topbjælke/profil: **LOG UD**-knappen i profilmenuen får store bogstaver og sekundær stil. Ingen global søgning.
+- Relativ tid-hjælper (`formatRelative` findes): «I går 16:45», «I dag 09:05», ugedagsforkortelse for dage inden for 6 dage («Fre. 13:50»), ellers dato. Fuld dato i `title`.
+
+**Moduler:** `lib/events.ts`: `countUnansweredUpcoming(db, userId, now?, days = 14): Promise<number>`; `lib/posts.ts`: `toggleBookmark`, `PostTab` udvides med `'egne' | 'gemte'`, `PostListItem.bookmarked`, `PostDetail.bookmarked`, `PostListItem.authorCharacter: string | null`; migration for `post_bookmarks`; `resetDb` tømmer den.
+
+**Tests (RED→GREEN):** `countUnansweredUpcoming` (kun kommende, ikke aflyste, ikke besvarede, inden for vinduet, 14-dages grænse, egen tilmelding tæller som besvaret uanset status); `toggleBookmark` (til/fra, ukendt/slettet opslag, kun egne bogmærker); `listPosts` for `egne` og `gemte` (rækkefølge, paging, slettede skjult, andres bogmærker ikke synlige); `bookmarked`-flag; `parseTab`; relativ tid-hjælper (I går/I dag/ugedag/dato, tidszone og sommertid); menu-rækkefølge som ren funktion (`menuItems({ chat: boolean })`) med test; kontrast-testen holdes grøn for nye farver (tilføj nye par). Pages verificeres med typecheck, build og curl (307 til /login).
+
+**Regler:** dansk UI; ingen nye pakker; autorisation i modulerne som før (`requireMember` i sider/actions); `toggleBookmarkAction` er en server action med `parseId`, `requireMember`, FormState-lignende fejlhåndtering og `revalidatePath`; formularer og knapper bevarer brugerinput (`onSubmit`-mønstret fra Task 12 hvor der er kontrollerede felter). Intet i AULAs ophavsretsbeskyttede materiale kopieres (ingen ikonskrift, ingen CSS, intet logo).
+
 ## Udrulning og afslutning
 
 ### Task 11: Udrulningsfiler og dokumentation
