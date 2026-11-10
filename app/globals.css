@@ -182,6 +182,8 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .chat-msg { padding: 6px 0; border-bottom: 1px solid var(--border); }
 .chat-meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
 .chat-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+a.chat-link { color: var(--heading); text-decoration: underline; overflow-wrap: anywhere; }
+a.chat-link:hover { text-decoration-thickness: 2px; }
 .chat-form { margin-top: 12px; }
 .chat-form .field { margin-bottom: 8px; }
 .chat-send { min-height: 44px; min-width: 44px; }

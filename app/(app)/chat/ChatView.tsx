@@ -2,16 +2,31 @@
 
 import { useActionState, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
-import type { ChatResult } from '@/lib/chat';
+import type { PublicChatResult } from '@/lib/chat-authors';
+import { linkify } from '@/lib/linkify';
 import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
 import { sendChatMessageAction, type FormState } from './actions';
 
-function isChatResult(v: unknown): v is ChatResult {
-  return typeof v === 'object' && v !== null && Array.isArray((v as ChatResult).messages);
+function isChatResult(v: unknown): v is PublicChatResult {
+  return typeof v === 'object' && v !== null && Array.isArray((v as PublicChatResult).messages);
+}
+
+function LinkedText({ text }: { text: string }) {
+  return (
+    <>
+      {linkify(text).map((p, i) =>
+        p.type === 'link' && p.href ? (
+          <a key={i} className="chat-link" href={p.href} target="_blank" rel="noopener noreferrer nofollow">{p.text}</a>
+        ) : (
+          <span key={i}>{p.text}</span>
+        ),
+      )}
+    </>
+  );
 }
 
 export function ChatView({ channelId, canWrite }: { channelId: string; canWrite: boolean }) {
-  const [data, setData] = useState<ChatResult | null>(null);
+  const [data, setData] = useState<PublicChatResult | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [now, setNow] = useState<Date>(() => new Date());
   const [newBelow, setNewBelow] = useState(false);
@@ -166,11 +181,13 @@ export function ChatView({ channelId, canWrite }: { channelId: string; canWrite:
         {data?.messages.map((m) => (
           <div key={m.id} className="chat-msg">
             <div className="chat-meta">
-              <strong>{m.author}</strong>
+              {m.armoryUrl
+                ? <strong><a className="chat-link" href={m.armoryUrl} target="_blank" rel="noopener noreferrer">{m.author}</a></strong>
+                : <strong>{m.author}</strong>}
               {m.bot && <span className="badge">bot</span>}
               <span className="muted">{formatMessageTime(m.timestamp, now)}</span>
             </div>
-            <div className="chat-text">{m.content}</div>
+            <div className="chat-text"><LinkedText text={m.content} /></div>
           </div>
         ))}
       </div>

@@ -1,7 +1,17 @@
 // Visning af (og skrivning i) serverens offentlige Discord-tekstkanaler. Al netværk går gennem den injicerede `fetch`, og tokenet
 // forlader aldrig modulet: resultater og fejl er kun data og faste koder, aldrig svar- eller fejltekst.
 
-export type ChatMessage = { id: string; author: string; content: string; timestamp: string; bot: boolean };
+/** Intern besked: authorId og mentions bruges kun på serveren (resolveAuthors) og sendes aldrig til klienten. */
+export type ChatMention = { id: string; name: string };
+export type ChatMessage = {
+  id: string;
+  author: string;
+  authorId: string | null;
+  content: string;
+  mentions: ChatMention[];
+  timestamp: string;
+  bot: boolean;
+};
 export type ChatError = 'no_access' | 'not_found' | 'unavailable';
 export type ChatChannel = { id: string; name: string; canWrite: boolean };
 export type ChannelsResult = { channels: ChatChannel[]; error?: 'unavailable' };
@@ -42,7 +52,7 @@ function userName(u: unknown): string {
   return str(u.global_name).trim() || str(u.username).trim();
 }
 
-function renderContent(content: string, mentions: unknown): string {
+function renderContent(content: string, mentions: unknown): { text: string; found: ChatMention[] } {
   const names = new Map<string, string>();
   if (Array.isArray(mentions)) {
     for (const m of mentions) {
@@ -52,11 +62,17 @@ function renderContent(content: string, mentions: unknown): string {
       }
     }
   }
-  return content
-    .replace(/<@!?(\d+)>/g, (_, id: string) => `@${names.get(id) ?? 'bruger'}`)
+  const found = new Map<string, ChatMention>();
+  const text = content
+    .replace(/<@!?(\d+)>/g, (_, id: string) => {
+      const name = names.get(id);
+      if (name && ID_RE.test(id)) found.set(id, { id, name });
+      return `@${name ?? 'bruger'}`;
+    })
     .replace(/<@&\d+>/g, '«@rolle»')
     .replace(/<#\d+>/g, '«#kanal»')
     .replace(/<a?:(\w+):\d+>/g, ':$1:');
+  return { text, found: [...found.values()] };
 }
 
 function embedText(embeds: unknown): string {
@@ -81,7 +97,8 @@ function parse(body: unknown): Parsed | null {
     const raw = str(m.content);
     const hasEmbeds = Array.isArray(m.embeds) && m.embeds.length > 0;
     const hasFiles = Array.isArray(m.attachments) && m.attachments.length > 0;
-    let content = renderContent(raw, m.mentions);
+    const rendered = renderContent(raw, m.mentions);
+    let content = rendered.text;
     if (!content.trim()) {
       content = embedText(m.embeds) || (hasFiles ? '[vedhæftet fil]' : '');
     } else if (hasFiles) {
@@ -94,7 +111,9 @@ function parse(body: unknown): Parsed | null {
       msg: {
         id: m.id,
         author: userName(author) || 'Ukendt',
+        authorId: typeof author.id === 'string' && ID_RE.test(author.id) ? author.id : null,
         content,
+        mentions: rendered.found,
         timestamp: isoTime(m, m.id),
         bot: author.bot === true || (m.webhook_id !== undefined && m.webhook_id !== null),
       },
