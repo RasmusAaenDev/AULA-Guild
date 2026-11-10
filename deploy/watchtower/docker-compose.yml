@@ -1,0 +1,18 @@
+name: aula-watchtower
+
+services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: aula-watchtower
+    restart: unless-stopped
+    environment:
+      DOCKER_API_VERSION: "1.44"
+      WATCHTOWER_SCOPE: aula
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_POLL_INTERVAL: "300"
+      WATCHTOWER_CLEANUP: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Kun hvis imaget er privat: en docker-login med read:packages til RasmusAaenDev's GHCR.
+      # Fjern kommentaren og peg på en fil, der kun indeholder AULA's egen login:
+      # - ./docker-config.json:/config.json:ro
