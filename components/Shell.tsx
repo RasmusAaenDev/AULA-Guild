@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { MyCharacter } from '@/lib/characters';
 import type { Member } from '@/lib/session';
 import { menuItems } from '@/lib/menu';
@@ -26,7 +27,7 @@ export function Shell({
     <>
       <a className="skip-link" href="#main">Spring til indhold</a>
       <header className="topbar">
-        <div className="logo">Aula</div>
+        <Link href="/" className="logo" aria-label="Aula, gå til forsiden">Aula</Link>
         <CharacterSwitcher characters={characters} activeId={activeId} />
         <div className="topbar-right">
           <ThemeToggle />

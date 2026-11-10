@@ -54,7 +54,7 @@ details.profile .menu :focus-visible { outline-color: var(--focus); }
 main:focus { outline: none; }
 
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; height: 56px; background: var(--topbar); color: #fff; }
-.logo { width: 100px; height: 100%; background: var(--logo); display: grid; place-items: center; font-weight: 800; font-size: 22px; }
+.logo { color: #fff; text-decoration: none; width: 100px; height: 100%; background: var(--logo); display: grid; place-items: center; font-weight: 800; font-size: 22px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; padding-right: 16px; }
 /* Karakterskifter i topbjælken (som AULAs børnefilter): en rund avatar pr. karakter, flueben på den primære. */
 .topbar-chars { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; }
