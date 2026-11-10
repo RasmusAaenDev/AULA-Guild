@@ -9,7 +9,7 @@ const ALLOW_ALL = String(VIEW | HISTORY | SEND);
 const ow = (id: string, type: number, allow = 0, deny = 0) => ({ id, type, allow: String(allow), deny: String(deny) });
 const ch = (id: string, over: Partial<FakeChannel> = {}): FakeChannel => ({ id, name: `k${id}`, type: 0, position: 0, ...over });
 
-function setup(fx: Fixture, messages?: (url: string, init?: RequestInit) => Response | Promise<Response>, extra: { visibleChannels?: string[]; readOnlyChannelIds?: string[] } = {}) {
+function setup(fx: Fixture, messages?: (url: string, init?: RequestInit) => Response | Promise<Response>, extra: { visibleChannels?: string[]; readOnlyChannelIds?: string[]; hiddenChannelIds?: string[] } = {}) {
   const msgCalls: { url: string; init?: RequestInit }[] = [];
   const other: string[] = [];
   let time = 1_000_000;
@@ -266,5 +266,10 @@ describe('udvalgte kanaler og skrivebeskyttet standardkanal', () => {
   it('adskiller kanaler med samme navn med kategorinavn', async () => {
     const s = setup(fixture({ channels: [{ id: '90', name: 'Server', type: 4 }, { id: '91', name: 'WoW', type: 4 }, named('11', 'logs', { parent_id: '90' }), named('12', 'logs', { parent_id: '91' })] }), undefined, opts);
     expect((await s.client.listChannels()).channels.map((c) => c.name).sort()).toEqual(['logs (Server)', 'logs (WoW)']);
+  });
+  it('skjuler kanaler på id, og et dublet-navn mister så kategoritilføjelsen', async () => {
+    const s = setup(fixture({ channels: [{ id: '90', name: 'Raid', type: 4 }, { id: '91', name: 'Misc', type: 4 }, named('11', 'logs', { parent_id: '90' }), named('12', 'logs', { parent_id: '91' })] }), undefined, { ...opts, hiddenChannelIds: ['11'] });
+    expect((await s.client.listChannels()).channels.map((c) => c.name)).toEqual(['logs']);
+    expect((await s.client.getMessages('11')).error).toBe('not_found');
   });
 });

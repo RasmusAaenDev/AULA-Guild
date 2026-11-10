@@ -67,6 +67,7 @@ export function getChat(): ChatClient | null {
     // Kun disse kanaler vises. Standardkanalen er den WoW-linkede, som Discord ikke lader bots skrive i.
     visibleChannels: ['general', 'generel', 'rio', 'logs', 'wow-news', 'wow'],
     readOnlyChannelIds: [cfg.channelId],
+    hiddenChannelIds: ['867737918709825556'], // #logs i kategorien «Raid»
   });
   return g.__aulaChat;
 }

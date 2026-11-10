@@ -193,6 +193,8 @@ export function createChatClient(opts: {
   visibleChannels?: string[];
   /** Kanal-id'er der altid er skrivebeskyttede (fx den WoW-linkede kanal). */
   readOnlyChannelIds?: string[];
+  /** Kanal-id'er der aldrig vises (fx en ekstra kanal med samme navn). */
+  hiddenChannelIds?: string[];
 }): ChatClient {
   const doFetch = opts.fetch ?? fetch;
   const now = opts.now ?? Date.now;
@@ -200,6 +202,7 @@ export function createChatClient(opts: {
   const timeoutMs = opts.timeoutMs ?? 8000;
   const visible = opts.visibleChannels?.map((n) => n.toLowerCase());
   const forcedReadOnly = new Set(opts.readOnlyChannelIds ?? []);
+  const hidden = new Set(opts.hiddenChannelIds ?? []);
   const api = 'https://discord.com/api/v10';
   const userAgent = 'DiscordBot (https://aula.aaensoftware.com, 1.0)';
   const authHeaders = { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent };
@@ -262,7 +265,7 @@ export function createChatClient(opts: {
     for (const raw of channelsRaw) {
       const c = parseChannel(raw);
       if (!c || (c.type !== 0 && c.type !== 5) || c.nsfw) continue; // aldersbegrænsede kanaler vises ikke
-      if (visible && !visible.includes(c.name.toLowerCase())) continue;
+      if (hidden.has(c.id) || (visible && !visible.includes(c.name.toLowerCase()))) continue;
       const pub = channelPermissions({ guildId: gid, everyone, roleIds: [], rolePerms, overwrites: c.overwrites });
       if ((pub & seeAndRead) !== seeAndRead) continue;
       const bot = channelPermissions({ guildId: gid, everyone, roleIds: botRoles, rolePerms, memberId: bid, overwrites: c.overwrites });
