@@ -4,8 +4,7 @@ import type { SatirePost } from '@/lib/satire';
 const displayName = (name: string) => name.replace(/\s*\(fiktiv\)\s*$/i, '');
 
 /**
- * Fiktivt opslag. Mærkningen er permanent og ligger inde i selve kortet (ikon i overskriften, fodlinje, stiplet kant, «Fiktive kommentarer»), så et
- * skærmbillede ikke kan forveksles med et ægte opslag. Ingen bogmærke, kommentarformular, læst-status eller detaljeside.
+ * Fiktivt opslag. Mærkningen er kun visuel (klovneikon i overskriften og stiplet kant), uden tekst. Skærmlæsere får aria-label. Ingen bogmærke, kommentarformular, læst-status eller detaljeside.
  */
 export function SatireCard({ post }: { post: SatirePost }) {
   const paragraphs = post.body.split(/\n+/);
@@ -13,7 +12,7 @@ export function SatireCard({ post }: { post: SatirePost }) {
     <article className="card post-card satire-card" aria-label="Fake opslag (satire)">
       {post.important && (
         <div className="satire-head">
-          <span className="badge">Vigtig (fiktivt)</span>
+          <span className="badge">Vigtig</span>
         </div>
       )}
       <p className="satire-meta">
@@ -28,17 +27,16 @@ export function SatireCard({ post }: { post: SatirePost }) {
       ))}
       {post.comments.length > 0 && (
         <div className="satire-comments">
-          <h4>Fiktive kommentarer ({post.comments.length})</h4>
+          <h4>Kommentarer ({post.comments.length})</h4>
           {post.comments.map((c, i) => (
             <p key={i}>
-              <strong>{displayName(c.author)}</strong> <span className="badge">fiktiv</span>
+              <strong>{displayName(c.author)}</strong>
               <br />
               {c.body}
             </p>
           ))}
         </div>
       )}
-      <p className="satire-foot">Dette er et fiktivt opslag. Alle personer er opdigtede.</p>
     </article>
   );
 }

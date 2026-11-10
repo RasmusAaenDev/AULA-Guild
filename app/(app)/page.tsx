@@ -87,7 +87,6 @@ export default async function OverviewPage({
             ))}
           </nav>
           <div className="satire-note">
-            {satireOn && <p className="muted">Opslag med klovnen er opdigtede (satire).</p>}
             <form action={setSatirePreferenceAction} className="satire-toggle">
               <input type="hidden" name="satire" value={satireOn ? 'off' : 'on'} />
               <button type="submit" className="btn secondary">{satireOn ? 'Skjul satire' : 'Vis satire'}</button>
