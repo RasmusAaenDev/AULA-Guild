@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
+import { TimeField } from '@/components/TimeField';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { createEventAction, updateEventAction, type FormState } from './actions';
 
@@ -49,8 +50,8 @@ export function EventForm({ isOfficer, initial }: { isOfficer: boolean; initial?
         <input id="date" {...bind('date')} type="date" required />
       </div>
       <div className="field">
-        <label htmlFor="time">Tidspunkt</label>
-        <input id="time" {...bind('time')} type="time" required />
+        <label id="time-label" htmlFor="time">Tidspunkt (24 timer)</label>
+        <TimeField id="time" {...bind('time')} required />
       </div>
       <div className="field">
         <label htmlFor="durationMinutes">Varighed i minutter (valgfri, 15–720)</label>

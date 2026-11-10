@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
+import { TimeField } from '@/components/TimeField';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { weekdayNames } from '@/lib/calendar-ui';
 import { createSeriesAction, updateSeriesAction, type FormState } from './actions';
@@ -52,8 +53,8 @@ export function SeriesForm({ initial }: { initial?: SeriesFormValues }) {
         </select>
       </div>
       <div className="field">
-        <label htmlFor="startTime">Klokkeslæt</label>
-        <input id="startTime" {...bind('startTime')} type="time" required />
+        <label id="startTime-label" htmlFor="startTime">Klokkeslæt (24 timer)</label>
+        <TimeField id="startTime" {...bind('startTime')} required />
       </div>
       <div className="field">
         <label htmlFor="durationMinutes">Varighed i minutter (15–720)</label>

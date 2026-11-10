@@ -239,3 +239,4 @@ details.create .menu a:hover { background: var(--border); }
 .satire-note p { margin: 0; }
 .satire-toggle { margin: 0; }
 .satire-explain { background: var(--sat-bg); border: 2px dashed var(--sat-border); color: var(--text); }
+.time-field { display: inline-flex; align-items: center; gap: 6px; }
