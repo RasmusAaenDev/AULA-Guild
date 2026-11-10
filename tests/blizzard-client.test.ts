@@ -94,6 +94,15 @@ describe('blizzard-klient', () => {
     expect((await client.getCharacter('x')).spec).toBeNull();
   });
 
+  it('klarer karakter uden guild, spec og item level', async () => {
+    const { client } = setup((u) =>
+      isToken(u) ? jsonResponse(200, tokenBody) : u.includes('/specializations') ? jsonResponse(404) : jsonResponse(200, { id: 5, name: 'Nul', character_class: { name: 'Priest' } }),
+    );
+    const c = await client.getCharacter('nul');
+    expect(c.spec).toBeUndefined();
+    expect(c).toMatchObject({ itemLevel: null, guildId: null, guildName: null, lastLogin: null });
+  });
+
   // Bevidst ændret: specializations er sekundære data. Før propagerede 429 herfra; nu giver enhver fejl spec undefined og profilen lykkes.
   it.each([
     ['404', () => jsonResponse(404)],
