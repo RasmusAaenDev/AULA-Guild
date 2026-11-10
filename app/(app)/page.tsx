@@ -1,6 +1,9 @@
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { and, eq } from 'drizzle-orm';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
+import { SatireCard } from '@/components/SatireCard';
+import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
@@ -13,12 +16,16 @@ import { roleLabel } from '@/lib/messages';
 import { fullName } from '@/lib/names';
 import { countUnread, listPosts } from '@/lib/posts';
 import type { PostTab } from '@/lib/posts';
+import type { OverviewTab } from '@/lib/posts-ui';
 import { excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
+import { SATIRE_COOKIE, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satirePosts, satireNeeded } from '@/lib/satire';
+import { todayInCopenhagen } from '@/lib/time';
 import { requireMember } from '@/lib/session';
 
-const TAB_ORDER: PostTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte'];
-const EMPTY: Record<PostTab, string> = {
+const TAB_ORDER: OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
+const EMPTY: Record<OverviewTab, string> = {
+  satire: 'Der er ingen satire-opslag.',
   alle: 'Der er ingen opslag endnu. Skriv det første.',
   ulaeste: 'Du har læst alle opslag.',
   vigtige: 'Der er ingen fastgjorte opslag.',
@@ -33,12 +40,15 @@ export default async function OverviewPage({
 }) {
   const member = await requireMember();
   const sp = await searchParams;
-  const tab = parseTab(sp.fane);
-  const page = parsePage(sp.side);
+  const satireOn = parseSatirePreference((await cookies()).get(SATIRE_COOKIE)?.value);
+  const tab = effectiveTab(parseTab(sp.fane), satireOn);
+  const mode = satireMode(tab, satireOn);
+  const page = mode === 'all' ? 1 : parsePage(sp.side);
   const db = getDb();
   const now = new Date();
+  const dateKey = todayInCopenhagen(now);
   const [{ items, hasMore }, unreadCount, unanswered, upcoming] = await Promise.all([
-    listPosts(db, member.userId, tab, page),
+    tab === 'satire' ? Promise.resolve({ items: [], hasMore: false }) : listPosts(db, member.userId, tab, page),
     countUnread(db, member.userId),
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
@@ -51,6 +61,14 @@ export default async function OverviewPage({
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
 
+  type Entry = { kind: 'real'; item: (typeof items)[number] } | { kind: 'satire'; item: (typeof satirePosts)[number] };
+  const feed: Entry[] =
+    mode === 'interleaved'
+      ? composeAlleFeed(items, pickSatire(dateKey, page, satireNeeded(items.length, page)), page)
+      : mode === 'all'
+        ? satirePosts.map((item) => ({ kind: 'satire' as const, item }))
+        : items.map((item) => ({ kind: 'real' as const, item }));
+
   return (
     <>
       <UnansweredBanner count={unanswered} />
@@ -61,41 +79,62 @@ export default async function OverviewPage({
       <div className="overview-grid">
         <div className="overview-main">
           <nav className="tabs" aria-label="Opslagsfaner">
-            {TAB_ORDER.map((t) => (
+            {TAB_ORDER.filter((t) => t !== 'satire' || satireOn).map((t) => (
               <Link key={t} href={`/?fane=${t}`} className="tab" aria-current={t === tab ? 'page' : undefined}>
                 {tabLabels[t]}
                 {t === 'ulaeste' && unreadCount > 0 ? ` (${unreadCount})` : ''}
               </Link>
             ))}
           </nav>
-          {items.length === 0 && (
+          <div className="satire-note">
+            <p className="muted">Opslag mærket FAKE · SATIRE er opdigtede.</p>
+            <form action={setSatirePreferenceAction} className="satire-toggle">
+              <input type="hidden" name="satire" value={satireOn ? 'off' : 'on'} />
+              <button type="submit" className="btn secondary">{satireOn ? 'Skjul satire' : 'Vis satire'}</button>
+            </form>
+          </div>
+          {mode === 'all' && (
+            <section className="card satire-explain">
+              <h2>Satire</h2>
+              <p>
+                Her er alle de fiktive opslag samlet. De er opdigtede for sjov, efterligner genren fra skolebeskeder og
+                handler ikke om rigtige personer. I Alle-fanen dukker et enkelt af dem op efter hvert tredje ægte opslag.
+                De tæller ikke som ulæste, kan ikke gemmes og kan ikke kommenteres. Du kan skjule dem med knappen ovenfor.
+              </p>
+            </section>
+          )}
+          {tab !== 'satire' && items.length === 0 && (
             <section className="card">
               <p className="muted">{page > 1 ? 'Der er ikke flere opslag.' : EMPTY[tab]}</p>
             </section>
           )}
-          {items.map((p) => (
-            <article key={p.id} className={p.unread ? 'card post-card unread' : 'card post-card'}>
-              {(p.pinned || p.unread) && (
-                <p className="post-badges">
-                  {p.pinned && <span className="badge">Vigtig</span>}
-                  {p.unread && <span className="badge new">Ny</span>}
-                </p>
-              )}
-              <div className="post-head">
-                <p className="post-meta">
-                  <strong>{p.authorCharacterFullName ? `${p.authorName} (${p.authorCharacterFullName})` : p.authorName}</strong>
-                  <span className="muted">Delt med hele guilden</span>
-                  <time className="muted" dateTime={p.createdAt.toISOString()} title={formatAbsolute(p.createdAt)}>
-                    {formatRelativeDay(p.createdAt, now)}
-                  </time>
-                </p>
-                <BookmarkButton postId={p.id} bookmarked={p.bookmarked} />
-              </div>
-              <h3><Link href={`/opslag/${p.id}`}>{p.title}</Link></h3>
-              <p className="excerpt">{excerptText(p.excerpt)}</p>
-              <p className="muted">{p.commentCount === 1 ? '1 kommentar' : `${p.commentCount} kommentarer`}</p>
-            </article>
-          ))}
+          {feed.map((entry) => {
+            if (entry.kind === 'satire') return <SatireCard key={`satire-${entry.item.id}`} post={entry.item} />;
+            const p = entry.item;
+            return (
+              <article key={p.id} className={p.unread ? 'card post-card unread' : 'card post-card'}>
+                {(p.pinned || p.unread) && (
+                  <p className="post-badges">
+                    {p.pinned && <span className="badge">Vigtig</span>}
+                    {p.unread && <span className="badge new">Ny</span>}
+                  </p>
+                )}
+                <div className="post-head">
+                  <p className="post-meta">
+                    <strong>{p.authorCharacterFullName ? `${p.authorName} (${p.authorCharacterFullName})` : p.authorName}</strong>
+                    <span className="muted">Delt med hele guilden</span>
+                    <time className="muted" dateTime={p.createdAt.toISOString()} title={formatAbsolute(p.createdAt)}>
+                      {formatRelativeDay(p.createdAt, now)}
+                    </time>
+                  </p>
+                  <BookmarkButton postId={p.id} bookmarked={p.bookmarked} />
+                </div>
+                <h3><Link href={`/opslag/${p.id}`}>{p.title}</Link></h3>
+                <p className="excerpt">{excerptText(p.excerpt)}</p>
+                <p className="muted">{p.commentCount === 1 ? '1 kommentar' : `${p.commentCount} kommentarer`}</p>
+              </article>
+            );
+          })}
           {(page > 1 || hasMore) && (
             <nav className="actions" aria-label="Sider med opslag">
               {page > 1 && (

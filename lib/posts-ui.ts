@@ -1,15 +1,18 @@
 import type { PostTab } from '@/lib/posts';
 import { todayInCopenhagen, utcToCopenhagen } from '@/lib/time';
 
-const TABS: readonly PostTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte'];
+/** Faner i Overblik: de fem ægte (`PostTab`) plus «satire», som kun findes i UI-laget (ingen database). */
+export type OverviewTab = PostTab | 'satire';
 
-export const tabLabels: Record<PostTab, string> = {
-  alle: 'Alle', ulaeste: 'Ulæste', vigtige: 'Vigtige', egne: 'Egne opslag', gemte: 'Gemte',
+const TABS: readonly OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
+
+export const tabLabels: Record<OverviewTab, string> = {
+  alle: 'Alle', ulaeste: 'Ulæste', vigtige: 'Vigtige', egne: 'Egne opslag', gemte: 'Gemte', satire: 'Satire',
 };
 
 /** Ukendt eller manglende fane giver «alle». */
-export function parseTab(value: string | string[] | undefined): PostTab {
-  return typeof value === 'string' && (TABS as readonly string[]).includes(value) ? (value as PostTab) : 'alle';
+export function parseTab(value: string | string[] | undefined): OverviewTab {
+  return typeof value === 'string' && (TABS as readonly string[]).includes(value) ? (value as OverviewTab) : 'alle';
 }
 
 /** Sidetal fra `?side=`; ugyldigt giver 1, og værdien afkortes til samme loft som modulet. */

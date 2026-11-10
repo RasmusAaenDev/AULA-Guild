@@ -4,12 +4,13 @@ import {
 } from '@/lib/posts-ui';
 
 describe('parseTab', () => {
-  it('kender de fem faner og falder tilbage til alle', () => {
+  it('kender de seks faner og falder tilbage til alle', () => {
     expect(parseTab('alle')).toBe('alle');
     expect(parseTab('ulaeste')).toBe('ulaeste');
     expect(parseTab('vigtige')).toBe('vigtige');
     expect(parseTab('egne')).toBe('egne');
     expect(parseTab('gemte')).toBe('gemte');
+    expect(parseTab('satire')).toBe('satire');
     expect(parseTab('x')).toBe('alle');
     expect(parseTab(undefined)).toBe('alle');
     expect(parseTab(['ulaeste', 'vigtige'])).toBe('alle');

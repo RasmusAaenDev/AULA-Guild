@@ -14,6 +14,7 @@
   --focus: #005b6b;
   --ok: #1b6e38; --maybe: #7d5200; --no: #b3261e; --on-status: #ffffff;
   --focus-inverse: #ffffff;
+  --sat-bg: #fff4d6; --sat-border: #7a4f00; --sat-badge: #4a1d7a; --sat-badge-fg: #ffffff; --sat-ink: #5b3a00;
   --on-cls: #ffffff; --check-bg: #ffffff; --check-fg: #005b6b;
   --cls-death-knight: #a8123a; --cls-demon-hunter: #7a1fa2; --cls-druid: #a14a00; --cls-evoker: #1b6e5c;
   --cls-hunter: #3d7a1c; --cls-mage: #1a6aa6; --cls-monk: #00755a; --cls-paladin: #b0306f;
@@ -26,6 +27,7 @@
     --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
     --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
     --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
+    --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
   }
 }
 :root[data-theme='dark'] {
@@ -33,6 +35,7 @@
   --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
   --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
   --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
+  --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
 }
 
 html { scroll-padding-top: 4rem; }
@@ -219,3 +222,22 @@ details.create .menu a:hover { background: var(--border); }
   .navlink { font-size: 11px; padding: 8px 0; }
   .nav-badge { left: auto; right: -8px; top: -8px; min-width: 16px; padding: 0 4px; font-size: 11px; }
 }
+
+/* Satire-opslag: bevidst anderledes end ægte opslag (stiplet kant, egen baggrund, egen badge). */
+.satire-card { background: var(--sat-bg); border: 2px dashed var(--sat-border); box-shadow: none; color: var(--text); }
+.satire-card h3, .satire-card h3 a { color: var(--heading); }
+.satire-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.satire-mask { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; border: 2px dashed var(--sat-border); color: var(--sat-ink); }
+.satire-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--sat-badge); color: var(--sat-badge-fg); border-radius: 6px; padding: 3px 10px; font-size: 13px; font-weight: 800; letter-spacing: 0.06em; }
+.satire-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin: 0; }
+.satire-meta .satire-label { color: var(--sat-ink); font-weight: 700; }
+.satire-body { white-space: pre-line; overflow-wrap: anywhere; margin: 0 0 8px; }
+.satire-card .muted { color: var(--muted); }
+.satire-comments { border-top: 1px dashed var(--sat-border); margin-top: 10px; padding-top: 8px; }
+.satire-comments h4 { margin: 0 0 4px; font-size: 14px; color: var(--sat-ink); }
+.satire-comments p { margin: 4px 0; overflow-wrap: anywhere; }
+.satire-foot { margin: 12px 0 0; padding-top: 8px; border-top: 2px dashed var(--sat-border); font-weight: 700; color: var(--sat-ink); }
+.satire-note { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; margin: -4px 0 16px; }
+.satire-note p { margin: 0; }
+.satire-toggle { margin: 0; }
+.satire-explain { background: var(--sat-bg); border: 2px dashed var(--sat-border); color: var(--text); }

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'maske' | 'fake';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -39,6 +39,18 @@ const paths: Record<IconName, ReactNode> = {
   ),
   luk: <path d="M6 6l12 12M18 6L6 18" />,
   'pil-ned': <path d="M6 9l6 6 6-6" />,
+  maske: (
+    <>
+      <path d="M4 6c3-2 5-2 8 0 3-2 5-2 8 0v5c0 4-3 7-8 9-5-2-8-5-8-9z" />
+      <path d="M8 11h2M14 11h2M9.5 15c1.5 1 3.5 1 5 0" />
+    </>
+  ),
+  fake: (
+    <>
+      <path d="M12 3l10 18H2z" />
+      <path d="M12 10v5M12 18v.5" />
+    </>
+  ),
 };
 
 /** Simpelt 24×24 stregikon i currentColor; skjult for skærmlæsere (teksten ved siden af bærer meningen). */
