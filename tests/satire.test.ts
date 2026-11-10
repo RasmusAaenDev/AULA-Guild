@@ -74,25 +74,25 @@ describe('pickSatire', () => {
 
 describe('activeSatire (rotation)', () => {
   const ids = (d: string) => activeSatire(d).map((p) => p.id);
-  it('har 40 unikke opslag', () => {
-    expect(SATIRE_VISIBLE).toBe(40);
-    expect(new Set(ids('2026-11-10')).size).toBe(40);
+  it('har 20 unikke opslag', () => {
+    expect(SATIRE_VISIBLE).toBe(20);
+    expect(new Set(ids('2026-11-10')).size).toBe(20);
   });
   it('glider ét opslag frem pr. dag: ét ud, ét ind', () => {
     const a = ids('2026-11-10');
     const b = ids('2026-11-11');
-    expect(b.slice(0, 39)).toEqual(a.slice(1));
-    expect(b[39]).not.toBe(a[39]);
+    expect(b.slice(0, 19)).toEqual(a.slice(1));
+    expect(b[19]).not.toBe(a[19]);
   });
-  it('kommer rundt efter 60 dage og dækker alle opslag over 21 dage', () => {
+  it('kommer rundt efter 60 dage og dækker alle opslag over 41 dage', () => {
     expect(ids('2027-01-09')).toEqual(ids('2026-11-10'));
     const seen = new Set<string>();
-    for (let d = 0; d < 21; d++) ids(new Date(Date.UTC(2026, 10, 10 + d)).toISOString().slice(0, 10)).forEach((i) => seen.add(i));
+    for (let d = 0; d < 41; d++) ids(new Date(Date.UTC(2026, 10, 10 + d)).toISOString().slice(0, 10)).forEach((i) => seen.add(i));
     expect(seen.size).toBe(60);
   });
   it('går rent over årsskifte og skuddag', () => {
-    expect(new Set(ids('2028-02-29')).size).toBe(40);
-    expect(ids('2027-01-01').slice(0, 39)).toEqual(ids('2026-12-31').slice(1));
+    expect(new Set(ids('2028-02-29')).size).toBe(20);
+    expect(ids('2027-01-01').slice(0, 19)).toEqual(ids('2026-12-31').slice(1));
   });
 });
 

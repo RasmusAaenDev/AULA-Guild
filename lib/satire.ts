@@ -45,7 +45,7 @@ function mulberry32(seed: number): () => number {
 }
 
 /** Antal opslag i den aktive pulje. Puljen glider ét opslag frem pr. dag, så alle opslag roterer ind og ud i en evig løkke. */
-export const SATIRE_VISIBLE = 40;
+export const SATIRE_VISIBLE = 20;
 
 /** Dagnummer (UTC-midnat) for en `YYYY-MM-DD`-nøgle i dansk tid; ugyldig nøgle giver 0. */
 export function dayNumber(dateKey: string): number {
