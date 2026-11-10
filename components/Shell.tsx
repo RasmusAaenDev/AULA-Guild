@@ -30,6 +30,8 @@ export function Shell({
             )}
           </NavLink>
           <NavLink href="/kalender">Kalender</NavLink>
+          <NavLink href="/filer">Filer</NavLink>
+          <NavLink href="/galleri">Galleri</NavLink>
           <NavLink href="/kontakter">Kontakter</NavLink>
         </nav>
         <main className="content">{children}</main>
