@@ -365,7 +365,7 @@ describe('toggleBookmark', () => {
     expect(await db.select().from(postBookmarks)).toHaveLength(0);
   });
 
-  it('kan fjerne et bogmærke på et opslag, der siden er slettet', async () => {
+  it('giver not_found for et opslag, der siden er slettet, og skjuler det i gemte', async () => {
     const a = await seedUser(db);
     const p = await seedPost(a, 'P');
     await toggleBookmark(db, a, p);

@@ -123,7 +123,6 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .tab[aria-current='page'], .tab[aria-current='page']:hover { background: var(--topbar); color: #fff; border-color: var(--topbar); }
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 .section-head h2 { margin: 0; }
-a.post-card { display: block; text-decoration: none; color: inherit; }
 .post-card h3 { margin: 6px 0; }
 .post-card .excerpt { margin: 0 0 6px; overflow-wrap: anywhere; }
 .post-card.unread { border-left: 4px solid var(--badge); }
@@ -180,6 +179,10 @@ details.create .menu a:hover { background: var(--border); }
 .date-block { flex: none; width: 52px; text-align: center; background: var(--bg); border-radius: 8px; padding: 6px 0; line-height: 1.1; }
 .date-day { display: block; font-size: 24px; font-weight: 800; color: var(--heading); }
 .date-month { display: block; font-size: 13px; color: var(--muted); text-transform: uppercase; }
+.rsvp-compact { margin-top: 8px; }
+.rsvp-compact .actions { gap: 6px; }
+.rsvp-compact .btn { padding: 6px 10px; font-size: 14px; }
+.date-row > div:last-child { min-width: 0; }
 .date-status { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; }
 .date-row.status-deltager .date-status { color: var(--ok); }
 .date-row.status-maaske .date-status { color: var(--maybe); }

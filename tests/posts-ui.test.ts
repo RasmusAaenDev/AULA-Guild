@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  excerptText, formatAbsolute, formatRelative, formatRelativeDay, parsePage, parseTab, postMessage, unreadLabel,
+  excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, postMessage, unreadLabel,
 } from '@/lib/posts-ui';
 
 describe('parseTab', () => {
@@ -38,22 +38,6 @@ describe('postMessage', () => {
   });
   it('kommentarbesked nævner kommentaren', () => {
     expect(postMessage('invalid', 'comment')).toMatch(/Kommentar/);
-  });
-});
-
-describe('formatRelative', () => {
-  const now = new Date('2026-11-10T12:00:00Z');
-  it('kort efter', () => {
-    expect(formatRelative(new Date('2026-11-10T11:59:40Z'), now)).toBe('lige nu');
-    expect(formatRelative(new Date('2026-11-10T12:00:30Z'), now)).toBe('lige nu');
-  });
-  it('minutter og timer', () => {
-    expect(formatRelative(new Date('2026-11-10T11:55:00Z'), now)).toBe('for 5 min. siden');
-    expect(formatRelative(new Date('2026-11-10T09:00:00Z'), now)).toBe('for 3 timer siden');
-    expect(formatRelative(new Date('2026-11-10T11:00:00Z'), now)).toBe('for 1 time siden');
-  });
-  it('ældre end et døgn giver absolut tid i dansk tid', () => {
-    expect(formatRelative(new Date('2026-11-01T11:00:00Z'), now)).toBe('01.11.2026 12.00');
   });
 });
 

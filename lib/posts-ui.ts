@@ -49,17 +49,6 @@ export function formatAbsolute(d: Date): string {
   return absolute.format(d).replace(',', '');
 }
 
-/** «lige nu», «for 5 min. siden», «for 3 timer siden»; ældre end et døgn giver absolut tid. */
-export function formatRelative(d: Date, now: Date): string {
-  const diff = now.getTime() - d.getTime();
-  if (diff < 60_000) return 'lige nu';
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 60) return `for ${minutes} min. siden`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return hours === 1 ? 'for 1 time siden' : `for ${hours} timer siden`;
-  return formatAbsolute(d);
-}
-
 const weekdayShort = ['Man.', 'Tir.', 'Ons.', 'Tor.', 'Fre.', 'Lør.', 'Søn.'] as const;
 
 function dayNumber(date: string): number {
@@ -68,8 +57,8 @@ function dayNumber(date: string): number {
 }
 
 /**
- * AULA-lignende relativ tid efter danske kalenderdage: «I dag 09:05», «I går 16:45», «Fre. 13:50» for de
- * næste fem dage bagud (2–6 dage siden), ellers dato og tid. Fremtidige tidspunkter vises som dato og tid.
+ * AULA-lignende relativ tid efter danske kalenderdage: «I dag 09:05», «I går 16:45», ugedagsforkortelse og
+ * klokkeslæt («Fre. 13:50») for 2–6 dage siden, ellers dato og tid. Fremtidige tidspunkter vises som dato og tid.
  */
 export function formatRelativeDay(d: Date, now: Date): string {
   const local = utcToCopenhagen(d);

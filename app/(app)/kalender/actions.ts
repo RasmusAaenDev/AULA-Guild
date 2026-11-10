@@ -43,6 +43,7 @@ function field(formData: FormData, name: string): string {
 }
 
 function revalidateCalendar(eventId?: number) {
+  revalidatePath('/', 'layout'); // tællere og bånd i layoutet
   revalidatePath('/kalender');
   revalidatePath('/kalender/serier');
   revalidatePath('/');
