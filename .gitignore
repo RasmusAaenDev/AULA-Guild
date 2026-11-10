@@ -5,3 +5,4 @@ node_modules/
 data/
 *.log
 next-env.d.ts
+*.tsbuildinfo
