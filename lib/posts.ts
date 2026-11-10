@@ -33,7 +33,9 @@ const DEFAULT_PAGE_SIZE = 20;
 const validId = (id: number) => Number.isInteger(id) && id > 0 && id <= 2147483647;
 
 function lengthOk(s: string, max: number): boolean {
-  return s.length >= 1 && s.length <= max;
+  if (s.includes('\u0000')) return false; // Postgres afviser NUL i text (22021)
+  const n = [...s].length; // Unicode-tegn, ikke UTF-16-enheder
+  return n >= 1 && n <= max;
 }
 
 export async function createPost(
@@ -125,7 +127,7 @@ export async function setPinned(
   await db
     .update(posts)
     .set({ pinned, pinnedAt: pinned ? new Date() : null })
-    .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
+    .where(and(eq(posts.id, postId), isNull(posts.deletedAt), eq(posts.pinned, !pinned)));
   return { ok: true };
 }
 
@@ -148,8 +150,9 @@ export async function listPosts(
   page: number,
   pageSize: number = DEFAULT_PAGE_SIZE,
 ): Promise<{ items: PostListItem[]; hasMore: boolean }> {
-  const size = Math.max(1, Math.floor(pageSize));
-  const offset = (Math.max(1, Math.floor(page)) - 1) * size;
+  const size = Number.isFinite(pageSize) && pageSize >= 1 ? Math.min(100, Math.floor(pageSize)) : DEFAULT_PAGE_SIZE;
+  const pageNo = Number.isFinite(page) ? Math.min(1_000_000, Math.max(1, Math.floor(page))) : 1;
+  const offset = (pageNo - 1) * size;
   const where = and(
     isNull(posts.deletedAt),
     tab === 'vigtige' ? eq(posts.pinned, true) : undefined,
@@ -159,7 +162,7 @@ export async function listPosts(
     .select({
       id: posts.id,
       title: posts.title,
-      excerpt: sql<string>`left(${posts.body}, ${EXCERPT_LENGTH})`,
+      excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH})`,
       authorName: users.name,
       createdAt: posts.createdAt,
       pinned: posts.pinned,

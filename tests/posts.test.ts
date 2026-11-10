@@ -38,7 +38,12 @@ describe('createPost', () => {
 
   it('validerer grænserne præcist', async () => {
     const u = await seedUser(db);
-    const ok = (title: string, body: string) => createPost(db, u, { title, body }).then((r) => r.ok);
+    let created = 0;
+    const ok = async (title: string, body: string) => {
+      const r = await createPost(db, u, { title, body });
+      if (r.ok) created += 1;
+      return r.ok;
+    };
     expect(await ok('', 'x')).toBe(false);
     expect(await ok('   ', 'x')).toBe(false);
     expect(await ok('t', '')).toBe(false);
@@ -50,7 +55,31 @@ describe('createPost', () => {
     expect(await ok('t', 'b'.repeat(5001))).toBe(false);
     const r = await createPost(db, u, { title: '', body: 'x' });
     expect(r).toEqual({ ok: false, reason: 'invalid' });
-    expect(await db.select().from(posts)).toHaveLength(3);
+    expect(await db.select().from(posts)).toHaveLength(created);
+  });
+
+  it('afviser NUL-tegn uden at kaste', async () => {
+    const u = await seedUser(db);
+    expect(await createPost(db, u, { title: 'a\u0000b', body: 'x' })).toEqual({ ok: false, reason: 'invalid' });
+    expect(await createPost(db, u, { title: 't', body: 'x\u0000' })).toEqual({ ok: false, reason: 'invalid' });
+    expect(await db.select().from(posts)).toHaveLength(0);
+  });
+
+  it('tæller unicode-tegn, ikke UTF-16-enheder', async () => {
+    const u = await seedUser(db);
+    const e = '\u{1F600}';
+    expect((await createPost(db, u, { title: e.repeat(120), body: e.repeat(5000) })).ok).toBe(true);
+    expect((await createPost(db, u, { title: e.repeat(121), body: 'x' })).ok).toBe(false);
+    expect((await createPost(db, u, { title: 't', body: e.repeat(5001) })).ok).toBe(false);
+    const p = await seedPost(u, 'P');
+    expect((await addComment(db, u, p, e.repeat(2000))).ok).toBe(true);
+    expect(await addComment(db, u, p, e.repeat(2001))).toEqual({ ok: false, reason: 'invalid' });
+  });
+
+  it('opslag er ikke ulæst for forfatteren lige efter oprettelse', async () => {
+    const u = await seedUser(db);
+    await createPost(db, u, { title: 't', body: 'x' });
+    expect((await listPosts(db, u, 'ulaeste', 1)).items).toEqual([]);
   });
 });
 
@@ -66,6 +95,13 @@ describe('addComment', () => {
     expect(await addComment(db, b, p, '   ')).toEqual({ ok: false, reason: 'invalid' });
     expect((await addComment(db, b, p, 'k'.repeat(2000))).ok).toBe(true);
     expect(await addComment(db, b, p, 'k'.repeat(2001))).toEqual({ ok: false, reason: 'invalid' });
+  });
+
+  it('afviser NUL-tegn', async () => {
+    const a = await seedUser(db);
+    const p = await seedPost(a, 'P');
+    expect(await addComment(db, a, p, 'a\u0000b')).toEqual({ ok: false, reason: 'invalid' });
+    expect(await db.select().from(comments)).toHaveLength(0);
   });
 
   it('afviser slettet og ukendt opslag', async () => {
@@ -126,6 +162,19 @@ describe('setPinned', () => {
     await db.update(posts).set({ deletedAt: T0 }).where(eq(posts.id, p));
     expect(await setPinned(db, { userId: a, isOfficer: true }, p, true)).toEqual({ ok: false, reason: 'not_found' });
   });
+
+  it('er en no-op når tilstanden allerede er den ønskede', async () => {
+    const a = await seedUser(db, 'a');
+    const off = { userId: a, isOfficer: true };
+    const p = await seedPost(a, 'P');
+    expect(await setPinned(db, off, p, false)).toEqual({ ok: true });
+    await setPinned(db, off, p, true);
+    const [first] = await db.select().from(posts).where(eq(posts.id, p));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(await setPinned(db, off, p, true)).toEqual({ ok: true });
+    const [second] = await db.select().from(posts).where(eq(posts.id, p));
+    expect(second.pinnedAt).toEqual(first.pinnedAt);
+  });
 });
 
 describe('listPosts', () => {
@@ -173,6 +222,45 @@ describe('listPosts', () => {
     // slettet fastgjort vises ikke
     await db.update(posts).set({ deletedAt: T0 }).where(eq(posts.id, p2));
     expect((await listPosts(db, b, 'vigtige', 1)).items).toEqual([]);
+  });
+
+  it('uddrag: whitespace samles, og der skæres på tegngrænsen', async () => {
+    const a = await seedUser(db);
+    const p1 = await seedPost(a, 'A', min(0), { body: '  Linje1\n\n  Linje2\t\tslut  ' });
+    const p2 = await seedPost(a, 'B', min(1), { body: 'x'.repeat(199) + '\u{1F600}\u{1F600}' });
+    const r = await listPosts(db, a, 'alle', 1);
+    expect(r.items.find((i) => i.id === p1)!.excerpt).toBe('Linje1 Linje2 slut');
+    const ex = r.items.find((i) => i.id === p2)!.excerpt;
+    expect(ex).toBe('x'.repeat(199) + '\u{1F600}');
+    expect([...ex]).toHaveLength(200);
+  });
+
+  it('ugyldig page og pageSize giver standardværdier i stedet for fejl', async () => {
+    const a = await seedUser(db);
+    for (let i = 0; i < 3; i++) await seedPost(a, `P${i}`, min(i));
+    for (const page of [NaN, Infinity, -3, 0, 1.5]) {
+      expect((await listPosts(db, a, 'alle', page)).items).toHaveLength(3);
+    }
+    for (const size of [NaN, Infinity, -1, 0]) {
+      expect((await listPosts(db, a, 'alle', 1, size)).items).toHaveLength(3);
+    }
+    expect((await listPosts(db, a, 'alle', 1, 1e9)).items).toHaveLength(3);
+    expect((await listPosts(db, a, 'alle', 1, 2.7)).items).toHaveLength(2);
+  });
+
+  it('ulæste-fanen med sideinddeling', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const ids: number[] = [];
+    for (let i = 0; i < 5; i++) ids.push(await seedPost(a, `P${i}`, min(i)));
+    const exp = [...ids].reverse();
+    const r1 = await listPosts(db, b, 'ulaeste', 1, 2);
+    const r2 = await listPosts(db, b, 'ulaeste', 2, 2);
+    const r3 = await listPosts(db, b, 'ulaeste', 3, 2);
+    expect(r1.items.map((i) => i.id)).toEqual(exp.slice(0, 2));
+    expect(r2.items.map((i) => i.id)).toEqual(exp.slice(2, 4));
+    expect(r3.items.map((i) => i.id)).toEqual(exp.slice(4));
+    expect([r1.hasMore, r2.hasMore, r3.hasMore]).toEqual([true, true, false]);
   });
 
   it('sideinddeling med pageSize 2 og stabil rækkefølge ved ens tidspunkt', async () => {
@@ -235,6 +323,13 @@ describe('getPost', () => {
     await markPostRead(db, b, p);
     expect((await getPost(db, b, p))!.unread).toBe(false);
     expect((await getPost(db, a, p))!.unread).toBe(true);
+  });
+
+  it('markPostRead for ukendt id er en no-op', async () => {
+    const a = await seedUser(db);
+    await markPostRead(db, a, 424242);
+    expect(await db.select().from(postReads)).toHaveLength(0);
+    expect(await getPost(db, a, 424242)).toBeNull();
   });
 
   it('giver null for slettet og ukendt', async () => {
