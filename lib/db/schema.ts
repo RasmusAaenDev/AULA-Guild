@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, pgEnum, pgTable, serial, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const roles = ['tank', 'healer', 'dps'] as const;
 export type Role = (typeof roles)[number];
@@ -69,7 +69,10 @@ export const events = pgTable(
       .references(() => users.id),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex('events_series_starts_at_uniq').on(t.seriesId, t.startsAt).where(sql`${t.seriesId} is not null`)],
+  (t) => [
+    uniqueIndex('events_series_starts_at_uniq').on(t.seriesId, t.startsAt).where(sql`${t.seriesId} is not null`),
+    index('events_starts_at_idx').on(t.startsAt),
+  ],
 );
 
 export const rsvps = pgTable(
@@ -88,5 +91,9 @@ export const rsvps = pgTable(
     status: rsvpStatusEnum('status').notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [uniqueIndex('rsvps_event_user_uniq').on(t.eventId, t.userId)],
+  (t) => [
+    uniqueIndex('rsvps_event_user_uniq').on(t.eventId, t.userId),
+    index('rsvps_user_id_idx').on(t.userId),
+    index('rsvps_character_id_idx').on(t.characterId),
+  ],
 );
