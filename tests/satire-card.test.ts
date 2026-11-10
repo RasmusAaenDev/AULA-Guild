@@ -12,7 +12,7 @@ const post: SatirePost = {
   important: true,
   tags: [],
   comments: [
-    { author: 'Hr. Fiktiv', body: 'Tak for info.' },
+    { author: 'Hr. Hansen', body: 'Tak for info.' },
     { author: 'Fru Falsk', body: 'Hvornår?' },
   ],
 };
