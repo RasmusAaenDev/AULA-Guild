@@ -121,7 +121,7 @@ function retrySeconds(res: Response, body: unknown): number {
   return Math.min(Math.max(s, 1), MAX_RETRY_S);
 }
 
-type RawChannel = { id: string; name: string; type: number; position: number; overwrites: Overwrite[] };
+type RawChannel = { id: string; name: string; type: number; position: number; nsfw: boolean; overwrites: Overwrite[] };
 type Overwrite = { id: string; type: number; allow: bigint; deny: bigint };
 type ListBase = { id: string; name: string; position: number; type: number; botWrite: boolean };
 
@@ -146,6 +146,7 @@ function parseChannel(c: unknown): RawChannel | null {
     name: str(c.name).trim() || 'kanal',
     type: c.type,
     position: typeof c.position === 'number' ? c.position : 0,
+    nsfw: c.nsfw === true,
     overwrites,
   };
 }
@@ -249,7 +250,7 @@ export function createChatClient(opts: {
     const out: ListBase[] = [];
     for (const raw of channelsRaw) {
       const c = parseChannel(raw);
-      if (!c || (c.type !== 0 && c.type !== 5)) continue;
+      if (!c || (c.type !== 0 && c.type !== 5) || c.nsfw) continue; // aldersbegrænsede kanaler vises ikke
       const pub = channelPermissions({ guildId: gid, everyone, roleIds: [], rolePerms, overwrites: c.overwrites });
       if ((pub & seeAndRead) !== seeAndRead) continue;
       const bot = channelPermissions({ guildId: gid, everyone, roleIds: botRoles, rolePerms, memberId: bid, overwrites: c.overwrites });

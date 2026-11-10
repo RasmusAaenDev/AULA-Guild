@@ -30,6 +30,10 @@ describe('offentlig/privat', () => {
     expect(r.channels.map((c) => [c.id, c.canWrite])).toEqual([['11', true], ['12', false]]);
     expect(s.other[0]).toBe(`/channels/${CHANNEL}`);
   });
+  it('skjuler aldersbegrænsede (nsfw) kanaler', async () => {
+    const s = setup(fixture({ channels: [ch('11'), ch('12', { nsfw: true })] }));
+    expect(await ids(s)).toEqual(['11']);
+  });
   it('@everyone uden View eller Read History skjuler kanalen', async () => {
     const s = setup(fixture({ roles: [{ id: GUILD, permissions: String(SEND) }], channels: [ch('11')] }));
     expect(await ids(s)).toEqual([]);

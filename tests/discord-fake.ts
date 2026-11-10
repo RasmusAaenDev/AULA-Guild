@@ -15,6 +15,7 @@ export type FakeChannel = {
   name?: string;
   type?: number;
   position?: number;
+  nsfw?: boolean;
   permission_overwrites?: { id: string; type: number; allow: string; deny: string }[];
 };
 export type Fixture = {
