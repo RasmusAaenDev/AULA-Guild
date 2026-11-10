@@ -6,8 +6,8 @@ import { ProfileMenu } from './ProfileMenu';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Shell({
-  member, characters, activeId, unreadPosts = 0, children,
-}: { member: Member; characters: MyCharacter[]; activeId: number | null; unreadPosts?: number; children: React.ReactNode }) {
+  member, characters, activeId, unreadPosts = 0, chatEnabled = false, children,
+}: { member: Member; characters: MyCharacter[]; activeId: number | null; unreadPosts?: number; chatEnabled?: boolean; children: React.ReactNode }) {
   const unread = unreadLabel(unreadPosts);
   return (
     <>
@@ -32,6 +32,7 @@ export function Shell({
           <NavLink href="/kalender">Kalender</NavLink>
           <NavLink href="/filer">Filer</NavLink>
           <NavLink href="/galleri">Galleri</NavLink>
+          {chatEnabled && <NavLink href="/chat">Chat</NavLink>}
           <NavLink href="/kontakter">Kontakter</NavLink>
         </nav>
         <main className="content">{children}</main>

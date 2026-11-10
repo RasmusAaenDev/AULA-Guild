@@ -4,6 +4,7 @@ import { listMyCharacters } from '@/lib/characters';
 import { countUnread } from '@/lib/posts';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
+import { isChatConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     countUnread(db, member.userId),
   ]);
   return (
-    <Shell member={member} characters={characters} activeId={user?.active ?? null} unreadPosts={unread}>
+    <Shell member={member} characters={characters} activeId={user?.active ?? null} unreadPosts={unread} chatEnabled={isChatConfigured()}>
       {children}
     </Shell>
   );

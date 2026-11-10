@@ -17,6 +17,14 @@ const schema = z.object({
   UPLOAD_DIR: z.string().min(1).default('./data/uploads'),
   MAX_UPLOAD_MB: z.coerce.number().int().positive().max(1024).default(10),
   MAX_TOTAL_MB: z.coerce.number().int().positive().default(2048),
+  // Chat (valgfri): kun aktiv hvis BEGGE er sat. Tomme værdier regnes som ikke sat.
+  DISCORD_BOT_TOKEN: z.string().trim().optional().transform((v) => v || undefined),
+  DISCORD_CHAT_CHANNEL_ID: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().regex(/^\d{5,25}$/, 'DISCORD_CHAT_CHANNEL_ID skal være et tal').optional()),
 });
 
 export type Env = z.infer<typeof schema>;

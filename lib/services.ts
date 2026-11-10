@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { createChatClient, type ChatClient } from '@/lib/chat';
 import { createBlizzardClient } from '@/lib/blizzard/client';
 import type { BlizzardClient } from '@/lib/blizzard/types';
 import type { CharactersDeps } from '@/lib/characters';
@@ -11,7 +12,7 @@ import { generateSeriesEvents } from '@/lib/series';
 import { syncRoster, type SyncResult } from '@/lib/sync';
 import { upsertUser } from '@/lib/users';
 
-const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient };
+const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient };
 
 export function getBlizzard(): BlizzardClient {
   g.__aulaBlizzard ??= createBlizzardClient({
@@ -49,4 +50,17 @@ export function filesDeps(): StorageDeps {
     maxBytes: e.MAX_UPLOAD_MB * 1024 * 1024,
     maxTotalBytes: e.MAX_TOTAL_MB * 1024 * 1024,
   };
+}
+
+export function isChatConfigured(): boolean {
+  const e = env();
+  return Boolean(e.DISCORD_BOT_TOKEN && e.DISCORD_CHAT_CHANNEL_ID);
+}
+
+/** Chat-klienten (delt cache på tværs af anmodninger), eller null hvis chatten ikke er sat op. */
+export function getChat(): ChatClient | null {
+  const e = env();
+  if (!e.DISCORD_BOT_TOKEN || !e.DISCORD_CHAT_CHANNEL_ID) return null;
+  g.__aulaChat ??= createChatClient({ token: e.DISCORD_BOT_TOKEN, channelId: e.DISCORD_CHAT_CHANNEL_ID });
+  return g.__aulaChat;
 }

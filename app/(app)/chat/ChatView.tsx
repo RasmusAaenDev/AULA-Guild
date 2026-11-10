@@ -1,0 +1,138 @@
+'use client';
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { ChatResult } from '@/lib/chat';
+import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+
+function isChatResult(v: unknown): v is ChatResult {
+  return typeof v === 'object' && v !== null && Array.isArray((v as ChatResult).messages);
+}
+
+export function ChatView() {
+  const [data, setData] = useState<ChatResult | null>(null);
+  const [failed, setFailed] = useState<string | null>(null);
+  const [now, setNow] = useState<Date>(() => new Date());
+  const [newBelow, setNewBelow] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+  const follow = useRef(true);
+  const lastId = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let controller: AbortController | null = null;
+    let failures = 0;
+
+    const schedule = () => {
+      clearTimeout(timer);
+      if (cancelled || document.visibilityState !== 'visible') return;
+      timer = setTimeout(poll, nextPollDelay(failures));
+    };
+
+    async function poll() {
+      if (cancelled || controller || document.visibilityState !== 'visible') return;
+      const mine = new AbortController();
+      controller = mine;
+      try {
+        const res = await fetch('/api/chat', { cache: 'no-store', signal: mine.signal });
+        const body: unknown = await res.json().catch(() => null);
+        if (cancelled || mine.signal.aborted) return;
+        if (res.ok && isChatResult(body)) {
+          failures = 0;
+          setFailed(null);
+          setData(body);
+          setNow(new Date());
+        } else {
+          failures++;
+          setFailed(
+            res.status === 401 ? 'Din session er udløbet. Log ind igen.'
+              : res.status === 404 ? 'Chatten er ikke sat op.'
+              : 'Chatten kunne ikke hentes. Prøver igen om lidt.',
+          );
+        }
+      } catch {
+        if (cancelled || mine.signal.aborted) return;
+        failures++;
+        setFailed('Chatten kunne ikke hentes. Prøver igen om lidt.');
+      } finally {
+        if (controller === mine) controller = null;
+        if (!mine.signal.aborted) schedule();
+      }
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        clearTimeout(timer);
+        void poll();
+      } else {
+        clearTimeout(timer);
+        controller?.abort();
+        controller = null;
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibility);
+    void poll();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      controller?.abort();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    follow.current = true;
+    setNewBelow(false);
+  }, []);
+
+  // Ny sidste besked: rul med, hvis brugeren er i bunden, ellers vis knappen.
+  useLayoutEffect(() => {
+    const id = data?.messages.at(-1)?.id ?? null;
+    const changed = id !== lastId.current;
+    const first = lastId.current === null;
+    lastId.current = id;
+    if (!changed) return;
+    if (follow.current || first) scrollToBottom();
+    else setNewBelow(true);
+  }, [data, scrollToBottom]);
+
+  const onScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+    follow.current = isNearBottom(el);
+    if (follow.current) setNewBelow(false);
+  };
+
+  const error = chatErrorMessage(data?.error);
+  const hint = chatHintMessage(data?.hint);
+
+  return (
+    <section className="card chat">
+      {failed && <p className="error" role="alert">{failed}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      {hint && <p className="muted">{hint}</p>}
+      {data?.stale && <p className="muted"><span className="badge">forældet</span> Viser sidst hentede beskeder.</p>}
+      <div className="chat-list" ref={listRef} onScroll={onScroll} tabIndex={0} aria-label="Beskeder">
+        {data === null && !failed && <p className="muted">Henter beskeder…</p>}
+        {data !== null && data.messages.length === 0 && !error && <p className="muted">Der er ingen beskeder endnu.</p>}
+        {data?.messages.map((m) => (
+          <div key={m.id} className="chat-msg">
+            <div className="chat-meta">
+              <strong>{m.author}</strong>
+              {m.bot && <span className="badge">bot</span>}
+              <span className="muted">{formatMessageTime(m.timestamp, now)}</span>
+            </div>
+            <div className="chat-text">{m.content}</div>
+          </div>
+        ))}
+      </div>
+      {newBelow && (
+        <button type="button" className="btn chat-new" onClick={scrollToBottom}>Nye beskeder ↓</button>
+      )}
+    </section>
+  );
+}

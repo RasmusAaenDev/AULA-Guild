@@ -64,7 +64,7 @@ details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; b
 @media (max-width: 700px) {
   .layout { flex-direction: column-reverse; }
   .sidenav { width: 100%; flex-direction: row; position: sticky; bottom: 0; }
-  .navlink { flex: 1; }
+  .navlink { flex: 1; min-width: 0; padding: 12px 2px; font-size: 12px; }
   .logo { width: 64px; }
   .table-wrap { overflow-x: auto; }
 }
@@ -98,3 +98,10 @@ a.post-card { display: block; text-decoration: none; color: inherit; }
 .gallery-item a { display: block; }
 .gallery-item img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
 .gallery-caption { display: flex; flex-direction: column; font-size: 14px; overflow-wrap: anywhere; }
+
+.chat { position: relative; }
+.chat-list { max-height: calc(100vh - 240px); min-height: 200px; overflow-y: auto; overflow-x: hidden; }
+.chat-msg { padding: 6px 0; border-bottom: 1px solid var(--border); }
+.chat-meta { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font-size: 14px; }
+.chat-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.chat-new { position: absolute; right: 24px; bottom: 28px; }
