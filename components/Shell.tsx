@@ -2,6 +2,7 @@ import type { MyCharacter } from '@/lib/characters';
 import type { Member } from '@/lib/session';
 import { menuItems } from '@/lib/menu';
 import { unreadLabel } from '@/lib/posts-ui';
+import { CharacterSwitcher } from './CharacterSwitcher';
 import { NavLink } from './NavLink';
 import { ProfileMenu } from './ProfileMenu';
 import { ThemeToggle } from './ThemeToggle';
@@ -26,6 +27,7 @@ export function Shell({
       <a className="skip-link" href="#main">Spring til indhold</a>
       <header className="topbar">
         <div className="logo">Aula</div>
+        <CharacterSwitcher characters={characters} activeId={activeId} />
         <div className="topbar-right">
           <ThemeToggle />
           <ProfileMenu name={member.name} image={member.image} characters={characters} activeId={activeId} />

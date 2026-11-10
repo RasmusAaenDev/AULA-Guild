@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, luminance } from '@/lib/contrast';
+import { classKeys } from '@/lib/character-switcher';
 
 const css = readFileSync(path.join(__dirname, '..', 'app', 'globals.css'), 'utf8');
 
@@ -90,6 +91,19 @@ for (const [name, t] of Object.entries(themes)) {
       ['fokusring (hvid) mod --nav', t['focus-inverse'], t.nav, 3],
       ['fokusring (hvid) mod topbjælken', t['focus-inverse'], t.topbar, 3],
     ];
+    const clsKeys = [...classKeys, 'ukendt'];
+    for (const k of clsKeys) {
+      pairs.push(
+        [`karakterskifter: initialer (--on-cls) på --cls-${k}`, t['on-cls'], t[`cls-${k}`], 4.5],
+        [`karakterskifter: avatar --cls-${k} mod hvid ring`, t['focus-inverse'], t[`cls-${k}`], 3],
+        [`karakterskifter: flueben-cirkel mod avatar --cls-${k}`, t['check-bg'], t[`cls-${k}`], 3],
+      );
+    }
+    pairs.push(
+      ['karakterskifter: flueben (--check-fg) på --check-bg', t['check-fg'], t['check-bg'], 4.5],
+      ['karakterskifter: flueben-cirkel (--check-bg) mod topbjælken', t['check-bg'], t.topbar, 3],
+      ['karakterskifter: «Tilføj karakter» (hvid) på topbjælken', '#ffffff', t.topbar, 4.5],
+    );
     it.each(pairs)('%s', (_label, fg, bg, min) => {
       expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(min);
     });

@@ -14,6 +14,11 @@
   --focus: #005b6b;
   --ok: #1b6e38; --maybe: #7d5200; --no: #b3261e; --on-status: #ffffff;
   --focus-inverse: #ffffff;
+  --on-cls: #ffffff; --check-bg: #ffffff; --check-fg: #005b6b;
+  --cls-death-knight: #a8123a; --cls-demon-hunter: #7a1fa2; --cls-druid: #a14a00; --cls-evoker: #1b6e5c;
+  --cls-hunter: #3d7a1c; --cls-mage: #1a6aa6; --cls-monk: #00755a; --cls-paladin: #b0306f;
+  --cls-priest: #5b6770; --cls-rogue: #826600; --cls-shaman: #1f4fb0; --cls-warlock: #6b3fa0;
+  --cls-warrior: #7a5a36; --cls-ukendt: #4d6370;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
@@ -48,6 +53,25 @@ main:focus { outline: none; }
 .topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; height: 56px; background: var(--topbar); color: #fff; }
 .logo { width: 100px; height: 100%; background: var(--logo); display: grid; place-items: center; font-weight: 800; font-size: 22px; }
 .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; padding-right: 16px; }
+/* Karakterskifter i topbjælken (som AULAs børnefilter): en rund avatar pr. karakter, flueben på den primære. */
+.topbar-chars { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; }
+.cs-list { list-style: none; margin: 0; padding: 0 8px; display: flex; align-items: center; gap: 12px; height: 100%; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+.cs-list li { flex: none; margin: 0; }
+.cs-list form { margin: 0; }
+.cs-avatar { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--focus-inverse); background: var(--cls-ukendt); color: var(--on-cls); font: inherit; font-size: 13px; font-weight: 800; letter-spacing: 0.02em; padding: 0; cursor: pointer; }
+.cs-avatar[aria-current='true'] { cursor: default; box-shadow: 0 0 0 2px var(--logo); }
+.cs-avatar:not([aria-current='true']):hover { filter: brightness(1.15); }
+.cs-check { position: absolute; right: -6px; bottom: -6px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--check-bg); color: var(--check-fg); border: 1px solid var(--check-fg); }
+.cs-add { color: #fff; font-weight: 700; margin-left: 8px; white-space: nowrap; }
+.cs-cls-death-knight { background: var(--cls-death-knight); } .cs-cls-demon-hunter { background: var(--cls-demon-hunter); }
+.cs-cls-druid { background: var(--cls-druid); } .cs-cls-evoker { background: var(--cls-evoker); }
+.cs-cls-hunter { background: var(--cls-hunter); } .cs-cls-mage { background: var(--cls-mage); }
+.cs-cls-monk { background: var(--cls-monk); } .cs-cls-paladin { background: var(--cls-paladin); }
+.cs-cls-priest { background: var(--cls-priest); } .cs-cls-rogue { background: var(--cls-rogue); }
+.cs-cls-shaman { background: var(--cls-shaman); } .cs-cls-warlock { background: var(--cls-warlock); }
+.cs-cls-warrior { background: var(--cls-warrior); } .cs-cls-ukendt { background: var(--cls-ukendt); }
+.topbar-right { flex: none; }
+details.profile summary > span:last-child { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .layout { display: flex; min-height: calc(100vh - 56px); }
 .sidenav { width: 100px; background: var(--nav); display: flex; flex-direction: column; }
 .navlink { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 4px; color: #fff; text-decoration: none; font-size: 13px; }
@@ -88,7 +112,10 @@ details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; b
   .navlink .icon { width: 24px; height: 24px; }
   .navlink > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   html { scroll-padding-bottom: 5rem; }
-  .logo { width: 64px; }
+  .logo { width: 64px; flex: none; }
+  .topbar-right { gap: 8px; padding-right: 8px; }
+  details.profile summary > span:last-child { max-width: 64px; }
+  .cs-list { gap: 10px; padding: 0 6px; }
   .table-wrap { overflow-x: auto; }
 }
 
