@@ -10,7 +10,7 @@ Designreference (prototype, ikke officiel designspec): https://claude.ai/artifac
 | Emne | Valg |
 |---|---|
 | Placering | `~/development/AULA-Guild`, eget git-repo (`RasmusAaenDev/AULA-Guild` på GitHub), Next.js (app router, TypeScript), Auth.js (Discord), Drizzle som ORM |
-| Hosting | Selvhostet på brugerens Linux-maskine: Next.js-container + Postgres-container i én compose-fil, Cloudflare Tunnel på `aula.aaensoftware.com`. Kun prod, ingen staging. Image bygges i GitHub Actions til GHCR, Watchtower opdaterer fra `main` (samme mønster som `server-stacks`) |
+| Hosting | Selvhostet på brugerens Linux-maskine: Next.js-container + Postgres-container i én compose-fil, Cloudflare Tunnel på `aula.aaensoftware.com`. Kun prod, ingen staging. Image bygges i GitHub Actions til GHCR, egen Watchtower-instans (scope `aula`) opdaterer fra `main`, adskilt fra Sekvens' opsætning |
 | Adgang | Medlem af guildens Discord-server. Officer = bestemt Discord-rolle. Scopes: `identify`, `guilds.members.read`. Ingen bot |
 | Server-id og officer-rolle-id | Miljøvariabler (værdier leveres af brugeren) |
 | Rolle (tank/healer/dps) | Spilleren vælger selv og kan ændre den |

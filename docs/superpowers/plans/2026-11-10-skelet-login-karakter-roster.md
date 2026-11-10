@@ -24,7 +24,7 @@ Gælder implicit for alle tasks (værdier fra specen):
 - Tidspunkter gemmes i UTC og vises i `Europe/Copenhagen`.
 - Cron-jobbet opretter aldrig karakterer. Kontakter viser kun registrerede (tilknyttede) karakterer.
 - Ved Blizzard-fejl i roster-kaldet ændres intet (ingen "forladt guild"-markering).
-- Hosting: selvhostet, kun prod, port `127.0.0.1:8102`, `aula.aaensoftware.com` via Cloudflare Tunnel. `cloudflared` røres ikke.
+- Hosting: selvhostet på denne Linux-maskine (adskilt fra Sekvens' servere og deres `server-stacks`/Watchtower), kun prod, port `127.0.0.1:8102` (ledig, verificeret), `aula.aaensoftware.com` via Cloudflare Tunnel. `cloudflared` og Sekvens' opsætning røres ikke. AULA får sin egen Watchtower-instans med scope `aula`, der kun opdaterer app-containeren.
 - Kun Overblik og Kontakter er menupunkter. Ingen døde links.
 
 ## Kendte usikkerheder (verificeres, ikke gættes)
@@ -2913,8 +2913,7 @@ git commit -m "test: adgangsregler for medlem og officer"
 ### Task 13: Docker, compose, backup, pipeline og README
 
 **Files:**
-- Create: `Dockerfile`, `.dockerignore`, `public/.gitkeep`, `deploy/docker-compose.yml`, `deploy/.env.example`, `deploy/backup.sh`, `.github/workflows/build-and-push.yml`, `README.md`
-- Modify (i et andet repo, kun lokalt): `/home/rasmus/development/server-stacks/ADDING-NEW-SERVICE.md` (portlinje)
+- Create: `Dockerfile`, `.dockerignore`, `public/.gitkeep`, `deploy/docker-compose.yml`, `deploy/.env.example`, `deploy/backup.sh`, `deploy/watchtower/docker-compose.yml`, `.github/workflows/build-and-push.yml`, `README.md`
 
 **Interfaces:**
 - Produces: image `ghcr.io/rasmusaaendev/aula-guild:main`, lytter på port 3000 i containeren, mapper til `127.0.0.1:8102`.
@@ -2976,6 +2975,9 @@ services:
     init: true
     stop_grace_period: 15s
     env_file: .env
+    labels:
+      - com.centurylinklabs.watchtower.enable=true
+      - com.centurylinklabs.watchtower.scope=aula
     depends_on:
       db:
         condition: service_healthy
@@ -3108,11 +3110,46 @@ jobs:
 
 - [ ] **Step 7: Skriv `README.md`**
 
-Skriv en kort README på dansk med: hvad projektet er, hvordan man starter udvikling (`docker compose -f docker-compose.dev.yml up -d`, `createdb aula_test`, `cp .env.example .env.local`, `npm run dev`), at tests kræver dev-databasen, miljøvariablerne (henvis til `.env.example`), første deploy (kopiér `deploy/` til `server-stacks/prod/aula-guild`, `cp .env.example .env`, udfyld, `docker compose pull && up -d`), backup-cron-linjen (`15 3 * * * BACKUP_DIR=/srv/backups/aula /srv/docker/prod/aula-guild/backup.sh`), og at Cloudflare Tunnel-route `aula.aaensoftware.com → localhost:8102` oprettes i dashboardet. Ingen hemmeligheder i filen.
+Skriv en kort README på dansk med: hvad projektet er, hvordan man starter udvikling (`docker compose -f docker-compose.dev.yml up -d`, `createdb aula_test`, `cp .env.example .env.local`, `npm run dev`), at tests kræver dev-databasen, miljøvariablerne (henvis til `.env.example`), første deploy (kopiér `deploy/` til en mappe på maskinen, fx `/srv/aula-guild`, `cp .env.example .env`, udfyld, `docker compose pull && up -d`, og start derefter Watchtower med `docker compose -f watchtower/docker-compose.yml up -d`; forklar, at pakken `ghcr.io/rasmusaaendev/aula-guild` enten gøres offentlig (anbefalet, koden indeholder ingen hemmeligheder) eller at `watchtower/docker-compose.yml` får monteret en egen `docker-config.json` med en PAT med `read:packages`), backup-cron-linjen (`15 3 * * * BACKUP_DIR=/srv/backups/aula /srv/aula-guild/backup.sh`), og at Cloudflare Tunnel-route `aula.aaensoftware.com → localhost:8102` oprettes i dashboardet. Ingen hemmeligheder i filen.
 
-- [ ] **Step 8: Opdatér portlisten i `server-stacks` (lokalt, ingen push)**
+- [ ] **Step 8: Egen Watchtower til AULA (adskilt fra Sekvens)**
 
-Tilføj en række i tabellen i `/home/rasmus/development/server-stacks/ADDING-NEW-SERVICE.md`: `| aula-guild | — | 8102 |` og ret rækken "næste service" til `8101 | 8103`. Commit kun lokalt i det repo; push ikke uden at spørge brugeren.
+Der kører ingen Watchtower på denne maskine, og Sekvens' Watchtower (hvis den findes andre steder) må ikke bruges eller ændres. AULA får sin egen instans, som kun rører containere med scope `aula`, og kun app-containeren har den label (databasen får aldrig automatiske opdateringer).
+
+Skriv `deploy/watchtower/docker-compose.yml`:
+```yaml
+name: aula-watchtower
+
+services:
+  watchtower:
+    image: containrrr/watchtower
+    container_name: aula-watchtower
+    restart: unless-stopped
+    environment:
+      DOCKER_API_VERSION: "1.44"
+      WATCHTOWER_SCOPE: aula
+      WATCHTOWER_LABEL_ENABLE: "true"
+      WATCHTOWER_POLL_INTERVAL: "300"
+      WATCHTOWER_CLEANUP: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Kun hvis imaget er privat: en docker-login med read:packages til RasmusAaenDev's GHCR.
+      # Fjern kommentaren og peg på en fil, der kun indeholder AULA's egen login:
+      # - ./docker-config.json:/config.json:ro
+```
+
+Denne maskine kører Docker 29 (minimum API 1.40), og det gamle `containrrr/watchtower` er arkiveret og taler som standard en for gammel API-version. Verificér derfor, at instansen virker, i stedet for at antage det:
+
+Run:
+```bash
+docker compose -f deploy/watchtower/docker-compose.yml run --rm watchtower --run-once --debug
+docker compose -f deploy/watchtower/docker-compose.yml logs --no-color 2>&1 | tail -20
+```
+Expected: ingen fejl om `client version … is too old` eller `API version`, og en linje om at scopet er `aula`. Fejler det stadig med `DOCKER_API_VERSION=1.44`, så skift til et vedligeholdt fork (undersøg hvilket image der er aktivt vedligeholdt, fx ved at læse dets README/releases), ret `image:` i filen, og skriv i commit-beskeden hvilket image du valgte og hvorfor. Opdatér ikke Sekvens' filer, og brug ikke `/home/rasmus/development/server-stacks`.
+
+Prøv derefter, at kun den scopede app-container ville blive opdateret: start en midlertidig test-container med begge labels (`docker run -d --name aula-wt-test --label com.centurylinklabs.watchtower.enable=true --label com.centurylinklabs.watchtower.scope=aula ghcr.io/rasmusaaendev/aula-guild:main`, hvilket fejler, hvis imaget endnu ikke findes, og så er testen ikke udført, og det skrives i rapporten) og en uden labels, og kør `--run-once --debug`. Forventet i loggen: kun den labelede container nævnes. Fjern testcontainerne bagefter (`docker rm -f aula-wt-test`).
+
+Hvis imaget ikke findes endnu (det bygges først af pipelinen efter første push), så skriv ærligt i rapporten, at scope-testen ikke kunne gennemføres, og at den skal køres ved første udrulning.
 
 - [ ] **Step 9: Commit i AULA-Guild**
 
