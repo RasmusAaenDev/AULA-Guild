@@ -1,6 +1,7 @@
 import { and, asc, count, eq, gt, inArray, isNull, lte, notExists, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { fullName } from '@/lib/names';
+import { utcToCopenhagen } from '@/lib/time';
 import { characters, events, rsvps, users, type EventType, type Role, type RsvpStatus } from '@/lib/db/schema';
 
 export type EventActor = { userId: number; isOfficer: boolean };
@@ -101,7 +102,7 @@ export async function updateEvent(
   eventId: number,
   patch: Omit<EventInput, 'type'>,
   now: Date = new Date(),
-): Promise<{ ok: true } | { ok: false; reason: 'forbidden' | 'not_found' | 'invalid' | 'in_past' | 'cancelled' }> {
+): Promise<{ ok: true } | { ok: false; reason: 'forbidden' | 'not_found' | 'invalid' | 'in_past' | 'cancelled' | 'series_date_change' }> {
   const [e] = await db.select().from(events).where(eq(events.id, eventId));
   if (!e) return { ok: false, reason: 'not_found' };
   if (!canManage(actor, e)) return { ok: false, reason: 'forbidden' };
@@ -109,6 +110,14 @@ export async function updateEvent(
   if (validateEventFields(patch) !== 'ok') return { ok: false, reason: 'invalid' };
   const changedStart = patch.startsAt.getTime() !== e.startsAt.getTime();
   if (changedStart && patch.startsAt.getTime() <= now.getTime()) return { ok: false, reason: 'in_past' };
+  // En serie-forekomst må ikke flyttes til en anden dag: generatoren ville genskabe den oprindelige dag.
+  if (
+    e.seriesId !== null &&
+    changedStart &&
+    utcToCopenhagen(patch.startsAt).date !== utcToCopenhagen(e.startsAt).date
+  ) {
+    return { ok: false, reason: 'series_date_change' };
+  }
   await db
     .update(events)
     .set({

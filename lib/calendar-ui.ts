@@ -77,7 +77,8 @@ export type CalendarFailure =
   | 'not_found'
   | 'cancelled'
   | 'closed'
-  | 'no_character';
+  | 'no_character'
+  | 'series_date_change';
 
 const messages: Record<CalendarFailure, string> = {
   invalid: 'Tjek felterne. Titel 1–100 tegn, beskrivelse højst 2000 tegn og varighed 15–720 minutter.',
@@ -88,6 +89,8 @@ const messages: Record<CalendarFailure, string> = {
   cancelled: 'Eventet er aflyst og kan ikke ændres.',
   closed: 'Tilmeldingen er lukket.',
   no_character: 'Tilføj en karakter først.',
+  series_date_change:
+    'Et event i en serie kan ikke flyttes til en anden dag. Aflys forekomsten og opret et enkeltstående event.',
 };
 
 export function calendarMessage(reason: CalendarFailure): string {

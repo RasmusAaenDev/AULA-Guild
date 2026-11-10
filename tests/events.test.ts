@@ -161,6 +161,59 @@ describe('updateEvent', () => {
   });
 });
 
+describe('updateEvent: serie-events og dagsskift', () => {
+  const patch = (over = {}) => ({ title: 'Nyt navn', description: 'Ny', startsAt: FUTURE, durationMinutes: 90, ...over });
+  async function seriesEvent(o: number, startsAt: Date): Promise<number> {
+    const [s] = await db.insert(eventSeries).values({
+      type: 'raid', title: 'Serie', weekday: 3, startTime: '20:00', durationMinutes: 180, createdBy: o,
+    }).returning({ id: eventSeries.id });
+    const [ev] = await db.insert(events).values({
+      type: 'raid', title: 'Fra serie', startsAt, createdBy: o, seriesId: s.id,
+    }).returning({ id: events.id });
+    return ev.id;
+  }
+  it('tillader tidsændring samme københavnske dag og sætter detached', async () => {
+    const o = await seedUser(db);
+    const id = await seriesEvent(o, FUTURE); // 19:00 dansk, torsdag
+    const later = new Date('2026-11-12T20:00:00Z'); // 21:00 dansk, samme dag
+    expect(await updateEvent(db, officer(o), id, patch({ startsAt: later }), NOW)).toEqual({ ok: true });
+    const r = await row(id);
+    expect(r.detached).toBe(true);
+    expect(r.startsAt).toEqual(later);
+  });
+  it('afviser dagsskift for serie-events uden at ændre noget', async () => {
+    const o = await seedUser(db);
+    const id = await seriesEvent(o, FUTURE);
+    const next = new Date(FUTURE.getTime() + 24 * 3600_000);
+    expect(await updateEvent(db, officer(o), id, patch({ title: 'Ny titel', startsAt: next }), NOW)).toEqual({
+      ok: false, reason: 'series_date_change',
+    });
+    const r = await row(id);
+    expect(r.startsAt).toEqual(FUTURE);
+    expect(r.title).toBe('Fra serie');
+    expect(r.detached).toBe(false);
+  });
+  it('tillader dagsskift for enkeltstående events', async () => {
+    const o = await seedUser(db);
+    const id = await mk(officer(o));
+    const next = new Date(FUTURE.getTime() + 24 * 3600_000);
+    expect(await updateEvent(db, officer(o), id, patch({ startsAt: next }), NOW)).toEqual({ ok: true });
+    expect((await row(id)).startsAt).toEqual(next);
+  });
+  it('sammenligner københavnske datoer, ikke UTC-datoer', async () => {
+    const o = await seedUser(db);
+    // 23:30 dansk 12. nov = 22:30Z; 00:30 dansk 13. nov = 23:30Z samme UTC-dato
+    const late = new Date('2026-11-12T22:30:00Z');
+    const id = await seriesEvent(o, late);
+    expect(await updateEvent(db, officer(o), id, patch({ startsAt: new Date('2026-11-12T23:30:00Z') }), NOW)).toEqual({
+      ok: false, reason: 'series_date_change',
+    });
+    // 00:30 dansk 13. nov = 23:30Z 12. nov; til 23:30 dansk 13. nov = 22:30Z 13. nov: samme dansk dag
+    const early = await seriesEvent(o, new Date('2026-11-12T23:30:00Z'));
+    expect(await updateEvent(db, officer(o), early, patch({ startsAt: new Date('2026-11-13T22:30:00Z') }), NOW)).toEqual({ ok: true });
+  });
+});
+
 describe('cancelEvent', () => {
   it('aflyser, er idempotent og bevarer første tidspunkt', async () => {
     const u = await seedUser(db);

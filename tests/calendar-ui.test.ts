@@ -36,7 +36,10 @@ describe('kalender-hjælpere', () => {
     expect(timeMessage('invalid')).toBe('Ugyldig dato eller tid');
     expect(timeMessage('nonexistent')).toBe('Tidspunktet findes ikke (sommertidsskifte)');
     expect(calendarMessage('in_past')).toBe('Tidspunktet ligger i fortiden');
-    for (const r of ['invalid', 'forbidden', 'not_found', 'cancelled', 'closed', 'no_character'] as const) {
+    expect(calendarMessage('series_date_change')).toBe(
+      'Et event i en serie kan ikke flyttes til en anden dag. Aflys forekomsten og opret et enkeltstående event.',
+    );
+    for (const r of ['invalid', 'forbidden', 'not_found', 'cancelled', 'closed', 'no_character', 'series_date_change'] as const) {
       expect(calendarMessage(r).length).toBeGreaterThan(10);
     }
   });
