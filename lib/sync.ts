@@ -53,6 +53,8 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
   } catch {
     return { skipped: true, updated: 0, failed: 0 };
   }
+  // Et vellykket men tomt svar behandles som et udfald, så ingen fejlagtigt markeres som forladt.
+  if (roster.length === 0) return { skipped: true, updated: 0, failed: 0 };
   const byId = new Map(roster.map((m) => [m.blizzardId, m]));
 
   const registered = await deps.db
@@ -60,14 +62,14 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
     .from(characters)
     .where(isNotNull(characters.userId));
 
-  const present: { id: number; slug: string }[] = [];
+  const present: { id: number; blizzardId: number; slug: string }[] = [];
   for (const c of registered) {
     const m = byId.get(c.blizzardId);
     if (!m) {
       await deps.db.update(characters).set({ inGuild: false }).where(eq(characters.id, c.id));
     } else {
-      await deps.db.update(characters).set({ inGuild: true, guildRank: m.rank, slug: m.slug }).where(eq(characters.id, c.id));
-      present.push({ id: c.id, slug: m.slug });
+      await deps.db.update(characters).set({ inGuild: true, guildRank: m.rank }).where(eq(characters.id, c.id));
+      present.push({ id: c.id, blizzardId: c.blizzardId, slug: m.slug });
     }
   }
 
@@ -76,9 +78,14 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
   await mapLimit(present, deps.concurrency ?? 3, async (c) => {
     try {
       const p = await fetchProfile(deps.blizzard, c.slug, sleep);
+      if (p.blizzardId !== c.blizzardId) {
+        failed++;
+        return;
+      }
       await deps.db
         .update(characters)
         .set({
+          slug: c.slug,
           name: p.name,
           className: p.className,
           spec: p.spec,

@@ -39,7 +39,7 @@ describe('syncRoster', () => {
   it('markerer karakterer, der ikke står i rosteren, som forladt og beholder deres data', async () => {
     const u = await seedUser(db);
     await seed(1, 'Alpha', u);
-    const blizzard = fakeBlizzard({ roster: [] });
+    const blizzard = fakeBlizzard({ roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })] });
     expect(await run(blizzard)).toEqual({ skipped: false, updated: 0, failed: 0 });
     expect(await row(1)).toMatchObject({ inGuild: false, itemLevel: 5, spec: 'Fire', lastSynced: OLD });
     expect(blizzard.calls).toEqual(['roster']);
@@ -105,9 +105,39 @@ describe('syncRoster', () => {
     expect(blizzard.calls.filter((c) => c === 'character:alpha')).toHaveLength(2);
   });
 
+  it('tæller en profil med et andet blizzard-id som fejlet og skriver intet fra den', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha-ny', name: 'Alpha', rank: 2 })],
+      characters: { 'alpha-ny': armory({ blizzardId: 999, slug: 'alpha-ny', name: 'Fremmed', itemLevel: 99 }) },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 0, failed: 1 });
+    expect(await row(1)).toMatchObject({ slug: 'alpha', name: 'Alpha', itemLevel: 5, lastSynced: OLD });
+  });
+
+  it('beholder den gamle slug, når profilen fejler, selv om rosteren har en ny', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha-ny', name: 'Alpha', rank: 2 })],
+      characters: { 'alpha-ny': new BlizzardError('unavailable', 'x') },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 0, failed: 1 });
+    expect(await row(1)).toMatchObject({ slug: 'alpha', guildRank: 2, inGuild: true, lastSynced: OLD });
+  });
+
+  it('springer over og lader registrerede stå i guilden, når rosteren er tom', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    const blizzard = fakeBlizzard({ roster: [] });
+    expect(await run(blizzard)).toEqual({ skipped: true, updated: 0, failed: 0 });
+    expect(await row(1)).toMatchObject({ inGuild: true, lastSynced: OLD });
+  });
+
   it('rører ikke frakoblede karakterer', async () => {
     await seed(1, 'Orphan', null);
-    const blizzard = fakeBlizzard({ roster: [] });
+    const blizzard = fakeBlizzard({ roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })] });
     await run(blizzard);
     expect(await row(1)).toMatchObject({ inGuild: true, lastSynced: OLD });
   });
