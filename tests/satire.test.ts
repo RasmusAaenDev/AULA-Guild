@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  activeSatire, composeAlleFeed, interleave, SATIRE_VISIBLE, parseSatirePreference, pickSatire, satireMode, effectiveTab, satirePosts,
+  activeSatire, composeAlleFeed, interleave, SATIRE_VISIBLE, parseSatirePreference, pickSatire, satireMode, effectiveTab, satirePosts, satireNeeded,
 } from '@/lib/satire';
 import { parseTab } from '@/lib/posts-ui';
 
@@ -117,15 +117,29 @@ describe('interleave', () => {
   });
 });
 
+describe('satireNeeded', () => {
+  it('giver mindst 5 på side 1 og ellers ét pr. 3. ægte', () => {
+    expect(satireNeeded(0, 1)).toBe(5);
+    expect(satireNeeded(2, 1)).toBe(5);
+    expect(satireNeeded(30, 1)).toBe(10);
+    expect(satireNeeded(0, 2)).toBe(0);
+    expect(satireNeeded(2, 2)).toBe(1);
+    expect(satireNeeded(9, 2)).toBe(3);
+  });
+});
+
 describe('composeAlleFeed', () => {
   const sat = pickSatire('2026-11-10', 1, 4);
   it('flette ét efter hvert 3. ægte', () => {
     const f = composeAlleFeed(['a', 'b', 'c', 'd'], sat, 1);
-    expect(f.map((x) => x.kind)).toEqual(['real', 'real', 'real', 'satire', 'real']);
+    expect(f.map((x) => x.kind)).toEqual(['real', 'real', 'real', 'satire', 'real', 'satire', 'satire', 'satire']);
   });
-  it('viser mindst ét satire-opslag sidst, når der er færre end 3 ægte på side 1', () => {
-    expect(composeAlleFeed(['a', 'b'], sat, 1).map((x) => x.kind)).toEqual(['real', 'real', 'satire']);
-    expect(composeAlleFeed([], sat, 1).map((x) => x.kind)).toEqual(['satire']);
+  it('lægger resten af satire sidst på side 1, når der er få ægte opslag', () => {
+    expect(composeAlleFeed(['a', 'b'], sat, 1).map((x) => x.kind)).toEqual(['real', 'real', 'satire', 'satire', 'satire', 'satire']);
+    expect(composeAlleFeed([], sat, 1).map((x) => x.kind)).toEqual(['satire', 'satire', 'satire', 'satire']);
+  });
+  it('viser ét satire-opslag på side 2 med få ægte opslag', () => {
+    expect(composeAlleFeed(['a', 'b'], sat, 2).map((x) => x.kind)).toEqual(['real', 'real', 'satire']);
   });
   it('viser ingen satire på tom side 2 eller når det er slået fra', () => {
     expect(composeAlleFeed([], sat, 2)).toEqual([]);

@@ -87,19 +87,26 @@ export function interleave<T, S>(real: readonly T[], satire: readonly S[], every
   return out;
 }
 
-/** Antal satire-kort en side med `realCount` ægte opslag har brug for (mindst ét på side 1). */
+/** Mindste antal satire-kort på side 1 af ALLE, så feedet ikke ser tomt ud, når der er få ægte opslag. */
+export const SATIRE_MIN_FIRST_PAGE = 5;
+
+/** Antal satire-kort en side med `realCount` ægte opslag har brug for: mindst SATIRE_MIN_FIRST_PAGE på side 1, ellers ét pr. 3. ægte (mindst ét, hvis siden har ægte opslag). */
 export function satireNeeded(realCount: number, page: number, every = 3): number {
   const n = Math.floor(realCount / every);
-  return n > 0 ? n : realCount > 0 || page === 1 ? 1 : 0;
+  if (page === 1) return Math.max(n, SATIRE_MIN_FIRST_PAGE);
+  return n > 0 ? n : realCount > 0 ? 1 : 0;
 }
 
 /**
- * Feedet i ALLE: satire flettes ind efter hvert 3. ægte opslag. Har siden færre end 3 ægte opslag, vises ét satire-opslag
- * til sidst, men kun på side 1 eller når siden har ægte opslag (en tom side 2 er «ikke flere opslag»).
+ * Feedet i ALLE: satire flettes ind efter hvert 3. ægte opslag. Er der satire til overs på side 1 (få ægte opslag), lægges resten til sidst,
+ * så siden ikke er tom. På side 2+ vises satire kun, hvis siden har ægte opslag (en tom side 2 er «ikke flere opslag»).
  */
 export function composeAlleFeed<T>(real: readonly T[], satire: readonly SatirePost[], page: number, every = 3): Array<FeedItem<T, SatirePost>> {
   const out = interleave(real, satire, every);
-  if (satire.length > 0 && !out.some((x) => x.kind === 'satire') && (real.length > 0 || page === 1)) {
+  const used = out.filter((x) => x.kind === 'satire').length;
+  if (page === 1) {
+    for (const item of satire.slice(used)) out.push({ kind: 'satire', item });
+  } else if (satire.length > 0 && used === 0 && real.length > 0) {
     out.push({ kind: 'satire', item: satire[0] });
   }
   return out;
