@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
 import { roleLabel } from '@/lib/messages';
@@ -11,7 +11,7 @@ export default async function OverviewPage() {
   const [row] = await db
     .select({ name: characters.name, className: characters.className, spec: characters.spec, role: characters.role, itemLevel: characters.itemLevel })
     .from(users)
-    .innerJoin(characters, eq(characters.id, users.activeCharacterId))
+    .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
 
   return (
