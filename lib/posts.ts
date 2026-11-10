@@ -27,6 +27,7 @@ export type PostDetail = {
   unread: boolean;
 };
 
+/** Uddraget hentes med ét tegn mere end vist, så UI kan se, om teksten blev afkortet (se `excerptText`). */
 const EXCERPT_LENGTH = 200;
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -162,7 +163,7 @@ export async function listPosts(
     .select({
       id: posts.id,
       title: posts.title,
-      excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH})`,
+      excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH + 1})`,
       authorName: users.name,
       createdAt: posts.createdAt,
       pinned: posts.pinned,

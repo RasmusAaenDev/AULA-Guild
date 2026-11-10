@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { useFormValues } from '@/components/useFormValues';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { createEventAction, updateEventAction, type FormState } from './actions';
 
 export type EventFormValues = {
@@ -29,7 +29,7 @@ export function EventForm({ isOfficer, initial }: { isOfficer: boolean; initial?
     description: initial?.description ?? '',
   });
   return (
-    <form action={action} className="card">
+    <form onSubmit={submitHandler(action)} className="card">
       {editing && <input type="hidden" name="eventId" value={initial.eventId} />}
       {!editing && (
         <div className="field">

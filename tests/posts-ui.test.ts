@@ -72,11 +72,15 @@ describe('unreadLabel', () => {
 });
 
 describe('excerptText', () => {
-  it('lader korte uddrag være', () => {
+  it('lader korte uddrag være, også på præcis grænsen', () => {
     expect(excerptText('Kort tekst')).toBe('Kort tekst');
+    expect(excerptText('a'.repeat(200))).toBe('a'.repeat(200));
   });
-  it('tilføjer ellipsis ved afkortet uddrag', () => {
-    expect(excerptText('a'.repeat(200))).toBe(`${'a'.repeat(200)}…`);
-    expect(excerptText('ab ', 3)).toBe('ab…');
+  it('skærer og tilføjer ellipsis, når der er mere end grænsen', () => {
+    expect(excerptText('a'.repeat(201))).toBe(`${'a'.repeat(200)}…`);
+    expect(excerptText('ab c', 3)).toBe('ab…');
+  });
+  it('tæller tegn, ikke UTF-16-enheder', () => {
+    expect(excerptText('\u{1F600}'.repeat(3), 3)).toBe('\u{1F600}'.repeat(3));
   });
 });

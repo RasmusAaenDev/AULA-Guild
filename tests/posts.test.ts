@@ -202,7 +202,7 @@ describe('listPosts', () => {
     const r = await listPosts(db, b, 'alle', 1);
     const item = r.items.find((i) => i.id === p)!;
     expect(item).toMatchObject({ title: 'P', authorName: 'Bruger a', commentCount: 2, unread: true, pinned: false });
-    expect(item.excerpt.length).toBeLessThanOrEqual(200);
+    expect(item.excerpt.length).toBe(201); // ét tegn mere end vist, så UI kan se afkortning
     expect(item.createdAt).toEqual(T0);
     expect(r.items.find((i) => i.id === q)!.commentCount).toBe(0);
   });
@@ -224,15 +224,15 @@ describe('listPosts', () => {
     expect((await listPosts(db, b, 'vigtige', 1)).items).toEqual([]);
   });
 
-  it('uddrag: whitespace samles, og der skæres på tegngrænsen', async () => {
+  it('uddrag: whitespace samles, og der skæres på tegngrænsen (grænse + 1 tegn)', async () => {
     const a = await seedUser(db);
     const p1 = await seedPost(a, 'A', min(0), { body: '  Linje1\n\n  Linje2\t\tslut  ' });
     const p2 = await seedPost(a, 'B', min(1), { body: 'x'.repeat(199) + '\u{1F600}\u{1F600}' });
     const r = await listPosts(db, a, 'alle', 1);
     expect(r.items.find((i) => i.id === p1)!.excerpt).toBe('Linje1 Linje2 slut');
     const ex = r.items.find((i) => i.id === p2)!.excerpt;
-    expect(ex).toBe('x'.repeat(199) + '\u{1F600}');
-    expect([...ex]).toHaveLength(200);
+    expect(ex).toBe('x'.repeat(199) + '\u{1F600}\u{1F600}');
+    expect([...ex]).toHaveLength(201);
   });
 
   it('ugyldig page og pageSize giver standardværdier i stedet for fejl', async () => {

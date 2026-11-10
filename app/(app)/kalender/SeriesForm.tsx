@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { useFormValues } from '@/components/useFormValues';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { weekdayNames } from '@/lib/calendar-ui';
 import { createSeriesAction, updateSeriesAction, type FormState } from './actions';
 
@@ -31,7 +31,7 @@ export function SeriesForm({ initial }: { initial?: SeriesFormValues }) {
     description: initial?.description ?? '',
   });
   return (
-    <form action={action} className="card">
+    <form onSubmit={submitHandler(action)} className="card">
       <h2>{editing ? 'Redigér serie' : 'Opret serie'}</h2>
       {editing && <input type="hidden" name="seriesId" value={initial.seriesId} />}
       <div className="field">

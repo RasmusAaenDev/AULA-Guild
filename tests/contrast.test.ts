@@ -14,6 +14,8 @@ function vars(selector: string): Record<string, string> {
   return out;
 }
 
+/** Tekstfarven fra `.navlink { … color: … }` (ikke hårdkodet). */
+const navlinkColor = /\.navlink \{[^}]*?\bcolor:\s*(#[0-9a-fA-F]{3,6})\s*;/.exec(css)?.[1];
 const light = vars(':root');
 const darkMedia = vars(":root:not([data-theme='light'])");
 const darkAttr = vars(":root[data-theme='dark']");
@@ -33,6 +35,10 @@ describe('contrastRatio', () => {
   });
 });
 
+it('kan finde .navlink-farven i CSS', () => {
+  expect(navlinkColor).toBeDefined();
+});
+
 describe('globals.css: mørk tilstand', () => {
   it('har samme variabler i media-query og data-theme', () => {
     expect(darkMedia).toEqual(darkAttr);
@@ -43,8 +49,8 @@ const themes = { lys: light, mørk: dark } as const;
 for (const [name, t] of Object.entries(themes)) {
   describe(`kontrast i ${name} tilstand`, () => {
     const pairs: Array<[string, string, string, number]> = [
-      ['hvid menutekst på --nav', '#ffffff', t.nav, 4.5],
-      ['hvid menutekst på --nav-active', '#ffffff', t['nav-active'], 4.5],
+      ['.navlink-tekst på --nav', navlinkColor!, t.nav, 4.5],
+      ['.navlink-tekst på --nav-active', navlinkColor!, t['nav-active'], 4.5],
       ['hvid tekst på topbjælken', '#ffffff', t.topbar, 4.5],
       ['--muted på --card', t.muted, t.card, 4.5],
       ['--muted på --bg', t.muted, t.bg, 4.5],
@@ -62,6 +68,15 @@ for (const [name, t] of Object.entries(themes)) {
       ['valgt tilmelding: tekst på --no', t['on-status'], t.no, 4.5],
       ['--ok-kant mod --card', t.ok, t.card, 3],
       ['--maybe-kant mod --card', t.maybe, t.card, 3],
+      ['aflyst kort: --text på --bg', t.text, t.bg, 4.5],
+      ['aflyst kort: --muted på --bg', t.muted, t.bg, 4.5],
+      ['aflyst kort: --heading på --bg', t.heading, t.bg, 4.5],
+      ['--ok på --bg (RSVP hover)', t.ok, t.bg, 4.5],
+      ['--maybe på --bg (RSVP hover)', t.maybe, t.bg, 4.5],
+      ['--no på --bg (RSVP hover)', t.no, t.bg, 4.5],
+      ['--ok på --border', t.ok, t.border, 4.5],
+      ['--maybe på --border', t.maybe, t.border, 4.5],
+      ['--no på --border', t.no, t.border, 4.5],
       ['--focus mod --card', t.focus, t.card, 3],
       ['--focus mod --bg', t.focus, t.bg, 3],
       ['fokusring (hvid) mod --nav', t['focus-inverse'], t.nav, 3],

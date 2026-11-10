@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
-import { useFormValues } from '@/components/useFormValues';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { addCommentAction, type FormState } from './actions';
 
 export function CommentForm({ postId }: { postId: number }) {
@@ -14,7 +14,7 @@ export function CommentForm({ postId }: { postId: number }) {
     wasPending.current = pending;
   }, [pending, state.error, setValues]);
   return (
-    <form action={action}>
+    <form onSubmit={submitHandler(action)}>
       <input type="hidden" name="postId" value={postId} />
       <div className="field">
         <label htmlFor="comment-body">Skriv en kommentar</label>

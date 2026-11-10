@@ -1,14 +1,14 @@
 'use client';
 
 import { useActionState } from 'react';
-import { useFormValues } from '@/components/useFormValues';
+import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { createPostAction, type FormState } from './actions';
 
 export function PostForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(createPostAction, {});
   const { bind } = useFormValues({ title: '', body: '' });
   return (
-    <form action={action} className="card">
+    <form onSubmit={submitHandler(action)} className="card">
       <div className="field">
         <label htmlFor="title">Titel</label>
         <input id="title" {...bind('title')} required maxLength={120} autoComplete="off" />
