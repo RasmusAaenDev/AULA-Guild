@@ -20,14 +20,14 @@ function msg(id: string, over: Record<string, unknown> = {}) {
 
 type Call = { url: string; init?: RequestInit };
 
-function setup(responder: (n: number) => Response | Promise<Response>, ttlMs?: number) {
+function setup(responder: (n: number, init?: RequestInit) => Response | Promise<Response>, ttlMs?: number, timeoutMs?: number) {
   const calls: Call[] = [];
   let time = 1_000_000;
   const fetchFn = (async (url: string | URL | Request, init?: RequestInit) => {
     calls.push({ url: String(url), init });
-    return responder(calls.length);
+    return responder(calls.length, init);
   }) as typeof fetch;
-  const client = createChatClient({ token: TOKEN, channelId: CHANNEL, fetch: fetchFn, now: () => time, ttlMs });
+  const client = createChatClient({ token: TOKEN, channelId: CHANNEL, fetch: fetchFn, now: () => time, ttlMs, timeoutMs });
   return { client, calls, advance: (ms: number) => { time += ms; } };
 }
 
@@ -243,5 +243,68 @@ describe('createChatClient', () => {
       expect(JSON.stringify(r)).not.toContain(TOKEN);
       expect(JSON.stringify(r)).not.toContain('Bot ');
     }
+  });
+
+  it('sender User-Agent', async () => {
+    const { client, calls } = setup(() => jsonResponse(200, [msg('1')]));
+    await client.getMessages();
+    expect((calls[0].init?.headers as Record<string, string>)['User-Agent']).toBe('DiscordBot (https://aula.aaensoftware.com, 1.0)');
+  });
+
+  it('tilføjer vedhæftningsmarkør også når der er tekst', async () => {
+    const { client } = setup(() => jsonResponse(200, [msg('1', { content: 'se her', attachments: [{ id: 'a' }] })]));
+    expect((await client.getMessages()).messages[0].content).toBe('se her\n[vedhæftet fil]');
+  });
+
+  it('retry_after 0 blokerer stadig i mindst ét sekund', async () => {
+    const { client, calls, advance } = setup(() => jsonResponse(429, { retry_after: 0 }));
+    await client.getMessages();
+    advance(5000);
+    await client.getMessages();
+    expect(calls).toHaveLength(2);
+    advance(500);
+    await client.getMessages();
+    expect(calls).toHaveLength(2);
+    advance(600);
+    await client.getMessages();
+    expect(calls).toHaveLength(3);
+  });
+
+  it('afbryder en hængende anmodning og kan bruges igen bagefter', async () => {
+    const hang = (init?: RequestInit) =>
+      new Promise<Response>((_, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'TimeoutError')));
+      });
+    const { client, calls, advance } = setup((n, init) => (n === 1 ? hang(init) : jsonResponse(200, [msg('1')])), undefined, 20);
+    expect(await client.getMessages()).toEqual({ messages: [], stale: false, error: 'unavailable' });
+    advance(5000);
+    const r = await client.getMessages();
+    expect(calls).toHaveLength(2);
+    expect(r.messages).toHaveLength(1);
+  });
+
+  it('en hængende anmodning giver stale cache når der er en', async () => {
+    const hang = (init?: RequestInit) =>
+      new Promise<Response>((_, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'TimeoutError')));
+      });
+    const { client, advance } = setup((n, init) => (n === 1 ? jsonResponse(200, [msg('1')]) : hang(init)), undefined, 20);
+    await client.getMessages();
+    advance(5000);
+    const r = await client.getMessages();
+    expect(r.stale).toBe(true);
+    expect(r.messages).toHaveLength(1);
+  });
+
+  it('forbruger svarkroppen ved fejlstatus', async () => {
+    let cancelled = 0;
+    const mk = (status: number) => {
+      const res = new Response('x', { status });
+      const orig = res.body!.cancel.bind(res.body);
+      res.body!.cancel = (...a: []) => { cancelled++; return orig(...a); };
+      return res;
+    };
+    for (const status of [401, 404, 500]) await setup(() => mk(status)).client.getMessages();
+    expect(cancelled).toBe(3);
   });
 });

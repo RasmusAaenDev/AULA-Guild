@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { chatConfig } from '@/lib/chat-config';
 import { createChatClient, type ChatClient } from '@/lib/chat';
 import { createBlizzardClient } from '@/lib/blizzard/client';
 import type { BlizzardClient } from '@/lib/blizzard/types';
@@ -53,14 +54,13 @@ export function filesDeps(): StorageDeps {
 }
 
 export function isChatConfigured(): boolean {
-  const e = env();
-  return Boolean(e.DISCORD_BOT_TOKEN && e.DISCORD_CHAT_CHANNEL_ID);
+  return chatConfig() !== null;
 }
 
 /** Chat-klienten (delt cache på tværs af anmodninger), eller null hvis chatten ikke er sat op. */
 export function getChat(): ChatClient | null {
-  const e = env();
-  if (!e.DISCORD_BOT_TOKEN || !e.DISCORD_CHAT_CHANNEL_ID) return null;
-  g.__aulaChat ??= createChatClient({ token: e.DISCORD_BOT_TOKEN, channelId: e.DISCORD_CHAT_CHANNEL_ID });
+  const cfg = chatConfig();
+  if (!cfg) return null;
+  g.__aulaChat ??= createChatClient({ token: cfg.token, channelId: cfg.channelId });
   return g.__aulaChat;
 }

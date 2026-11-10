@@ -16,21 +16,24 @@ export function ChatView() {
   const listRef = useRef<HTMLDivElement>(null);
   const follow = useRef(true);
   const lastId = useRef<string | null>(null);
+  const emptied = useRef(false);
+  const savedTop = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let controller: AbortController | null = null;
     let failures = 0;
+    let halted = false;
 
     const schedule = () => {
       clearTimeout(timer);
-      if (cancelled || document.visibilityState !== 'visible') return;
+      if (cancelled || halted || document.visibilityState !== 'visible') return;
       timer = setTimeout(poll, nextPollDelay(failures));
     };
 
     async function poll() {
-      if (cancelled || controller || document.visibilityState !== 'visible') return;
+      if (cancelled || halted || controller || document.visibilityState !== 'visible') return;
       const mine = new AbortController();
       controller = mine;
       try {
@@ -43,12 +46,16 @@ export function ChatView() {
           setData(body);
           setNow(new Date());
         } else {
-          failures++;
-          setFailed(
-            res.status === 401 ? 'Din session er udløbet. Log ind igen.'
-              : res.status === 404 ? 'Chatten er ikke sat op.'
-              : 'Chatten kunne ikke hentes. Prøver igen om lidt.',
-          );
+          if (res.status === 401 || res.status === 404) {
+            // Hjælper ikke at prøve igen: stop med at hente.
+            halted = true;
+            setFailed(res.status === 401
+              ? 'Din session er udløbet. Genindlæs siden og log ind igen.'
+              : 'Chatten er ikke sat op.');
+          } else {
+            failures++;
+            setFailed('Chatten kunne ikke hentes. Prøver igen om lidt.');
+          }
         }
       } catch {
         if (cancelled || mine.signal.aborted) return;
@@ -92,9 +99,21 @@ export function ChatView() {
   // Ny sidste besked: rul med, hvis brugeren er i bunden, ellers vis knappen.
   useLayoutEffect(() => {
     const id = data?.messages.at(-1)?.id ?? null;
+    if (id === null) {
+      // Midlertidigt tom liste: behold lastId og husk at positionen skal genskabes.
+      if (data !== null) emptied.current = true;
+      return;
+    }
+    const wasEmptied = emptied.current;
+    emptied.current = false;
     const changed = id !== lastId.current;
     const first = lastId.current === null;
     lastId.current = id;
+    if (wasEmptied && !follow.current) {
+      if (listRef.current) listRef.current.scrollTop = savedTop.current;
+      if (changed) setNewBelow(true);
+      return;
+    }
     if (!changed) return;
     if (follow.current || first) scrollToBottom();
     else setNewBelow(true);
@@ -102,7 +121,8 @@ export function ChatView() {
 
   const onScroll = () => {
     const el = listRef.current;
-    if (!el) return;
+    if (!el || emptied.current || !data?.messages.length) return;
+    savedTop.current = el.scrollTop;
     follow.current = isNearBottom(el);
     if (follow.current) setNewBelow(false);
   };
@@ -116,7 +136,7 @@ export function ChatView() {
       {error && <p className="error" role="alert">{error}</p>}
       {hint && <p className="muted">{hint}</p>}
       {data?.stale && <p className="muted"><span className="badge">forældet</span> Viser sidst hentede beskeder.</p>}
-      <div className="chat-list" ref={listRef} onScroll={onScroll} tabIndex={0} aria-label="Beskeder">
+      <div className="chat-list" ref={listRef} onScroll={onScroll} tabIndex={0} role="log" aria-live="off" aria-label="Chatbeskeder fra Discord">
         {data === null && !failed && <p className="muted">Henter beskeder…</p>}
         {data !== null && data.messages.length === 0 && !error && <p className="muted">Der er ingen beskeder endnu.</p>}
         {data?.messages.map((m) => (

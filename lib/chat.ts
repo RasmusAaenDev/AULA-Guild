@@ -64,6 +64,8 @@ function parse(body: unknown): Parsed | null {
     let content = renderContent(raw, m.mentions);
     if (!content.trim()) {
       content = embedText(m.embeds) || (hasFiles ? '[vedhæftet fil]' : '');
+    } else if (hasFiles) {
+      content += '\n[vedhæftet fil]';
     }
     const author = isObj(m.author) ? m.author : {};
     rows.push({
@@ -84,11 +86,19 @@ function parse(body: unknown): Parsed | null {
   return parsed;
 }
 
+async function discard(res: Response): Promise<void> {
+  try {
+    await res.body?.cancel();
+  } catch {
+    // ligegyldigt: kroppen skal bare ikke blive hængende
+  }
+}
+
 function retrySeconds(res: Response, body: unknown): number {
   let s = isObj(body) && typeof body.retry_after === 'number' ? body.retry_after : NaN;
   if (!(s >= 0)) s = Number(res.headers.get('retry-after') ?? NaN);
   if (!(s >= 0)) s = DEFAULT_RETRY_S;
-  return Math.min(s, MAX_RETRY_S);
+  return Math.min(Math.max(s, 1), MAX_RETRY_S);
 }
 
 export function createChatClient(opts: {
@@ -97,10 +107,12 @@ export function createChatClient(opts: {
   fetch?: typeof fetch;
   now?: () => number;
   ttlMs?: number;
+  timeoutMs?: number;
 }): ChatClient {
   const doFetch = opts.fetch ?? fetch;
   const now = opts.now ?? Date.now;
   const ttl = opts.ttlMs ?? 4000;
+  const timeoutMs = opts.timeoutMs ?? 8000;
   const url = `https://discord.com/api/v10/channels/${encodeURIComponent(opts.channelId)}/messages?limit=50`;
 
   let good: { at: number; parsed: Parsed } | null = null;
@@ -122,16 +134,23 @@ export function createChatClient(opts: {
     const t = now();
     let result: ChatResult;
     try {
-      const res = await doFetch(url, { headers: { Authorization: `Bot ${opts.token}` }, cache: 'no-store' });
+      const res = await doFetch(url, {
+        headers: { Authorization: `Bot ${opts.token}`, 'User-Agent': 'DiscordBot (https://aula.aaensoftware.com, 1.0)' },
+        cache: 'no-store',
+        signal: AbortSignal.timeout(timeoutMs),
+      });
       if (res.status === 401 || res.status === 403) {
+        await discard(res);
         result = { messages: [], stale: false, error: 'no_access' };
       } else if (res.status === 404) {
+        await discard(res);
         result = { messages: [], stale: false, error: 'not_found' };
       } else if (res.status === 429) {
         const body: unknown = await res.json().catch(() => null);
         blockedUntil = t + retrySeconds(res, body) * 1000;
         return degraded(t);
       } else if (!res.ok) {
+        await discard(res);
         result = degraded(t);
       } else {
         const parsed = parse(await res.json().catch(() => null));
