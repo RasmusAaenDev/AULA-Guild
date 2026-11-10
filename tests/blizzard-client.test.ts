@@ -14,6 +14,7 @@ const rawCharacter = {
   name_search: 'Magi Far',
   character_class: { name: 'Mage' },
   guild: { id: 304114, name: 'AULA' },
+  level: 32,
   equipped_item_level: 8,
   average_item_level: 9,
   last_login_timestamp: 1789000000000,
@@ -66,7 +67,7 @@ describe('blizzard-klient', () => {
     const c = await client.getCharacter('magi-far');
     expect(c).toEqual({
       blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', spec: 'Frost',
-      itemLevel: 8, guildId: 304114, guildName: 'AULA', lastLogin: new Date(1789000000000),
+      level: 32, itemLevel: 8, guildId: 304114, guildName: 'AULA', lastLogin: new Date(1789000000000),
     });
     expect(calls[0].init?.headers).toMatchObject({ Authorization: 'Basic ' + Buffer.from('id:secret').toString('base64') });
     expect(calls[0].init?.body).toBe('grant_type=client_credentials');
@@ -96,13 +97,22 @@ describe('blizzard-klient', () => {
     expect((await client.getCharacter('x')).spec).toBeNull();
   });
 
+  it('afviser ugyldigt level (ikke heltal 1..100) som null', async () => {
+    for (const bad of [0, 101, 32.5, '32', null]) {
+      const { client } = setup((u) =>
+        isToken(u) ? jsonResponse(200, tokenBody) : u.includes('/specializations') ? jsonResponse(404) : jsonResponse(200, { id: 5, name: 'Nul', level: bad, character_class: { name: 'Priest' } }),
+      );
+      expect((await client.getCharacter('nul')).level).toBeNull();
+    }
+  });
+
   it('klarer karakter uden guild, spec og item level', async () => {
     const { client } = setup((u) =>
       isToken(u) ? jsonResponse(200, tokenBody) : u.includes('/specializations') ? jsonResponse(404) : jsonResponse(200, { id: 5, name: 'Nul', character_class: { name: 'Priest' } }),
     );
     const c = await client.getCharacter('nul');
     expect(c.spec).toBeUndefined();
-    expect(c).toMatchObject({ itemLevel: null, guildId: null, guildName: null, lastLogin: null });
+    expect(c).toMatchObject({ level: null, itemLevel: null, guildId: null, guildName: null, lastLogin: null });
   });
 
   // Bevidst ændret: specializations er sekundære data. Før propagerede 429 herfra; nu giver enhver fejl spec undefined og profilen lykkes.

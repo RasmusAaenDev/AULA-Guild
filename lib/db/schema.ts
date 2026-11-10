@@ -22,6 +22,7 @@ export const characters = pgTable('characters', {
   className: text('class_name').notNull(),
   spec: text('spec'),
   role: roleEnum('role').notNull(),
+  level: integer('level'),
   itemLevel: integer('item_level'),
   guildRank: integer('guild_rank'),
   inGuild: boolean('in_guild').notNull().default(true),

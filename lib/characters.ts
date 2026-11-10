@@ -74,6 +74,7 @@ export async function addCharacter(
     className: found.className,
     spec: found.spec ?? null,
     role: input.role,
+    level: found.level,
     itemLevel: found.itemLevel,
     inGuild: true,
     lastLogin: found.lastLogin,
@@ -195,6 +196,7 @@ export type Contact = {
   className: string;
   spec: string | null;
   role: Role;
+  level: number | null;
   itemLevel: number | null;
   guildRank: number | null;
   inGuild: boolean;
@@ -213,6 +215,7 @@ export async function listContacts(db: Db): Promise<Contact[]> {
       className: characters.className,
       spec: characters.spec,
       role: characters.role,
+      level: characters.level,
       itemLevel: characters.itemLevel,
       guildRank: characters.guildRank,
       inGuild: characters.inGuild,

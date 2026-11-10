@@ -21,7 +21,7 @@ export default async function ContactsPage() {
             <thead>
               <tr>
                 <th>Karakter</th><th>Spiller</th><th>Klasse</th><th>Rolle</th>
-                <th>Item level</th><th>Rang</th><th>Sidst synkroniseret</th>
+                <th>Level</th><th>Item level</th><th>Rang</th><th>Sidst synkroniseret</th>
                 {member.isOfficer && <th />}
               </tr>
             </thead>
@@ -35,6 +35,7 @@ export default async function ContactsPage() {
                   <td>{c.ownerName}</td>
                   <td>{c.className}{c.spec ? ` (${c.spec})` : ''}</td>
                   <td>{roleLabel(c.role)}</td>
+                  <td>{c.level ?? '–'}</td>
                   <td>{c.itemLevel ?? '–'}</td>
                   <td>{c.guildRank ?? '–'}</td>
                   <td>{formatDateTime(c.lastSynced)}</td>

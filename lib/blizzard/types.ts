@@ -7,6 +7,8 @@ export type ArmoryCharacter = {
   className: string;
   // string = udledt, null = opslag lykkedes men ingen enkelt spec, undefined = opslag fejlede (ukendt)
   spec?: string | null;
+  // Karakterens level (heltal 1..100); null = ukendt.
+  level: number | null;
   itemLevel: number | null;
   guildId: number | null;
   guildName: string | null;

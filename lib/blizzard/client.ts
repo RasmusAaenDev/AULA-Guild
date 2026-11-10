@@ -12,6 +12,7 @@ type RawCharacter = {
   surname?: unknown;
   character_class?: { name: string };
   guild?: { id: number; name: string };
+  level?: unknown;
   equipped_item_level?: number;
   average_item_level?: number;
   last_login_timestamp?: number;
@@ -55,6 +56,11 @@ function cleanSurname(v: unknown): string | null {
   if (typeof v !== 'string') return null;
   const t = v.trim();
   return t === '' ? null : t;
+}
+
+// Heltal 1..100, ellers null.
+function cleanLevel(v: unknown): number | null {
+  return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 100 ? v : null;
 }
 
 function slugFromHref(href: string | undefined): string | null {
@@ -151,6 +157,7 @@ export function createBlizzardClient(opts: {
         surname: cleanSurname(raw.surname),
         className: raw.character_class?.name ?? 'Ukendt',
         spec,
+        level: cleanLevel(raw.level),
         itemLevel: raw.equipped_item_level ?? raw.average_item_level ?? null,
         guildId: raw.guild?.id ?? null,
         guildName: raw.guild?.name ?? null,

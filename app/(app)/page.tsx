@@ -56,7 +56,7 @@ export default async function OverviewPage({
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
   const [row] = await db
-    .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, itemLevel: characters.itemLevel })
+    .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
@@ -190,6 +190,7 @@ export default async function OverviewPage({
                 <br />
                 <span className="muted">
                   {roleLabel(row.role)}
+                  {row.level != null ? ` · level ${row.level}` : ''}
                   {row.itemLevel != null ? ` · item level ${row.itemLevel}` : ''}
                 </span>
               </p>

@@ -91,6 +91,7 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
           ...((p.surname ?? c.surname) !== null ? { surname: p.surname ?? c.surname } : {}),
           className: p.className,
           ...(p.spec !== undefined ? { spec: p.spec } : {}),
+          ...(p.level !== null ? { level: p.level } : {}),
           itemLevel: p.itemLevel,
           lastLogin: p.lastLogin,
           lastSynced: now(),

@@ -14,6 +14,7 @@ export function armory(over: Partial<ArmoryCharacter> = {}): ArmoryCharacter {
     surname: 'Far',
     className: 'Mage',
     spec: 'Frost',
+    level: 32,
     itemLevel: 8,
     guildId: 304114,
     guildName: 'AULA',

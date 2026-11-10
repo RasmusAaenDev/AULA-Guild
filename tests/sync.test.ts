@@ -74,10 +74,10 @@ describe('syncRoster', () => {
     await seed(1, 'Alpha', u);
     const blizzard = fakeBlizzard({
       roster: [member({ blizzardId: 1, slug: 'alpha-ny', name: 'Alpha', rank: 2 })],
-      characters: { 'alpha-ny': armory({ blizzardId: 1, slug: 'alpha-ny', name: 'Alpha', itemLevel: 42, spec: 'Frost', className: 'Mage' }) },
+      characters: { 'alpha-ny': armory({ blizzardId: 1, slug: 'alpha-ny', name: 'Alpha', level: 41, itemLevel: 42, spec: 'Frost', className: 'Mage' }) },
     });
     expect(await run(blizzard)).toEqual({ skipped: false, updated: 1, failed: 0 });
-    expect(await row(1)).toMatchObject({ guildRank: 2, slug: 'alpha-ny', itemLevel: 42, spec: 'Frost', inGuild: true, lastSynced: NOW });
+    expect(await row(1)).toMatchObject({ guildRank: 2, slug: 'alpha-ny', level: 41, itemLevel: 42, spec: 'Frost', inGuild: true, lastSynced: NOW });
   });
 
   it('beholder gemt spec når spec er undefined, men opdaterer øvrige felter; skriver null når spec er null', async () => {
@@ -200,5 +200,19 @@ describe('syncRoster', () => {
     const blizzard = fakeBlizzard({ roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })] });
     await run(blizzard);
     expect(await row(1)).toMatchObject({ inGuild: true, lastSynced: OLD });
+  });
+});
+
+describe('syncRoster level', () => {
+  it('beholder kendt level, når profilen ikke giver et', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    await db.update(characters).set({ level: 30 }).where(eq(characters.blizzardId, 1));
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', rank: 2 })],
+      characters: { alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', level: null }) },
+    });
+    await run(blizzard);
+    expect(await row(1)).toMatchObject({ level: 30 });
   });
 });
