@@ -26,7 +26,7 @@ let charSeq = 0;
 async function seedChar(userId: number, role: Role, name: string, className = 'Mage'): Promise<number> {
   charSeq += 1;
   const [c] = await db.insert(characters).values({
-    blizzardId: 5000 + charSeq, slug: name.toLowerCase(), name, className, role, userId,
+    blizzardId: 5000 + charSeq, slug: `${name.toLowerCase()}-${name.toLowerCase()}sen`, name, surname: `${name}sen`, className, role, userId,
   }).returning({ id: characters.id });
   return c.id;
 }
@@ -250,6 +250,7 @@ describe('getEvent', () => {
     }
     const d = (await getEvent(db, id))!;
     expect(d.attendees.map((a) => a.characterName)).toEqual(['Tor', 'Mia', 'Abe', 'Zed', 'Per', 'Hel', 'Bob']);
+    expect(d.attendees.map((a) => a.characterFullName)).toEqual(['Tor Torsen', 'Mia Miasen', 'Abe Abesen', 'Zed Zedsen', 'Per Persen', 'Hel Helsen', 'Bob Bobsen']);
     expect(d.counts).toEqual({ tank: 1, healer: 1, dps: 2, total: 4 });
     expect(d.creatorName).toBe('Bruger c');
     expect(d.createdBy).toBe(creator);

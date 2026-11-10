@@ -89,7 +89,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <ul>
                 {list.map((a) => (
                   <li key={a.userId}>
-                    <strong>{a.characterName}</strong> · {a.className} · {roleLabel(a.role)}
+                    <strong>{a.characterFullName}</strong> · {a.className} · {roleLabel(a.role)}
                     <span className="muted"> ({a.userName})</span>
                   </li>
                 ))}

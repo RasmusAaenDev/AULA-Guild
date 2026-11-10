@@ -10,6 +10,7 @@ import { getDb } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
 import { roleLabel } from '@/lib/messages';
+import { fullName } from '@/lib/names';
 import { countUnread, listPosts } from '@/lib/posts';
 import type { PostTab } from '@/lib/posts';
 import { excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
@@ -45,7 +46,7 @@ export default async function OverviewPage({
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
   const [row] = await db
-    .select({ name: characters.name, className: characters.className, spec: characters.spec, role: characters.role, itemLevel: characters.itemLevel })
+    .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, itemLevel: characters.itemLevel })
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
@@ -82,7 +83,7 @@ export default async function OverviewPage({
               )}
               <div className="post-head">
                 <p className="post-meta">
-                  <strong>{p.authorCharacter ? `${p.authorName} (${p.authorCharacter})` : p.authorName}</strong>
+                  <strong>{p.authorCharacterFullName ? `${p.authorName} (${p.authorCharacterFullName})` : p.authorName}</strong>
                   <span className="muted">Delt med hele guilden</span>
                   <time className="muted" dateTime={p.createdAt.toISOString()} title={formatAbsolute(p.createdAt)}>
                     {formatRelativeDay(p.createdAt, now)}
@@ -146,7 +147,7 @@ export default async function OverviewPage({
             <h2>Dine karakterer</h2>
             {row ? (
               <p>
-                <strong>{row.name}</strong> · {row.className}
+                <strong>{fullName(row)}</strong> · {row.className}
                 {row.spec ? ` (${row.spec})` : ''}
                 <br />
                 <span className="muted">

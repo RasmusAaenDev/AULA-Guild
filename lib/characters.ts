@@ -4,7 +4,11 @@ import { characters, users, type Role } from '@/lib/db/schema';
 import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RosterMember } from '@/lib/blizzard/types';
 import type { AddFailure } from '@/lib/messages';
 import { reassignUpcomingRsvps } from '@/lib/rsvps';
+import { fullName } from '@/lib/names';
 import { nameToSlug, normalizeName } from '@/lib/slug';
+
+const byFullName = (a: { fullName: string; id: number }, b: { fullName: string; id: number }) =>
+  a.fullName.localeCompare(b.fullName, 'da') || a.id - b.id;
 
 export type CharactersDeps = { db: Db; blizzard: BlizzardClient; guildId: number; guildSlug: string };
 export type AddResult = { ok: true; characterId: number } | { ok: false; reason: AddFailure };
@@ -159,19 +163,34 @@ export async function unlinkCharacter(db: Db, characterId: number, now: Date = n
   });
 }
 
-export type MyCharacter = { id: number; name: string; className: string; spec: string | null; role: Role };
+export type MyCharacter = {
+  id: number;
+  /** Fornavn (Blizzard `name`). */
+  name: string;
+  /** Fornavn + efternavn (efternavn udledes af sluggen, hvis det ikke er gemt endnu). */
+  fullName: string;
+  className: string;
+  spec: string | null;
+  role: Role;
+};
 
 export async function listMyCharacters(db: Db, userId: number): Promise<MyCharacter[]> {
-  return db
-    .select({ id: characters.id, name: characters.name, className: characters.className, spec: characters.spec, role: characters.role })
+  const rows = await db
+    .select({
+      id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug,
+      className: characters.className, spec: characters.spec, role: characters.role,
+    })
     .from(characters)
-    .where(eq(characters.userId, userId))
-    .orderBy(asc(characters.name));
+    .where(eq(characters.userId, userId));
+  return rows
+    .map(({ surname, slug, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug }) }))
+    .sort(byFullName);
 }
 
 export type Contact = {
   id: number;
   name: string;
+  fullName: string;
   className: string;
   spec: string | null;
   role: Role;
@@ -184,10 +203,12 @@ export type Contact = {
 };
 
 export async function listContacts(db: Db): Promise<Contact[]> {
-  return db
+  const rows = await db
     .select({
       id: characters.id,
       name: characters.name,
+      surname: characters.surname,
+      slug: characters.slug,
       className: characters.className,
       spec: characters.spec,
       role: characters.role,
@@ -199,6 +220,8 @@ export async function listContacts(db: Db): Promise<Contact[]> {
       ownerAvatar: users.avatar,
     })
     .from(characters)
-    .innerJoin(users, eq(characters.userId, users.id))
-    .orderBy(desc(characters.inGuild), asc(characters.name));
+    .innerJoin(users, eq(characters.userId, users.id));
+  return rows
+    .map(({ surname, slug, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug }) }))
+    .sort((a, b) => Number(b.inGuild) - Number(a.inGuild) || byFullName(a, b));
 }

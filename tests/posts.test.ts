@@ -430,7 +430,7 @@ describe('listPosts: egne og gemte, bookmarked og authorCharacter', () => {
     const b = await seedUser(db, 'b');
     const c = await seedUser(db, 'c');
     const [ca] = await db.insert(characters).values({
-      blizzardId: 1, slug: 'magi', name: 'Magi Far', className: 'Mage', role: 'dps', userId: a,
+      blizzardId: 1, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', role: 'dps', userId: a,
     }).returning({ id: characters.id });
     // b har en karakter, men ingen aktiv; c peger på en andens karakter (må ikke vises)
     await db.insert(characters).values({ blizzardId: 2, slug: 'tank', name: 'Tankie', className: 'Warrior', role: 'tank', userId: b });
@@ -440,8 +440,11 @@ describe('listPosts: egne og gemte, bookmarked og authorCharacter', () => {
     const pb = await seedPost(b, 'B', min(2));
     const pc = await seedPost(c, 'C', min(3));
     const items = (await listPosts(db, a, 'alle', 1)).items;
-    expect(items.find((i) => i.id === pa)!.authorCharacter).toBe('Magi Far');
+    expect(items.find((i) => i.id === pa)!.authorCharacter).toBe('Magi');
+    expect(items.find((i) => i.id === pa)!.authorCharacterFullName).toBe('Magi Far');
     expect(items.find((i) => i.id === pb)!.authorCharacter).toBeNull();
+    expect(items.find((i) => i.id === pb)!.authorCharacterFullName).toBeNull();
     expect(items.find((i) => i.id === pc)!.authorCharacter).toBeNull();
+    expect(items.find((i) => i.id === pc)!.authorCharacterFullName).toBeNull();
   });
 });

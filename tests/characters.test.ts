@@ -43,7 +43,9 @@ describe('addCharacter', () => {
     await addCharacter(deps(blizzard), { userId, name: 'Ezzek', role: 'tank' });
     if (!first.ok) throw new Error('forventede ok');
     expect(await activeOf(userId)).toBe(first.characterId);
-    expect(await listMyCharacters(db, userId)).toHaveLength(2);
+    const mine = await listMyCharacters(db, userId);
+    expect(mine).toHaveLength(2);
+    expect(mine.map((c) => c.fullName)).toEqual(['Ezzek Svumpukkel', 'Magi Far']);
   });
 
   it('afviser ugyldigt navn uden at kalde Blizzard', async () => {
@@ -260,18 +262,34 @@ describe('addCharacter: efternavn og opslag på fuldt navn', () => {
   });
 });
 
+describe('listMyCharacters: fuldt navn og rækkefølge', () => {
+  it('sorterer efter fuldt navn (da) og leverer fullName', async () => {
+    const a = await seedUser(db, 'a');
+    await db.insert(characters).values([
+      { blizzardId: 1, slug: 'anna-ølund', name: 'Anna', surname: 'Ølund', className: 'Mage', role: 'dps', userId: a },
+      { blizzardId: 2, slug: 'anna-aaen', name: 'Anna', surname: 'Aaen', className: 'Mage', role: 'dps', userId: a },
+      { blizzardId: 3, slug: 'bo-ek', name: 'Bo', surname: null, className: 'Mage', role: 'dps', userId: a },
+    ]);
+    const mine = await listMyCharacters(db, a);
+    expect(mine.map((c) => c.fullName)).toEqual(['Anna Aaen', 'Anna Ølund', 'Bo Ek']);
+    expect(mine.map((c) => c.name)).toEqual(['Anna', 'Anna', 'Bo']);
+  });
+});
+
 describe('listContacts', () => {
   it('viser kun tilknyttede karakterer, guild-medlemmer først, med ejerens navn', async () => {
     const a = await seedUser(db, 'a');
     const b = await seedUser(db, 'b');
     await db.insert(characters).values([
-      { blizzardId: 1, slug: 'zed', name: 'Zed', className: 'Rogue', role: 'dps', userId: a, inGuild: false },
-      { blizzardId: 2, slug: 'abe', name: 'Abe', className: 'Mage', role: 'dps', userId: b },
-      { blizzardId: 3, slug: 'bob', name: 'Bob', className: 'Priest', role: 'healer', userId: a },
+      { blizzardId: 1, slug: 'zed-zorn', name: 'Zed', surname: 'Zorn', className: 'Rogue', role: 'dps', userId: a, inGuild: false },
+      { blizzardId: 2, slug: 'abe-aaen', name: 'Abe', surname: 'Aaen', className: 'Mage', role: 'dps', userId: b },
+      { blizzardId: 3, slug: 'bob-bygger', name: 'Bob', className: 'Priest', role: 'healer', userId: a },
       { blizzardId: 4, slug: 'orphan', name: 'Orphan', className: 'Priest', role: 'healer', userId: null },
     ]);
     const contacts = await listContacts(db);
     expect(contacts.map((c) => c.name)).toEqual(['Abe', 'Bob', 'Zed']);
+    // Bob har intet surname i databasen: fuldt navn udledes af sluggen.
+    expect(contacts.map((c) => c.fullName)).toEqual(['Abe Aaen', 'Bob Bygger', 'Zed Zorn']);
     expect(contacts[0]).toMatchObject({ ownerName: 'Bruger b', inGuild: true });
     expect(contacts[2].inGuild).toBe(false);
   });

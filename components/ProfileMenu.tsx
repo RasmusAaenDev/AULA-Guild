@@ -13,7 +13,7 @@ export function ProfileMenu({
     <DetailsMenu className="profile">
       <summary>
         {image ? <img className="avatar" src={image} alt="" /> : <span className="avatar" />}
-        <span>{active ? active.name : name}</span>
+        <span>{active ? active.fullName : name}</span>
       </summary>
       <div className="menu">
         <strong>{name}</strong>
@@ -22,7 +22,7 @@ export function ProfileMenu({
           <form key={c.id} action={setActiveAction}>
             <input type="hidden" name="characterId" value={c.id} />
             <button type="submit" className="btn secondary" style={{ width: '100%', margin: '6px 0' }} disabled={c.id === activeId}>
-              {c.name} · {c.className} · {roleLabel(c.role)}
+              {c.fullName} · {c.className} · {roleLabel(c.role)}
               {c.id === activeId ? ' (aktiv)' : ''}
             </button>
           </form>
@@ -30,7 +30,7 @@ export function ProfileMenu({
         {active && (
           <form key={`${active.id}-${active.role}`} action={setRoleAction} className="field">
             <input type="hidden" name="characterId" value={active.id} />
-            <label htmlFor="role">Rolle for {active.name}</label>
+            <label htmlFor="role">Rolle for {active.fullName}</label>
             <select id="role" name="role" defaultValue={active.role}>
               {roles.map((r: Role) => <option key={r} value={r}>{roleLabel(r)}</option>)}
             </select>

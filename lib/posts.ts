@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, isNull, notExists, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
+import { fullName } from '@/lib/names';
 import { characters, comments, postBookmarks, postReads, posts, users } from '@/lib/db/schema';
 
 export type PostTab = 'alle' | 'ulaeste' | 'vigtige' | 'egne' | 'gemte';
@@ -11,6 +12,8 @@ export type PostListItem = {
   authorName: string;
   /** Navnet på forfatterens aktive karakter, ellers null. */
   authorCharacter: string | null;
+  /** Fuldt navn (fornavn + efternavn) på forfatterens aktive karakter, ellers null. */
+  authorCharacterFullName: string | null;
   createdAt: Date;
   pinned: boolean;
   commentCount: number;
@@ -200,6 +203,8 @@ export async function listPosts(
       excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH + 1})`,
       authorName: users.name,
       authorCharacter: characters.name,
+      authorCharacterSurname: characters.surname,
+      authorCharacterSlug: characters.slug,
       createdAt: posts.createdAt,
       pinned: posts.pinned,
       commentCount: sql<number>`(select count(*)::int from ${comments} where ${comments.postId} = ${posts.id} and ${comments.deletedAt} is null)`,
@@ -218,7 +223,14 @@ export async function listPosts(
     )
     .limit(size + 1)
     .offset(offset);
-  return { items: rows.slice(0, size), hasMore: rows.length > size };
+  const items = rows.slice(0, size).map(({ authorCharacterSurname, authorCharacterSlug, ...r }) => ({
+    ...r,
+    authorCharacterFullName:
+      r.authorCharacter === null || authorCharacterSlug === null
+        ? null
+        : fullName({ name: r.authorCharacter, surname: authorCharacterSurname, slug: authorCharacterSlug }),
+  }));
+  return { items, hasMore: rows.length > size };
 }
 
 export async function getPost(db: Db, userId: number, postId: number): Promise<PostDetail | null> {

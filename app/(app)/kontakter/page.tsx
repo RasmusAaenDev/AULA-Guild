@@ -29,7 +29,7 @@ export default async function ContactsPage() {
               {contacts.map((c) => (
                 <tr key={c.id} className={c.inGuild ? undefined : 'left-guild'}>
                   <td>
-                    <strong>{c.name}</strong>
+                    <strong>{c.fullName}</strong>
                     {!c.inGuild && <> <span className="badge">forladt guild</span></>}
                   </td>
                   <td>{c.ownerName}</td>

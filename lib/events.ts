@@ -1,5 +1,6 @@
 import { and, asc, count, eq, gt, inArray, isNull, lte, notExists, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
+import { fullName } from '@/lib/names';
 import { characters, events, rsvps, users, type EventType, type Role, type RsvpStatus } from '@/lib/db/schema';
 
 export type EventActor = { userId: number; isOfficer: boolean };
@@ -26,7 +27,10 @@ export type Attendee = {
   userId: number;
   userName: string;
   characterId: number;
+  /** Karakterens fornavn. */
   characterName: string;
+  /** Fornavn + efternavn. */
+  characterFullName: string;
   className: string;
   role: Role;
   status: RsvpStatus;
@@ -157,6 +161,8 @@ export async function getEvent(db: Db, eventId: number): Promise<EventDetail | n
       userName: users.name,
       characterId: characters.id,
       characterName: characters.name,
+      characterSurname: characters.surname,
+      characterSlug: characters.slug,
       className: characters.className,
       role: characters.role,
       status: rsvps.status,
@@ -165,11 +171,16 @@ export async function getEvent(db: Db, eventId: number): Promise<EventDetail | n
     .innerJoin(users, eq(users.id, rsvps.userId))
     .innerJoin(characters, eq(characters.id, rsvps.characterId))
     .where(eq(rsvps.eventId, eventId));
-  const attendees: Attendee[] = rows.sort(
+  const attendees: Attendee[] = rows
+    .map(({ characterSurname, characterSlug, ...r }) => ({
+      ...r,
+      characterFullName: fullName({ name: r.characterName, surname: characterSurname, slug: characterSlug }),
+    }))
+    .sort(
     (a, b) =>
       STATUS_ORDER[a.status] - STATUS_ORDER[b.status] ||
       ROLE_ORDER[a.role] - ROLE_ORDER[b.role] ||
-      a.characterName.localeCompare(b.characterName, 'da'),
+      a.characterFullName.localeCompare(b.characterFullName, 'da'),
   );
   const counts = emptyCounts();
   for (const a of attendees) if (a.status === 'deltager') addCount(counts, a.role);
