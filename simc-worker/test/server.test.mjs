@@ -1,7 +1,8 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { spawn, execFileSync } from 'node:child_process';
+import { rmSync, readFileSync, readdirSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sanitizeProfile } from '../sanitize.mjs';
@@ -58,11 +59,12 @@ test('ekkoer højst 40 tegn', () => {
 
 // ---- HTTP-lag med falsk simc ----
 let proc, base;
+const pidFile = path.join(tmpdir(), `fake-simc-pid-${process.pid}`);
 before(async () => {
   const port = 18000 + Math.floor(Math.random() * 1000);
   base = `http://127.0.0.1:${port}`;
   proc = spawn(process.execPath, [path.join(here, '../server.mjs')], {
-    env: { ...process.env, PORT: String(port), SIMC_BIN: path.join(here, 'fake-simc.sh') },
+    env: { ...process.env, PORT: String(port), SIMC_BIN: path.join(here, 'fake-simc.sh'), FAKE_SIMC_PID: pidFile },
     stdio: ['ignore', 'ignore', 'pipe'],
   });
   for (let i = 0; i < 50; i++) {
@@ -71,7 +73,7 @@ before(async () => {
   }
   throw new Error('serveren startede ikke');
 });
-after(() => proc?.kill('SIGTERM'));
+after(() => { proc?.kill('SIGTERM'); try { rmSync(pidFile, { force: true }); } catch {} });
 
 const post = (body, headers = { 'content-type': 'application/json' }) =>
   fetch(`${base}/run`, { method: 'POST', headers, body: typeof body === 'string' ? body : JSON.stringify(body) });
@@ -124,4 +126,103 @@ test('for stor body giver 413', async () => {
 });
 test('ukendt sti giver 404', async () => {
   assert.equal((await fetch(`${base}/x`)).status, 404);
+});
+
+// ---- NDJSON-stream ----
+const NDJSON = { 'content-type': 'application/json', accept: 'application/x-ndjson' };
+async function readNdjson(res) {
+  const text = await res.text();
+  return text.split('\n').filter(Boolean).map((l) => JSON.parse(l));
+}
+const simcDirs = () => readdirSync(tmpdir()).filter((n) => n.startsWith('simc-'));
+
+test('ndjson: log-linjer og præcis én slutlinje med samme krop som før', async () => {
+  const res = await post({ input: 'hunter="A"\nrace=logs\n', iterations: 500 }, NDJSON);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'application/x-ndjson');
+  const lines = await readNdjson(res);
+  const results = lines.filter((l) => l.type === 'result');
+  assert.equal(results.length, 1);
+  assert.equal(lines.at(-1).type, 'result');
+  assert.equal(results[0].ok, true);
+  assert.equal(results[0].result.dps.mean, 1234.5);
+  const log = lines.filter((l) => l.type === 'log').map((l) => l.text).join('');
+  assert.match(log, /SimulationCraft FAKE-1 starter/);
+  assert.match(log, /== Kampstil: Patchwerk ==/);
+  assert.match(log, /Generating Baseline: 100\/100\n/);
+  assert.doesNotMatch(log, /Baseline: 10\/100/);
+  assert.match(log, /farlig rødtekst\ttab <mappe>/);
+  assert.match(log, /slutlinje uden linjeskift\n$/);
+  assert.doesNotMatch(log, /[\u0000-\u0008\u000b-\u001f\u007f]/);
+  assert.doesNotMatch(log, /\/tmp\/|\/opt\//);
+  assert.match(log, /Læser <mappe> og skriver til <mappe>/);
+  assert.ok(log.split('\n').every((l) => l.length <= 300));
+});
+test('ndjson: fejl giver fejl-slutlinje uden at afsløre mere end simc-loggen', async () => {
+  const lines = await readNdjson(await post({ input: 'hunter="A"\nrace=fail\n' }, NDJSON));
+  const last = lines.at(-1);
+  assert.equal(last.type, 'result');
+  assert.equal(last.ok, false);
+  assert.match(last.error, /Simulationen kunne ikke køre/);
+  assert.equal(lines.filter((l) => l.type === 'result').length, 1);
+});
+test('ndjson: valideringsfejl før streamen er almindelig JSON med statuskode', async () => {
+  const res = await post({ input: 'hunter="A"\ninput=/etc/passwd\n' }, NDJSON);
+  assert.equal(res.status, 400);
+  assert.match(res.headers.get('content-type'), /^application\/json/);
+  assert.equal((await res.json()).ok, false);
+});
+test('ndjson: samlet logvolumen er højst 64 KB og afkortes med note', async () => {
+  const lines = await readNdjson(await post({ input: 'hunter="A"\nrace=flood\n' }, NDJSON));
+  const log = lines.filter((l) => l.type === 'log').map((l) => l.text).join('');
+  assert.ok(Buffer.byteLength(log) <= 64 * 1024 + 20, String(log.length));
+  assert.equal(log.split('[log afkortet]\n').length - 1, 1);
+  assert.equal(lines.at(-1).type, 'result');
+  assert.equal(lines.at(-1).ok, true);
+});
+test('ndjson: log kommer løbende, før slutlinjen', async () => {
+  const t0 = Date.now();
+  const res = await post({ input: 'hunter="A"\nrace=logs\n' }, NDJSON);
+  const reader = res.body.getReader();
+  const first = await reader.read();
+  assert.match(new TextDecoder().decode(first.value), /"type":"log"/);
+  assert.ok(Date.now() - t0 < 3000);
+  await reader.cancel();
+  await new Promise((r) => setTimeout(r, 500)); // lad den afbrudte kørsel rydde op, før næste test tager sit øjebliksbillede
+});
+test('uden Accept-headeren er svaret uændret (almindelig JSON)', async () => {
+  const res = await post({ input: 'hunter="A"\nrace=logs\n' });
+  assert.match(res.headers.get('content-type'), /^application\/json/);
+  const j = await res.json();
+  assert.equal(j.type, undefined);
+  assert.equal(j.ok, true);
+  assert.equal(j.result.dps.mean, 1234.5);
+});
+test('ndjson: klient der afbryder midt i dræber simc og rydder temp-mappen', async () => {
+  const ac = new AbortController();
+  const before = new Set(simcDirs());
+  const res = await fetch(`${base}/run`, { method: 'POST', headers: NDJSON, signal: ac.signal, body: JSON.stringify({ input: 'hunter="A"\nrace=slowlog\n' }) });
+  const reader = res.body.getReader();
+  await reader.read(); // første log-brudstykke
+  for (let i = 0; i < 50 && !existsSync(pidFile); i++) await new Promise((r) => setTimeout(r, 100));
+  const pid = Number(readFileSync(pidFile, 'utf8').trim());
+  assert.ok(pid > 0);
+  ac.abort();
+  let alive = true;
+  for (let i = 0; i < 40 && alive; i++) {
+    await new Promise((r) => setTimeout(r, 100));
+    try { process.kill(pid, 0); } catch { alive = false; }
+  }
+  assert.equal(alive, false, 'simc-processen blev ikke dræbt');
+  for (let i = 0; i < 20 && simcDirs().some((d) => !before.has(d)); i++) await new Promise((r) => setTimeout(r, 100));
+  assert.deepEqual(simcDirs().filter((d) => !before.has(d)), []);
+});
+test('ndjson: job der venter i køen får «Venter i kø»-linjer', async () => {
+  const slow = post({ input: 'hunter="A"\nrace=slow\n' }).then((r) => r.text());
+  await new Promise((r) => setTimeout(r, 300));
+  const lines = await readNdjson(await post({ input: 'hunter="A"\n' }, NDJSON));
+  await slow;
+  const waits = lines.filter((l) => l.type === 'log' && l.text === 'Venter i kø …\n');
+  assert.ok(waits.length >= 2 && waits.length <= 6, String(waits.length));
+  assert.equal(lines.at(-1).type, 'result');
 });

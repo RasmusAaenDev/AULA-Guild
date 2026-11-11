@@ -3,7 +3,9 @@ import { spawn, execFile } from 'node:child_process';
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { StringDecoder } from 'node:string_decoder';
 import { sanitizeProfile } from './sanitize.mjs';
+import { LogCollector } from './logsanitize.mjs';
 import {
   validateRunOptions, equippedFromLines, buildProfilesets, profilesetIterations,
   parseProfilesetResults, buildItemResults, badProfilesetIndex,
@@ -17,6 +19,8 @@ const MAX_PENDING = 10;
 const TOTAL_TIMEOUT_MS = Number(process.env.SIMC_TOTAL_TIMEOUT_MS) || 240_000;
 const MIN_RUN_MS = 1_000;
 const LOG_CAP = 20 * 1024;
+const LOG_FLUSH_MS = Number(process.env.SIMC_LOG_FLUSH_MS) || 500;
+const QUEUE_NOTE_MS = Number(process.env.SIMC_QUEUE_NOTE_MS) || 1000;
 
 let simcVersion = 'ukendt';
 let shuttingDown = false;
@@ -42,13 +46,18 @@ function enqueue(task) {
   return p;
 }
 
-function runSimc(inputFile, timeoutMs) {
+// ctx: { aborted, child, log } — log er en LogCollector (kun ved streaming), aborted sættes når klienten går.
+function runSimc(inputFile, timeoutMs, ctx) {
   return new Promise((resolve) => {
+    if (ctx?.aborted) return resolve({ code: -1, timedOut: false, out: '', err: '' });
     const child = spawn(SIMC_BIN, [inputFile], { stdio: ['ignore', 'pipe', 'pipe'], shell: false });
+    if (ctx) ctx.child = child;
     let out = '', err = '', timedOut = false;
     const cap = (cur, d) => (cur.length >= LOG_CAP ? cur : (cur + d.toString('utf8')).slice(0, LOG_CAP));
-    child.stdout.on('data', (d) => { out = cap(out, d); });
-    child.stderr.on('data', (d) => { err = cap(err, d); });
+    // Hver strøm får sin egen decoder, så multibyte-tegn ikke deles midt over to brudstykker.
+    const dec = { stdout: new StringDecoder('utf8'), stderr: new StringDecoder('utf8') };
+    child.stdout.on('data', (d) => { out = cap(out, d); ctx?.log?.feed(dec.stdout.write(d)); });
+    child.stderr.on('data', (d) => { err = cap(err, d); ctx?.log?.feed(dec.stderr.write(d)); });
     const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, timeoutMs);
     child.on('error', () => { clearTimeout(timer); resolve({ code: -1, timedOut, out, err }); });
     child.on('close', (code) => { clearTimeout(timer); resolve({ code, timedOut, out, err }); });
@@ -59,7 +68,7 @@ const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 const str = (v) => (typeof v === 'string' ? v : null);
 
 // En simc-kørsel for én kampstil (basisprofil + evt. profilesets i samme kørsel).
-async function runStyle(dir, lines, iterations, fightStyle, ps, timeoutMs) {
+async function runStyle(dir, lines, iterations, fightStyle, ps, timeoutMs, ctx) {
   const outFile = path.join(dir, `out-${fightStyle}.json`);
   const inFile = path.join(dir, `in-${fightStyle}.simc`);
   const content = [
@@ -72,7 +81,8 @@ async function runStyle(dir, lines, iterations, fightStyle, ps, timeoutMs) {
     `json2=${outFile}`, '',
   ].join('\n');
   await writeFile(inFile, content, { mode: 0o600 });
-  const r = await runSimc(inFile, timeoutMs);
+  ctx?.log?.note(`== Kampstil: ${fightStyle} ==`);
+  const r = await runSimc(inFile, timeoutMs, ctx);
   if (r.timedOut || r.code !== 0) {
     console.error(`simc fejlede: stil=${fightStyle} kode=${r.code} timeout=${r.timedOut} stderr_bytes=${r.err.length}`);
     const bad = r.timedOut ? null : badProfilesetIndex(r.err);
@@ -90,10 +100,11 @@ async function runStyle(dir, lines, iterations, fightStyle, ps, timeoutMs) {
   return { entry, player: p };
 }
 
-async function simulate(lines, className, iterations, fightStyles, bagItems) {
+async function simulate(lines, className, iterations, fightStyles, bagItems, ctx) {
   const started = Date.now();
   const deadline = started + TOTAL_TIMEOUT_MS;
   const dir = await mkdtemp(path.join(tmpdir(), 'simc-'), { mode: 0o700 });
+  if (ctx?.log) ctx.log.dir = dir;
   try {
     const equipped = equippedFromLines(lines);
     // Items simc ikke kan indlæse (fx ukendt id) får simc til at afbryde hele kørslen med det samme;
@@ -126,7 +137,8 @@ async function simulate(lines, className, iterations, fightStyles, bagItems) {
         const ps = buildPs();
         const remaining = deadline - Date.now();
         if (remaining < MIN_RUN_MS) { r = { timedOut: true, error: 'Der var ikke tid nok tilbage til denne kampstil.' }; break; }
-        r = await runStyle(dir, lines, iterations, fightStyle, ps, remaining);
+        if (ctx?.aborted) return { fail: null };
+        r = await runStyle(dir, lines, iterations, fightStyle, ps, remaining, ctx);
         if (r.badIndex === undefined) break;
         if (!(r.badIndex < bagItems.length) || badIdx.has(r.badIndex)) { r = { error: 'Simulationen kunne ikke køre for denne kampstil.' }; break; }
         badIdx.add(r.badIndex);
@@ -218,19 +230,53 @@ const server = http.createServer(async (req, res) => {
       if (!s.ok) return send(res, 400, { ok: false, error: s.error });
       const o = validateRunOptions(body);
       if (!o.ok) return send(res, 400, { ok: false, error: o.error });
-      const job = enqueue(() => simulate(s.lines, s.className, iterations, o.fightStyles, o.bagItems));
+      const stream = /application\/x-ndjson/i.test(req.headers.accept || '');
+      const ctx = { aborted: false, child: null, log: null };
+      let started = false;
+      const job = enqueue(() => {
+        started = true;
+        if (ctx.aborted) return { fail: null };
+        return simulate(s.lines, s.className, iterations, o.fightStyles, o.bagItems, ctx);
+      });
       if (!job) return send(res, 429, { ok: false, error: 'Køen er fuld. Prøv igen om lidt.' });
-      let r;
-      try { r = await job; } catch (e) {
-        console.error('intern fejl i kørsel:', e?.code || e?.name || 'ukendt');
-        r = { fail: null };
+      const finish = async () => {
+        let r;
+        try { r = await job; } catch (e) {
+          console.error('intern fejl i kørsel:', e?.code || e?.name || 'ukendt');
+          r = { fail: null };
+        }
+        if (r.fail !== undefined) {
+          return [422, { ok: false, error: `Simulationen kunne ikke køre. ${r.fail || 'Tjek at profilen er en gyldig eksport fra SimulationCraft-addonen.'}` }];
+        }
+        const payload = { ok: true, result: r.result };
+        if (r.warnings.length) payload.warnings = r.warnings;
+        return [200, payload];
+      };
+      if (!stream) {
+        const [status, payload] = await finish();
+        return send(res, status, payload);
       }
-      if (r.fail !== undefined) {
-        return send(res, 422, { ok: false, error: `Simulationen kunne ikke køre. ${r.fail || 'Tjek at profilen er en gyldig eksport fra SimulationCraft-addonen.'}` });
+      // ---- NDJSON-stream: log-linjer løbende, derefter præcis én slutlinje ----
+      res.writeHead(200, { 'content-type': 'application/x-ndjson', 'cache-control': 'no-cache', 'x-accel-buffering': 'no', connection: 'close' });
+      const writeLine = (obj) => { if (!res.writableEnded && !res.destroyed) res.write(`${JSON.stringify(obj)}\n`); };
+      const log = new LogCollector({ emit: (text) => writeLine({ type: 'log', text }) });
+      ctx.log = log;
+      const timers = [];
+      const stop = () => { timers.forEach(clearInterval); timers.length = 0; };
+      res.on('close', () => {
+        stop();
+        if (!res.writableEnded) { ctx.aborted = true; ctx.child?.kill('SIGKILL'); }
+      });
+      if (pending > 1) {
+        writeLine({ type: 'log', text: 'Venter i kø …\n' });
+        timers.push(setInterval(() => { if (!started) writeLine({ type: 'log', text: 'Venter i kø …\n' }); }, QUEUE_NOTE_MS));
       }
-      const payload = { ok: true, result: r.result };
-      if (r.warnings.length) payload.warnings = r.warnings;
-      return send(res, 200, payload);
+      timers.push(setInterval(() => log.flush(), LOG_FLUSH_MS));
+      const [, payload] = await finish();
+      stop();
+      log.end();
+      if (!ctx.aborted) writeLine({ type: 'result', ...payload });
+      return res.end();
     }
     send(res, 404, { ok: false, error: 'Ikke fundet.' });
   } catch (e) {

@@ -13,13 +13,14 @@ Lille HTTP-tjeneste der kører [SimulationCraft (simc-forever)](https://github.c
   - Ukendt/ugyldigt item-id får simc til at afbryde med det samme (den forsøger et opslag mod Blizzards API); workeren udelader da det item (`error` på itemet) og kører igen.
   - Samlet tidsgrænse for hele kaldet: 240 s (SIGKILL); hver simc-kørsel får resten af budgettet, og stile der ikke når at køre får `error`.
   - 200: `{ ok, result: { apiVersion: 2, simc, player, iterations, elapsedMs, dps, scaleFactors: null, results: [{ fightStyle, dps: { mean, stdDev, meanStdDev }, items?: [{ index, slot, id, label, dpsMean, dpsStdDev, delta, deltaPercent, error? }], error? }] }, warnings? }`. `dps` er første vellykkede stils basis (som før). `items` er sorteret efter `delta` faldende (items med fejl sidst).
+  - **Log-stream:** med `Accept: application/x-ndjson` svarer `/run` 200 `application/x-ndjson` og skriver én JSON pr. linje: `{"type":"log","text":"…"}` (simcs stdout/stderr i ankomstrækkefølge, samlet og sendt højst hver ca. 500 ms; «Venter i kø …» højst hver sekund mens jobbet venter) og til sidst præcis én `{"type":"result", …}` med samme krop som det almindelige svar (også `{"type":"result","ok":false,"error":"…"}`). Fejl før streamen starter (400/413/415/429) er stadig almindelig JSON med statuskode. Lukker klienten forbindelsen, dræbes simc og temp-mappen ryddes. Uden headeren er svaret uændret.
   - 400 ugyldig profil eller ugyldige nye felter (dansk fejl med linjenummer/indeks), 422 ingen kampstil kunne køre, 429 kø fuld.
 
 ## Sikkerhedsgrænser
 
 - Profilen hvidlistes linje for linje (`sanitize.mjs`): præcis én spillerlinje og kendte nøgler. Nøgler der kan læse/skrive filer eller netværk (`input=`, `json2=`, `html=`, `apikey=`, `armory=` osv.) afvises, og kommentarer fjernes.
 - Worker bygger selv inputfilen med faste indstillinger (`threads=1`, `default_actions=1`, valgt kampstil, `max_time=300` for Patchwerk) i en frisk 0700-mappe i `/tmp`, som slettes bagefter.
-- `spawn` uden shell, samlet timeout 240 s (SIGKILL), output afkortet til 20 KB og sendes aldrig til klienten.
+- `spawn` uden shell, samlet timeout 240 s (SIGKILL), output afkortet til 20 KB internt. Simcs output sendes kun til klienten via log-streamen ovenfor, og kun renset (`logsanitize.mjs`): kontroltegn og ANSI fjernes (undtagen linjeskift/tab), `\r`-fremdriftslinjer reduceres til seneste tilstand, job-mappen og andre absolutte stier (`/tmp/…`, `/opt/…`, `/app/…`) erstattes med `<mappe>`, linjer afkortes til 300 tegn og samlet log til 64 KB (så `[log afkortet]`). Profilen ekkoes aldrig af workeren; kun hvad simc selv skriver.
 - Én kørsel ad gangen (FIFO), højst 10 ventende. Ingen udgående netværkskald; kør containeren på et `internal`-netværk, read-only, uden capabilities, som uid 10001.
 
 ## Opdatér simc

@@ -15,7 +15,7 @@ FROM node:22-alpine
 RUN apk --no-cache add libcurl libgcc libstdc++ \
  && adduser -D -u 10001 worker
 COPY --from=build /src/engine/simc /opt/simc/simc
-COPY server.mjs sanitize.mjs profilesets.mjs /app/
+COPY server.mjs sanitize.mjs profilesets.mjs logsanitize.mjs /app/
 ENV NODE_ENV=production
 USER 10001
 WORKDIR /app
