@@ -6,6 +6,7 @@ import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { ConfirmForm } from '@/components/ConfirmForm';
+import { armoryUrl } from '@/lib/armory';
 import { QuickSim } from '@/components/QuickSim';
 import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
@@ -258,7 +259,7 @@ export default async function OverviewPage({
             {row ? (
               <>
               <p>
-                <strong>{fullName(row)}</strong> · {row.className}
+                <strong>{armoryUrl(row.slug) ? <a href={armoryUrl(row.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{fullName(row)}</a> : fullName(row)}</strong> · {row.className}
                 {row.spec ? ` (${row.spec})` : ''}
                 <br />
                 <span className="muted">

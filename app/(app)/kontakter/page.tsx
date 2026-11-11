@@ -3,6 +3,7 @@ import { listContacts } from '@/lib/characters';
 import { getDb } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
 import { roleLabel } from '@/lib/messages';
+import { armoryUrl } from '@/lib/armory';
 import { QuickSim } from '@/components/QuickSim';
 import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
@@ -37,7 +38,7 @@ export default async function ContactsPage() {
               {contacts.map((c) => (
                 <tr key={c.id} className={c.inGuild ? undefined : 'left-guild'}>
                   <td>
-                    <strong>{c.fullName}</strong>
+                    <strong>{armoryUrl(c.slug) ? <a href={armoryUrl(c.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{c.fullName}</a> : c.fullName}</strong>
                     {!c.inGuild && <> <span className="badge">forladt guild</span></>}
                   </td>
                   <td>{c.ownerName}</td>

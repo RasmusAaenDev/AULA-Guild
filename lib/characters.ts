@@ -192,6 +192,7 @@ export async function listMyCharacters(db: Db, userId: number): Promise<MyCharac
 export type Contact = {
   id: number;
   name: string;
+  slug: string;
   fullName: string;
   className: string;
   spec: string | null;
@@ -228,6 +229,6 @@ export async function listContacts(db: Db): Promise<Contact[]> {
     .from(characters)
     .innerJoin(users, eq(characters.userId, users.id));
   return rows
-    .map(({ surname, slug, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug }) }))
+    .map(({ surname, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug: r.slug }) }))
     .sort((a, b) => Number(b.inGuild) - Number(a.inGuild) || byFullName(a, b));
 }

@@ -29,7 +29,7 @@ describe('resolveAuthors', () => {
     const [r] = await resolveAuthors(db, [msg({ authorId: '111' })]);
     expect(r.author).toBe('Ragnar Stormskjold');
     expect(r.characterSlug).toBe('ragnar-stormskjold');
-    expect(r.armoryUrl).toBeNull();
+    expect(r.armoryUrl).toBe('https://worldofwarcraft.blizzard.com/en-gb/forever/eu/armory/character/ragnar-stormskjold');
   });
   it('bruger uden aktiv karakter og ukendt id beholder Discord-navnet', async () => {
     const u = await seedUser(db, '111');
