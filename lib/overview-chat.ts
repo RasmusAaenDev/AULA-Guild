@@ -4,7 +4,8 @@ import type { ChatClient, ChatMessage } from '@/lib/chat';
 import { resolveAuthors } from '@/lib/chat-authors';
 import { SITE_PREFIX } from '@/lib/chat-http';
 import type { Db } from '@/lib/db';
-import { listChannels as listSiteChannels, listMessages as listSiteMessages } from '@/lib/site-chat';
+import { and, desc, eq, gt, isNull } from 'drizzle-orm';
+import { chatChannels, chatMessages } from '@/lib/db/schema';
 
 export type ChatItem = {
   id: string;
@@ -49,6 +50,9 @@ function newest(cands: Candidate[], n: number): Candidate[] {
   return [...cands].sort((a, b) => b.at.getTime() - a.at.getTime()).slice(0, n);
 }
 
+// Blizzards/Discords egen systemtekst i WoW-linkede kanaler er støj i Overblik.
+const SYSTEM_NOISE = /has not yet linked their (discord|battle\.net)/i;
+
 async function discordCandidates(chat: ChatClient, since: number, now: number): Promise<Candidate[]> {
   const list = await chat.listChannels();
   const perChannel = await Promise.all(
@@ -58,7 +62,7 @@ async function discordCandidates(chat: ChatClient, since: number, now: number): 
       const cands: Candidate[] = [];
       for (const msg of r.messages) {
         const t = Date.parse(msg.timestamp);
-        if (Number.isNaN(t) || t < since || t > now + 60_000 || msg.content.trim() === '') continue;
+        if (Number.isNaN(t) || t < since || t > now + 60_000 || msg.content.trim() === '' || SYSTEM_NOISE.test(msg.content)) continue;
         cands.push({ source: 'discord', channelId: c.id, channelName: c.name, msg, at: new Date(t) });
       }
       return newest(cands, CHAT_PER_CHANNEL);
@@ -68,21 +72,24 @@ async function discordCandidates(chat: ChatClient, since: number, now: number): 
 }
 
 async function siteCandidates(db: Db, since: number, now: number): Promise<Candidate[]> {
-  const channels = await listSiteChannels(db);
-  const perChannel = await Promise.all(
-    channels.map(async (c) => {
-      const messages = (await listSiteMessages(db, c.id, { limit: 10 })) ?? [];
-      const cands: Candidate[] = [];
-      for (const m of messages) {
-        const t = Date.parse(m.createdAt);
-        if (Number.isNaN(t) || t < since || t > now + 60_000 || m.content.trim() === '') continue;
-        const msg: ChatMessage = { id: String(m.id), author: m.authorName, authorId: null, content: m.content, mentions: [], timestamp: m.createdAt, bot: false };
-        cands.push({ source: 'site', channelId: `${SITE_PREFIX}${c.id}`, channelName: c.name, msg, at: new Date(t) });
-      }
-      return newest(cands, CHAT_PER_CHANNEL);
-    }),
-  );
-  return perChannel.flat();
+  // Én samlet forespørgsel (de nyeste beskeder i aktive kanaler inden for vinduet) i stedet for én pr. kanal.
+  const rows = await db
+    .select({ id: chatMessages.id, channelId: chatMessages.channelId, channelName: chatChannels.name, authorName: chatMessages.authorName, content: chatMessages.content, createdAt: chatMessages.createdAt })
+    .from(chatMessages)
+    .innerJoin(chatChannels, eq(chatChannels.id, chatMessages.channelId))
+    .where(and(isNull(chatMessages.deletedAt), isNull(chatChannels.deletedAt), gt(chatMessages.createdAt, new Date(since))))
+    .orderBy(desc(chatMessages.id))
+    .limit(60);
+  const byChannel = new Map<number, Candidate[]>();
+  for (const m of rows) {
+    const t = m.createdAt.getTime();
+    if (t > now + 60_000 || m.content.trim() === '') continue;
+    const msg: ChatMessage = { id: String(m.id), author: m.authorName, authorId: null, content: m.content, mentions: [], timestamp: m.createdAt.toISOString(), bot: false };
+    const list = byChannel.get(m.channelId) ?? [];
+    list.push({ source: 'site', channelId: `${SITE_PREFIX}${m.channelId}`, channelName: m.channelName, msg, at: new Date(t) });
+    byChannel.set(m.channelId, list);
+  }
+  return [...byChannel.values()].flatMap((cands) => newest(cands, CHAT_PER_CHANNEL));
 }
 
 /** Højst 6 beskeder fra de seneste 7 dage (højst 2 pr. kanal), nyeste først. Fejl og tidsoverskridelse giver tom liste. */

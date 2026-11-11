@@ -96,3 +96,18 @@ describe('recentChatItems', () => {
     expect(JSON.stringify(item)).not.toMatch(/424242|777/);
   });
 });
+
+describe('systemstøj fra WoW-linkede kanaler', () => {
+  it('udelader «has not yet linked their Discord account»-beskeder', async () => {
+    const { recentChatItems } = await import('@/lib/overview-chat');
+    const now = new Date('2026-11-11T12:00:00Z');
+    const mk = (id: string, content: string) => ({ id, author: 'X', authorId: null, content, mentions: [], timestamp: '2026-11-11T11:00:00.000Z', bot: false });
+    const chat = {
+      listChannels: async () => ({ channels: [{ id: '1', name: 'wow', canWrite: false }] }),
+      getMessages: async () => ({ messages: [mk('1', 'Sent a message to guild chat but has not yet linked their Discord account.'), mk('2', 'rigtig besked')], stale: false }),
+      sendMessage: async () => ({ ok: true as const }),
+    };
+    const items = await recentChatItems({ chat: chat as never, db: {} as never }, now);
+    expect(items.map((i) => i.content)).toEqual(['rigtig besked']);
+  });
+});
