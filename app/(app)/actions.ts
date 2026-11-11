@@ -11,7 +11,8 @@ import { parseId } from '@/lib/parse';
 import { charactersDeps } from '@/lib/services';
 import { requireMember, requireOfficer } from '@/lib/session';
 
-export type AddState = { error?: string };
+/** `name`/`role` sendes tilbage ved fejl, så formularen kan genindsætte det indtastede uden JavaScript. */
+export type AddState = { error?: string; name?: string; role?: string };
 
 function toRole(value: FormDataEntryValue | null): Role | null {
   return roles.find((r) => r === value) ?? null;
@@ -43,9 +44,9 @@ export async function addCharacterAction(_prev: AddState, formData: FormData): P
   const member = await requireMember();
   const role = toRole(formData.get('role'));
   const name = String(formData.get('name') ?? '');
-  if (!role) return { error: 'Vælg en rolle.' };
+  if (!role) return { error: 'Vælg en rolle.', name };
   const result = await addCharacter(charactersDeps(), { userId: member.userId, name, role });
-  if (!result.ok) return { error: addCharacterMessage(result.reason) };
+  if (!result.ok) return { error: addCharacterMessage(result.reason), name, role };
   revalidatePath('/', 'layout');
   redirect('/kontakter');
 }

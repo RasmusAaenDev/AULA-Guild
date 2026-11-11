@@ -304,4 +304,4 @@ details.create .menu a:hover { background: var(--border); }
 .quick-sim .btn { min-height: 44px; }
 .quick-sim-btn { display: inline-flex; align-items: center; gap: 6px; }
 /* Formularer kan først sendes, når siden er hydreret (se HydrationMark). */
-html:not([data-hydrated]) form button[type='submit'] { opacity: 0.6; cursor: progress; pointer-events: none; }
+html:not([data-hydrated]) form:not([data-progressive]) button[type='submit'] { opacity: 0.6; cursor: progress; pointer-events: none; }
