@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'sim' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'sim' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake' | 'person' | 'gruppe';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -19,6 +19,22 @@ const paths: Record<IconName, ReactNode> = {
     <>
       <circle cx="9" cy="8" r="3.5" />
       <path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6M16 5a3.5 3.5 0 010 7M18 14c2.2.6 3.5 2.4 3.5 6" />
+    </>
+  ),
+  person: (
+    <>
+      <circle cx="12" cy="7.5" r="3.5" />
+      <path d="M5 21c0-4.5 3-7 7-7s7 2.5 7 7" />
+    </>
+  ),
+  gruppe: (
+    <>
+      <circle cx="12" cy="7" r="2.8" />
+      <path d="M7 19c0-3.4 2.2-5.2 5-5.2s5 1.8 5 5.2" />
+      <circle cx="5" cy="9.5" r="2.2" />
+      <path d="M1.5 19c0-2.8 1.5-4.4 3.5-4.4" />
+      <circle cx="19" cy="9.5" r="2.2" />
+      <path d="M22.5 19c0-2.8-1.5-4.4-3.5-4.4" />
     </>
   ),
   deltager: <path d="M5 12.5l4.5 4.5L19 7" />,

@@ -302,3 +302,4 @@ details.create .menu a:hover { background: var(--border); }
 .toggle-option.selected:focus-within { outline-color: var(--focus-inverse); }
 .quick-sim { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .quick-sim .btn { min-height: 44px; }
+.quick-sim-btn { display: inline-flex; align-items: center; gap: 6px; }
