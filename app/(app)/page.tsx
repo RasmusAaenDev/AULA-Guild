@@ -9,6 +9,7 @@ import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { ConfirmForm } from '@/components/ConfirmForm';
 import { armoryUrl } from '@/lib/armory';
+import { FirstCharacterCard } from '@/components/FirstCharacterCard';
 import { QuickSim } from '@/components/QuickSim';
 import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
@@ -105,14 +106,7 @@ export default async function OverviewPage({
 
   return (
     <>
-      {characterCount === 0 && (
-        <div className="alert-banner" role="status">
-          <Icon name="udraab" size={22} />
-          <p>
-            Du har ikke oprettet nogen WoW-karakter endnu. <Link href="/karakter/ny">Opret din karakter</Link> for at kunne tilmelde dig begivenheder.
-          </p>
-        </div>
-      )}
+      {characterCount === 0 && <FirstCharacterCard />}
       <UnansweredBanner count={unanswered} />
       <div className="section-head">
         <h1>Overblik</h1>

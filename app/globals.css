@@ -312,3 +312,7 @@ details.create .menu a:hover { background: var(--border); }
 .quick-sim { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .quick-sim .btn { min-height: 44px; }
 .quick-sim-btn { display: inline-flex; align-items: center; gap: 6px; }
+.first-character { border-left: 8px solid var(--badge); background: var(--card); padding: 24px; }
+.first-character h2 { margin: 6px 0 10px; font-size: 26px; color: var(--heading); }
+.first-character p { max-width: 60ch; }
+.first-character-cta { min-height: 52px; padding: 12px 28px; font-size: 18px; font-weight: 800; display: inline-flex; align-items: center; }
