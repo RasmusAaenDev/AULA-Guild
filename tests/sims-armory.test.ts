@@ -1,0 +1,196 @@
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+import { eq } from 'drizzle-orm';
+import { createSendLimiter } from '@/lib/chat-send';
+import { characters, simJobs, users } from '@/lib/db/schema';
+import { BlizzardError, type SimProfile } from '@/lib/blizzard/types';
+import { ARMORY_NOT_FOUND, ARMORY_UNAVAILABLE, enqueueArmorySim } from '@/lib/sims-armory';
+import { buildSimInput, cleanPlayerName, raceToken } from '@/lib/simc-armory';
+import { validateSimcInput } from '@/lib/simc-input';
+import { claimNextSim, finishSim, listMySims, parseSimResult } from '@/lib/sims';
+import { NO_ROTATION_TEXT, SOURCE_LABELS, hasNoDps, noRotationMessages, visibleWarnings } from '@/lib/sims-ui';
+import { fakeBlizzard } from './helpers';
+import { resetDb, testDb } from './db';
+
+const { db, close } = testDb();
+beforeEach(() => resetDb(db));
+afterAll(() => close());
+
+const warrior: SimProfile = {
+  name: 'Krigeren', className: 'Warrior', race: 'Dwarf', level: 21, faction: 'alliance',
+  equipment: [
+    { slot: 'HEAD', id: 1001 }, { slot: 'NECK', id: 1002 }, { slot: 'SHOULDER', id: 1003 }, { slot: 'BACK', id: 1004 },
+    { slot: 'CHEST', id: 1005 }, { slot: 'SHIRT', id: 1006 }, { slot: 'TABARD', id: 1007 }, { slot: 'WRIST', id: 1008 },
+    { slot: 'HANDS', id: 1009 }, { slot: 'WAIST', id: 1010 }, { slot: 'LEGS', id: 1011 }, { slot: 'FEET', id: 1012 },
+    { slot: 'FINGER_1', id: 1013 }, { slot: 'FINGER_2', id: 1014 }, { slot: 'TRINKET_1', id: 1015 }, { slot: 'TRINKET_2', id: 1016 },
+    { slot: 'MAIN_HAND', id: 1017 }, { slot: 'OFF_HAND', id: 1018 }, { slot: 'RANGED', id: 1019 }, { slot: 'AMMO', id: 1020 },
+  ],
+  talents: [{ id: 900001, rank: 5 }, { id: 900002, rank: 1 }],
+};
+
+describe('buildSimInput', () => {
+  it('bygger profil med slot-mapping og ignorerer shirt, tabard og ukendte pladser', () => {
+    const input = buildSimInput(warrior);
+    expect(input.split('\n')).toEqual([
+      'warrior="Krigeren"', 'level=21', 'race=dwarf', 'region=eu', 'server=forever', 'spec=unknown',
+      'legacy_talents=900001:5/900002:1',
+      'head=,id=1001', 'neck=,id=1002', 'shoulders=,id=1003', 'back=,id=1004', 'chest=,id=1005', 'wrist=,id=1008',
+      'hands=,id=1009', 'waist=,id=1010', 'legs=,id=1011', 'feet=,id=1012', 'finger1=,id=1013', 'finger2=,id=1014',
+      'trinket1=,id=1015', 'trinket2=,id=1016', 'main_hand=,id=1017', 'off_hand=,id=1018', 'ranged=,id=1019',
+    ]);
+    expect(input).not.toContain('1006');
+    expect(input).not.toContain('1007');
+    expect(input).not.toContain('1020');
+  });
+  it('består appens egen validering uændret', () => {
+    const r = validateSimcInput(buildSimInput(warrior));
+    expect(r).toMatchObject({ ok: true, className: 'warrior' });
+    const shaman = buildSimInput({ ...warrior, name: 'Shamy', className: 'Shaman', race: 'Mag\'har Orc', faction: 'horde', talents: [], equipment: [] });
+    expect(validateSimcInput(shaman)).toMatchObject({ ok: true, className: 'shaman' });
+    expect(shaman).toContain('race=maghar_orc');
+    expect(shaman).not.toContain('legacy_talents');
+  });
+  it('renser navnet til tilladte tegn og afkorter til 40', () => {
+    expect(cleanPlayerName('Tørn"; rm -rf /\n$x')).toBe('Tørn rm -rf x');
+    expect(cleanPlayerName('1234')).toBe('Karakter');
+    expect(cleanPlayerName('A'.repeat(100))).toHaveLength(40);
+    const weird = buildSimInput({ ...warrior, name: 'Åse "Ø" <b>\t\u0007Ætheling-O\'Neil' });
+    expect(validateSimcInput(weird)).toMatchObject({ ok: true });
+    expect(weird.split('\n')[0]).toBe('warrior="Åse Ø b Ætheling-O\'Neil"');
+  });
+  it('mapper Forever-racer simc ikke kender via fraktion (hunter-fejlen) og falder ellers tilbage til lowercase', () => {
+    expect(raceToken('High Order Skyborne', 'alliance')).toBe('skyborne_alliance');
+    expect(raceToken('High Order Skyborne', 'horde')).toBe('skyborne_horde');
+    expect(raceToken('Earthen', 'horde')).toBe('earthen_horde');
+    expect(raceToken('Night Elf')).toBe('night_elf');
+    expect(raceToken('Ny Ukendt Race', null)).toBe('ny_ukendt_race');
+    expect(raceToken('!!!')).toBe('unknown');
+  });
+  it('dropper talenter der ville give for lang værdi', () => {
+    const many = Array.from({ length: 200 }, (_, i) => ({ id: 100000 + i, rank: 1 }));
+    const r = validateSimcInput(buildSimInput({ ...warrior, talents: many }));
+    expect(r.ok).toBe(true);
+  });
+});
+
+let seq = 0;
+async function mkUser() {
+  seq++;
+  const [u] = await db.insert(users).values({ discordId: `a${seq}`, name: `A${seq}` }).returning();
+  return u;
+}
+async function mkChar(userId: number | null, slug = `krigeren-${++seq}`) {
+  const [c] = await db.insert(characters).values({ blizzardId: 5000 + ++seq, slug, name: 'Krigeren', className: 'Warrior', role: 'dps', userId }).returning();
+  return c;
+}
+const free = () => createSendLimiter({ max: 1000, windowMs: 1, minGapMs: 0 });
+const mkDeps = (userId: number, blizzard = fakeBlizzard({})) => ({ userId, limiter: free(), now: Date.now(), blizzard });
+
+describe('enqueueArmorySim', () => {
+  it('lægger egen karakter i kø med character_id, source og uden bagItems', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'krigeren-far');
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior } });
+    const r = await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk', 'DungeonSlice'] });
+    expect(r).toMatchObject({ ok: true, bags: { requested: false, found: 0 } });
+    expect(blizzard.calls).toEqual(['simprofile:krigeren-far']);
+    const [row] = await db.select().from(simJobs);
+    expect(row).toMatchObject({ userId: u.id, characterId: c.id, status: 'queued' });
+    expect(row.options).toMatchObject({ source: 'armory', fightStyles: ['Patchwerk', 'DungeonSlice'], optimizeBags: false });
+    expect(row.options).not.toHaveProperty('bagItems');
+    expect(row.input).toBe(buildSimInput(warrior));
+    const [view] = await listMySims(db, u.id);
+    expect(view.source).toBe('armory');
+    expect(SOURCE_LABELS[view.source]).toBe('Armory');
+  });
+  it('afviser en andens karakter, ukendt id og karakter uden ejer — uden at kalde Blizzard', async () => {
+    const a = await mkUser();
+    const b = await mkUser();
+    const theirs = await mkChar(b.id, 'hans');
+    const orphan = await mkChar(null, 'ingens');
+    const blizzard = fakeBlizzard({ simProfiles: { hans: warrior, ingens: warrior } });
+    for (const id of [String(theirs.id), String(orphan.id), '999999', 'abc', null, '']) {
+      expect(await enqueueArmorySim(db, mkDeps(a.id, blizzard), id, { fightStyles: ['Patchwerk'] }), String(id)).toMatchObject({ ok: false });
+    }
+    expect(blizzard.calls).toEqual([]);
+    expect(await db.select().from(simJobs)).toHaveLength(0);
+  });
+  it('kræver mindst én gyldig kampstil', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'x-y');
+    const blizzard = fakeBlizzard({ simProfiles: { 'x-y': warrior } });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: [] })).toMatchObject({ ok: false, error: 'Vælg mindst én kampstil.' });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Raid'] })).toMatchObject({ ok: false, error: 'Ugyldig kampstil.' });
+    expect(blizzard.calls).toEqual([]);
+  });
+  it('oversætter Blizzard-fejl til danske beskeder', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'x-y');
+    const cases: [Error, string][] = [
+      [new BlizzardError('not_found', 'x'), ARMORY_NOT_FOUND],
+      [new BlizzardError('unavailable', 'x'), ARMORY_UNAVAILABLE],
+      [new BlizzardError('rate_limited', 'x'), ARMORY_UNAVAILABLE],
+      [new Error('boom'), ARMORY_UNAVAILABLE],
+    ];
+    for (const [err, msg] of cases) {
+      const blizzard = fakeBlizzard({ simProfiles: { 'x-y': err } });
+      expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: msg });
+    }
+    expect(await db.select().from(simJobs)).toHaveLength(0);
+  });
+  it('bruger samme grænser som indsat tekst (2 samtidige)', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'x-y');
+    const blizzard = fakeBlizzard({ simProfiles: { 'x-y': warrior } });
+    const rs = [];
+    for (let i = 0; i < 3; i++) rs.push(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] }));
+    expect(rs.map((r) => r.ok)).toEqual([true, true, false]);
+    expect(rs[2]).toMatchObject({ reason: 'limit' });
+  });
+  it('afviser klasser simulatoren ikke kender med en forståelig besked', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'x-y');
+    const blizzard = fakeBlizzard({ simProfiles: { 'x-y': { ...warrior, className: 'Death Knight' } } });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: 'Klassen støttes ikke i WoW Forever-simulatoren.' });
+  });
+});
+
+describe('ingen rotation', () => {
+  const none = { mean: null, stdDev: null, meanStdDev: null };
+  const workerNoDps = {
+    player: { name: 'Mig', className: 'mage', spec: 'mage', level: 21, race: 'human' },
+    iterations: 500, dps: none,
+    results: [{ fightStyle: 'Patchwerk', dps: none }, { fightStyle: 'DungeonSlice', dps: none }],
+  };
+  const warn = ['DPS er 0 eller mangler for Patchwerk – spec eller rotation er muligvis ikke understøttet endnu.'];
+  it('gemmer et resultat uden DPS i stedet for at fejle jobbet', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'x-y');
+    await enqueueArmorySim(db, mkDeps(u.id, fakeBlizzard({ simProfiles: { 'x-y': warrior } })), String(c.id), { fightStyles: ['Patchwerk', 'DungeonSlice'] });
+    const job = (await claimNextSim(db))!;
+    expect(await finishSim(db, job.id, workerNoDps, warn)).toBe(true);
+    const [row] = await db.select().from(simJobs).where(eq(simJobs.id, job.id));
+    expect(row.status).toBe('done');
+    const [view] = await listMySims(db, u.id);
+    expect(view.result!.styles.map((s) => s.dps)).toEqual([null, null]);
+    expect(noRotationMessages(view.result!.styles)).toEqual([
+      { fightStyle: 'Patchwerk', text: NO_ROTATION_TEXT }, { fightStyle: 'DungeonSlice', text: NO_ROTATION_TEXT },
+    ]);
+    expect(visibleWarnings(view.result!.warnings)).toEqual([]);
+  });
+  it('hjælperen: null, 0 og manglende DPS giver teksten; rigtig DPS og fejl gør ikke', () => {
+    expect(NO_ROTATION_TEXT).toBe('Simulatoren til WoW Forever har endnu ikke en rotation for denne klasse og spec. Den virker automatisk, når den kommer.');
+    const d = (mean: number) => ({ mean, stdDev: null, meanStdDev: null });
+    const styles = [
+      { fightStyle: 'Patchwerk' as const, dps: null }, { fightStyle: 'DungeonSlice' as const, dps: d(0) },
+    ];
+    expect(noRotationMessages(styles).map((m) => m.fightStyle)).toEqual(['Patchwerk', 'DungeonSlice']);
+    expect(hasNoDps({ dps: d(43.2) })).toBe(false);
+    expect(hasNoDps({ dps: null, error: 'Der var ikke tid nok' })).toBe(false);
+    expect(noRotationMessages([{ fightStyle: 'Patchwerk', dps: d(10) }])).toEqual([]);
+    expect(visibleWarnings(['andet', ...warn])).toEqual(['andet']);
+  });
+  it('et resultat uden kampstile eller kun med fejl er stadig et uventet svar', () => {
+    expect(parseSimResult({ dps: none })).toBeNull();
+    expect(parseSimResult({ results: [{ fightStyle: 'Patchwerk', dps: none, error: 'x' }] })).toBeNull();
+  });
+});

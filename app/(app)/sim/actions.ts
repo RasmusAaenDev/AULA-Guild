@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { getDb } from '@/lib/db';
-import { isSimConfigured, kickSimQueue } from '@/lib/services';
+import { charactersDeps, isSimConfigured, kickSimQueue } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 import { createSimLimiter, deleteMySim, enqueueSim } from '@/lib/sims';
+import { enqueueArmorySim } from '@/lib/sims-armory';
 import type { FormState } from '../chat/actions';
 
 const limiter = createSimLimiter();
@@ -24,6 +25,17 @@ export async function enqueueSimAction(_prev: FormState, formData: FormData): Pr
       ? 'Der blev ikke fundet nogen genstande i «Gear from Bags», så kun din nuværende udrustning simuleres.'
       : `${r.bags.found} genstande fra dine tasker bliver testet${r.bags.truncated > 0 ? ` (${r.bags.truncated} flere end grænsen på 40 blev ignoreret)` : ''}.`;
   return { sent: true, notice };
+}
+
+export async function enqueueArmorySimAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await requireMember();
+  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
+  const fightStyles = [formData.get('patchwerk') === 'on' ? 'Patchwerk' : null, formData.get('dungeonSlice') === 'on' ? 'DungeonSlice' : null].filter((s) => s !== null);
+  const r = await enqueueArmorySim(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, formData.get('characterId'), { fightStyles });
+  if (!r.ok) return { error: r.error };
+  kickSimQueue();
+  revalidatePath('/sim');
+  return { sent: true, notice: 'Simulationen er sat i kø. Den bruger det udstyr og de talenter, armory viser.' };
 }
 
 export async function deleteSimAction(_prev: FormState, formData: FormData): Promise<FormState> {

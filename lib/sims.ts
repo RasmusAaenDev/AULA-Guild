@@ -25,7 +25,7 @@ const fail = (reason: SimReason, error: string): SimFail => ({ ok: false, reason
 
 export const FIGHT_STYLES = ['Patchwerk', 'DungeonSlice'] as const;
 export type FightStyle = (typeof FIGHT_STYLES)[number];
-const isFightStyle = (v: unknown): v is FightStyle => typeof v === 'string' && (FIGHT_STYLES as readonly string[]).includes(v);
+export const isFightStyle = (v: unknown): v is FightStyle => typeof v === 'string' && (FIGHT_STYLES as readonly string[]).includes(v);
 
 export type SimDps = { mean: number; stdDev: number | null; meanStdDev: number | null };
 export type SimItemResult = {
@@ -88,7 +88,9 @@ function parseStyle(v: unknown): SimStyleResult | null {
   if (!o || !isFightStyle(o.fightStyle)) return null;
   const dps = parseDps(o.dps);
   const error = str(o.error, 200);
-  if (!dps && !error) return null;
+  // Simulatoren kørte, men gav intet DPS-tal (fx klasse uden rotation endnu): kampstilen bevares uden dps og uden fejl.
+  const noDps = !dps && !error && (o.dps === null || obj(o.dps) !== null);
+  if (!dps && !error && !noDps) return null;
   const items = dps && Array.isArray(o.items) ? o.items.slice(0, MAX_BAG_ITEMS * 2).map(parseItem).filter((i): i is SimItemResult => i !== null) : [];
   return { fightStyle: o.fightStyle, dps, items, ...(error && !dps ? { error } : {}) };
 }
@@ -109,21 +111,29 @@ export function parseSimResult(raw: unknown, extraWarnings?: unknown): SimResult
     styles = dps ? [{ fightStyle: 'Patchwerk', dps, items: [] }] : [];
   }
   const first = styles.find((s) => s.dps);
-  if (!first?.dps) return null;
+  // Ingen kampstil gav DPS, men mindst én kørte uden fejl: gem resultatet (visningen forklarer det) frem for at fejle jobbet.
+  const silent = !first && styles.some((s) => !s.dps && !s.error);
+  if (!first?.dps && !silent) return null;
+  const firstDps: SimDps = first?.dps ?? { mean: 0, stdDev: null, meanStdDev: null };
   const p = obj(r.player) ?? {};
   const rawWarnings = Array.isArray(r.warnings) ? r.warnings : Array.isArray(extraWarnings) ? extraWarnings : [];
   const warnings = rawWarnings.map((w) => str(w, 200)).filter((w): w is string => w !== null).slice(0, 10);
   return {
     player: { name: str(p.name, 40), className: str(p.className, 30), spec: str(p.spec, 30), level: num(p.level), race: str(p.race, 30) },
     iterations: num(r.iterations),
-    dps: first.dps,
+    dps: firstDps,
     styles,
     elapsedMs: num(r.elapsedMs),
     warnings,
   };
 }
 
+export const SIM_SOURCES = ['armory', 'simc'] as const;
+export type SimSource = (typeof SIM_SOURCES)[number];
+
 export type SimOptions = {
+  /** Hvor profilen kom fra. Gamle rækker uden valget er indsat SimC-tekst. */
+  source: SimSource;
   fightStyles: FightStyle[];
   optimizeBags: boolean;
   bagItems: BagItem[];
@@ -140,6 +150,7 @@ export function parseSimOptions(raw: unknown): SimOptions {
   const fs = Array.isArray(o.fightStyles) ? [...new Set(o.fightStyles.filter(isFightStyle))] : [];
   const bagItems = sanitizeBagItems(o.bagItems);
   return {
+    source: o.source === 'armory' ? 'armory' : 'simc',
     fightStyles: fs.length > 0 ? fs : ['Patchwerk'],
     optimizeBags: o.optimizeBags === true,
     bagItems: o.optimizeBags === true ? bagItems : [],
@@ -158,13 +169,14 @@ export type SimView = {
   finishedAt: string | null;
   error: string | null;
   result: SimResult | null;
+  source: SimSource;
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
   bags: { requested: boolean; found: number; ignored: number; truncated: number };
 };
 
 export async function enqueueSim(
   db: Db,
-  deps: { userId: number; limiter: SendLimiter; now: number },
+  deps: { userId: number; limiter: SendLimiter; now: number; /** Armory-indgangen: karakteren der simuleres. */ characterId?: number; source?: SimSource },
   rawInput: unknown,
   rawOptions: SimEnqueueOptions = {},
 ): Promise<({ ok: true; id: number; bags: SimView['bags'] } | SimFail)> {
@@ -184,6 +196,7 @@ export async function enqueueSim(
   const bag = optimizeBags ? parseBagItems(rawInput) : { items: [], ignored: 0, truncated: 0 };
   const options = {
     fightStyles, optimizeBags,
+    ...(deps.source === 'armory' ? { source: 'armory' } : {}),
     ...(bag.items.length > 0 ? { bagItems: bag.items } : {}),
     bagFound: bag.items.length, bagIgnored: bag.ignored, bagTruncated: bag.truncated,
   };
@@ -202,7 +215,7 @@ export async function enqueueSim(
     if (!limit.ok) return fail('rate_limited', `Du kan højst starte ${MAX_PER_HOUR} simulationer i timen. Prøv igen senere.`);
     const [row] = await tx
       .insert(simJobs)
-      .values({ userId: deps.userId, input: valid.input, options, status: 'queued' })
+      .values({ userId: deps.userId, characterId: deps.characterId ?? null, input: valid.input, options, status: 'queued' })
       .returning({ id: simJobs.id });
     return { ok: true as const, id: row.id, bags: { requested: optimizeBags, found: bag.items.length, ignored: bag.ignored, truncated: bag.truncated } };
   });
@@ -228,6 +241,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     finishedAt: r.finishedAt ? r.finishedAt.toISOString() : null,
     error: r.error,
     result: r.status === 'done' ? parseSimResult(r.result) : null,
+    source: o.source,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
   };
   });

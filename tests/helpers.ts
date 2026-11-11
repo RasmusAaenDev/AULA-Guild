@@ -1,6 +1,6 @@
 import type { Db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember } from '@/lib/blizzard/types';
+import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember, type SimProfile } from '@/lib/blizzard/types';
 
 export function jsonResponse(status: number, body: unknown = {}): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -31,6 +31,7 @@ export function fakeBlizzard(opts: {
   characters?: Record<string, ArmoryCharacter | BlizzardError | (ArmoryCharacter | BlizzardError)[]>;
   roster?: RosterMember[] | BlizzardError;
   achievements?: Record<string, RecentAchievement[] | BlizzardError | Error>;
+  simProfiles?: Record<string, SimProfile | BlizzardError | Error>;
 }): BlizzardClient & { calls: string[] } {
   const calls: string[] = [];
   const counters = new Map<string, number>();
@@ -53,6 +54,13 @@ export function fakeBlizzard(opts: {
       const v = opts.achievements?.[slug];
       if (v instanceof Error) throw v;
       return v ?? [];
+    },
+    async getSimProfile(slug) {
+      calls.push(`simprofile:${slug}`);
+      const v = opts.simProfiles?.[slug];
+      if (v === undefined) throw new BlizzardError('not_found', slug);
+      if (v instanceof Error) throw v;
+      return v;
     },
     async getGuildRoster() {
       calls.push('roster');

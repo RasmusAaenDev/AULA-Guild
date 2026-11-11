@@ -1,5 +1,5 @@
 import type { SimItemResult, SimStyleResult, SimView } from '@/lib/sims';
-import { TOP_UPGRADES, fightStyleLabel, itemVerdict, percentText, rankItems, simDpsLabel, slotLabel, VERDICT_TEXT } from '@/lib/sims-ui';
+import { NO_ROTATION_TEXT, TOP_UPGRADES, fightStyleLabel, hasNoDps, itemVerdict, percentText, rankItems, simDpsLabel, slotLabel, VERDICT_TEXT } from '@/lib/sims-ui';
 
 function GearRow({ item }: { item: SimItemResult }) {
   const v = itemVerdict(item);
@@ -22,8 +22,14 @@ function StyleBlock({ style, optimized }: { style: SimStyleResult; optimized: bo
   return (
     <div className="sim-style">
       <h3>{fightStyleLabel(style.fightStyle)}</h3>
-      {style.dps ? <p className="sim-dps">{simDpsLabel({ dps: style.dps })}</p> : <p className="error">{style.error ?? 'Kampstilen kunne ikke simuleres.'}</p>}
-      {style.dps && optimized && (
+      {hasNoDps(style) ? (
+        <p className="muted">{NO_ROTATION_TEXT}</p>
+      ) : style.dps ? (
+        <p className="sim-dps">{simDpsLabel({ dps: style.dps })}</p>
+      ) : (
+        <p className="error">{style.error ?? 'Kampstilen kunne ikke simuleres.'}</p>
+      )}
+      {style.dps && style.dps.mean > 0 && optimized && (
         <>
           {ranked.length === 0 ? (
             <p className="muted">Ingen genstande kunne sammenlignes.</p>

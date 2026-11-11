@@ -1,5 +1,5 @@
 import type { SimStatus } from '@/lib/db/schema';
-import type { SimItemResult, SimResult } from '@/lib/sims';
+import type { SimItemResult, SimResult, SimSource, SimStyleResult } from '@/lib/sims';
 
 export function simStatusLabel(status: SimStatus): string {
   switch (status) {
@@ -17,6 +17,22 @@ export function simDpsLabel(r: { dps: SimResult['dps'] }): string {
   const base = `DPS ≈ ${int.format(r.dps.mean)}`;
   return r.dps.meanStdDev !== null ? `${base} ± ${int.format(r.dps.meanStdDev)}` : base;
 }
+
+export const NO_ROTATION_TEXT =
+  'Simulatoren til WoW Forever har endnu ikke en rotation for denne klasse og spec. Den virker automatisk, når den kommer.';
+
+/** Ingen brugbar DPS (null, 0 eller mangler) og ingen egentlig fejl: simulatoren kender ikke klassens/specens rotation. */
+export const hasNoDps = (s: Pick<SimStyleResult, 'dps' | 'error'>): boolean => !s.error && (!s.dps || !(s.dps.mean > 0));
+
+/** For hver kampstil uden DPS: den pæne forklaring (i stedet for «DPS ≈ 0» eller workerens rå advarsel). */
+export function noRotationMessages(styles: Pick<SimStyleResult, 'fightStyle' | 'dps' | 'error'>[]): { fightStyle: string; text: string }[] {
+  return styles.filter(hasNoDps).map((s) => ({ fightStyle: s.fightStyle, text: NO_ROTATION_TEXT }));
+}
+
+/** Workerens egen «DPS er 0 eller mangler …»-advarsel erstattes af forklaringen ovenfor. */
+export const visibleWarnings = (warnings: string[]): string[] => warnings.filter((w) => !/^DPS er 0 eller mangler/.test(w));
+
+export const SOURCE_LABELS: Record<SimSource, string> = { armory: 'Armory', simc: 'SimC-tekst' };
 
 export const FIGHT_STYLE_LABELS: Record<string, string> = {
   Patchwerk: 'Patchwerk (enkelt mål)',

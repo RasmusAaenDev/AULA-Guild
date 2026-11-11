@@ -316,3 +316,75 @@ describe('blizzard-klient: getRecentAchievements', () => {
   });
 });
 
+describe('getSimProfile', () => {
+  const rawProfile = { id: 7, name: 'Krigeren', level: 21, race: { name: 'High Order Skyborne' }, character_class: { name: 'Warrior' }, faction: { type: 'ALLIANCE', name: 'Alliance' } };
+  const rawEquipment = {
+    equipped_items: [
+      { item: { id: 1001 }, slot: { type: 'HEAD' } },
+      { item: { id: 1002 }, slot: { type: 'SHIRT' } },
+      { item: { id: 1001 }, slot: { type: 'HEAD' } },
+      { item: { id: 0 }, slot: { type: 'NECK' } },
+      { item: { id: 'x' }, slot: { type: 'BACK' } },
+      { item: { id: 5 } },
+      null,
+      'tekst',
+    ],
+  };
+  const rawTalents = {
+    specialization_groups: [
+      { is_active: false, specializations: [{ talents: [{ talent: { id: 1 }, talent_rank: 1 }] }] },
+      {
+        is_active: true,
+        specializations: [
+          { talents: [{ talent: { id: 900001 }, talent_rank: 5 }, { talent: { id: 900001 }, talent_rank: 2 }, { talent: { id: 900002 }, talent_rank: 0 }, { talent: { id: 'a' }, talent_rank: 1 }] },
+          { talents: [{ talent: { id: 900003 }, talent_rank: 2 }, { talent: { id: 900004 }, talent_rank: 99 }] },
+          { spent_points: 3 },
+        ],
+      },
+    ],
+  };
+  const route = (over: { profile?: () => Response; equipment?: () => Response; specs?: () => Response } = {}) => (u: string) =>
+    isToken(u)
+      ? jsonResponse(200, tokenBody)
+      : u.includes('/equipment') ? (over.equipment ?? (() => jsonResponse(200, rawEquipment)))()
+        : u.includes('/specializations') ? (over.specs ?? (() => jsonResponse(200, rawTalents)))()
+          : (over.profile ?? (() => jsonResponse(200, rawProfile)))();
+
+  it('henter profil, udstyr og talenter parallelt og filtrerer ugyldige elementer', async () => {
+    const { client, calls } = setup(route());
+    expect(await client.getSimProfile('krigeren-far')).toEqual({
+      name: 'Krigeren', className: 'Warrior', race: 'High Order Skyborne', level: 21, faction: 'alliance',
+      equipment: [{ slot: 'HEAD', id: 1001 }, { slot: 'SHIRT', id: 1002 }],
+      talents: [{ id: 900001, rank: 5 }, { id: 900003, rank: 2 }],
+    });
+    const urls = calls.map((c) => c.url);
+    expect(urls.filter((u) => !isToken(u)).sort()).toEqual([
+      'https://eu.api.blizzard.com/profile/wow/character/krigeren-far/equipment?namespace=profile-forever-eu&locale=en_GB',
+      'https://eu.api.blizzard.com/profile/wow/character/krigeren-far/specializations?namespace=profile-forever-eu&locale=en_GB',
+      'https://eu.api.blizzard.com/profile/wow/character/krigeren-far?namespace=profile-forever-eu&locale=en_GB',
+    ]);
+  });
+  it('giver tomme lister når udstyr og talenter mangler eller er misdannede', async () => {
+    for (const body of [{}, { equipped_items: 'nej', specialization_groups: 5 }, null, []]) {
+      const { client } = setup(route({ equipment: () => jsonResponse(200, body), specs: () => jsonResponse(200, body) }));
+      expect(await client.getSimProfile('x')).toMatchObject({ equipment: [], talents: [] });
+    }
+    const { client } = setup(route({ equipment: () => jsonResponse(404), specs: () => jsonResponse(404) }));
+    expect(await client.getSimProfile('x')).toMatchObject({ equipment: [], talents: [] });
+  });
+  it('kender ikke fraktionen ved ukendt værdi', async () => {
+    const { client } = setup(route({ profile: () => jsonResponse(200, { ...rawProfile, faction: { type: 'NEUTRAL' } }) }));
+    expect((await client.getSimProfile('x')).faction).toBeNull();
+  });
+  it('404 på profilen giver not_found; andre fejl unavailable/rate_limited', async () => {
+    await expect(setup(route({ profile: () => jsonResponse(404) })).client.getSimProfile('x')).rejects.toMatchObject({ kind: 'not_found' });
+    await expect(setup(route({ profile: () => jsonResponse(500) })).client.getSimProfile('x')).rejects.toMatchObject({ kind: 'unavailable' });
+    await expect(setup(route({ equipment: () => jsonResponse(429) })).client.getSimProfile('x')).rejects.toMatchObject({ kind: 'rate_limited' });
+  });
+  it('afviser en profil uden navn, klasse, race eller level', async () => {
+    for (const bad of [{ ...rawProfile, name: '' }, { ...rawProfile, race: undefined }, { ...rawProfile, character_class: {} }, { ...rawProfile, level: 0 }, null]) {
+      await expect(setup(route({ profile: () => jsonResponse(200, bad) })).client.getSimProfile('x')).rejects.toBeInstanceOf(BlizzardError);
+    }
+  });
+});
+

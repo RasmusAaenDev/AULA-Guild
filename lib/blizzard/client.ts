@@ -1,5 +1,5 @@
 import { nameToSlug } from '@/lib/slug';
-import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember } from './types';
+import { BlizzardError, type ArmoryCharacter, type BlizzardClient, type RecentAchievement, type RosterMember, type SimProfile } from './types';
 
 const API = 'https://eu.api.blizzard.com';
 const TOKEN_URL = 'https://oauth.battle.net/token';
@@ -91,6 +91,55 @@ function parseRecentAchievements(raw: unknown): RecentAchievement[] {
     });
   }
   return out.sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime()).slice(0, 10);
+}
+
+const MAX_TALENT_ID = 99_999_999;
+const MAX_ITEM_ID = 9_999_999;
+const MAX_TALENT_RANK = 10;
+const MAX_EQUIPPED = 40;
+const MAX_TALENTS = 200;
+
+const nonEmpty = (v: unknown): string | null => (typeof v === 'string' && v.trim() !== '' ? v.trim() : null);
+const posInt = (v: unknown, max: number): number | null => (typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= max ? v : null);
+
+// Defensiv parsing af /equipment: ugyldige elementer ignoreres, højst ét item pr. plads.
+function parseEquipment(raw: unknown): { slot: string; id: number }[] {
+  const list = raw && typeof raw === 'object' ? (raw as { equipped_items?: unknown }).equipped_items : undefined;
+  if (!Array.isArray(list)) return [];
+  const out: { slot: string; id: number }[] = [];
+  for (const x of list.slice(0, MAX_EQUIPPED * 2) as unknown[]) {
+    if (!x || typeof x !== 'object') continue;
+    const e = x as { item?: { id?: unknown } | null; slot?: { type?: unknown } | null };
+    const id = posInt(e.item && typeof e.item === 'object' ? e.item.id : undefined, MAX_ITEM_ID);
+    const slot = nonEmpty(e.slot && typeof e.slot === 'object' ? e.slot.type : undefined);
+    if (id === null || slot === null || out.some((o) => o.slot === slot)) continue;
+    out.push({ slot, id });
+    if (out.length >= MAX_EQUIPPED) break;
+  }
+  return out;
+}
+
+// Defensiv parsing af /specializations: talenter fra den aktive gruppe (alle træer), unikke id'er, rang 1..10.
+function parseTalents(raw: unknown): { id: number; rank: number }[] {
+  const groups = raw && typeof raw === 'object' ? (raw as { specialization_groups?: unknown }).specialization_groups : undefined;
+  if (!Array.isArray(groups)) return [];
+  const active = (groups as unknown[]).find((g) => g && typeof g === 'object' && (g as { is_active?: unknown }).is_active === true) as { specializations?: unknown } | undefined;
+  if (!active || !Array.isArray(active.specializations)) return [];
+  const out: { id: number; rank: number }[] = [];
+  for (const tree of active.specializations as unknown[]) {
+    const talents = tree && typeof tree === 'object' ? (tree as { talents?: unknown }).talents : undefined;
+    if (!Array.isArray(talents)) continue;
+    for (const t of talents as unknown[]) {
+      if (!t || typeof t !== 'object') continue;
+      const x = t as { talent?: { id?: unknown } | null; talent_rank?: unknown };
+      const id = posInt(x.talent && typeof x.talent === 'object' ? x.talent.id : undefined, MAX_TALENT_ID);
+      const rank = posInt(x.talent_rank, MAX_TALENT_RANK);
+      if (id === null || rank === null || out.some((o) => o.id === id)) continue;
+      out.push({ id, rank });
+      if (out.length >= MAX_TALENTS) return out;
+    }
+  }
+  return out;
 }
 
 function slugFromHref(href: string | undefined): string | null {
@@ -192,6 +241,30 @@ export function createBlizzardClient(opts: {
         guildId: raw.guild?.id ?? null,
         guildName: raw.guild?.name ?? null,
         lastLogin: raw.last_login_timestamp ? new Date(raw.last_login_timestamp) : null,
+      };
+    },
+
+    async getSimProfile(slug: string): Promise<SimProfile> {
+      const base = `/profile/wow/character/${encodeURIComponent(slug)}`;
+      // Udstyr og talenter: 404 betyder «ingen data» (tom liste), øvrige fejl går videre.
+      const optional = (path: string) =>
+        get<unknown>(path).catch((e: unknown) => {
+          if (e instanceof BlizzardError && e.kind === 'not_found') return null;
+          throw e;
+        });
+      const [raw, equipment, specs] = await Promise.all([get<unknown>(base), optional(`${base}/equipment`), optional(`${base}/specializations`)]);
+      const c = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : null;
+      const name = nonEmpty(c?.name);
+      const className = nonEmpty((c?.character_class as { name?: unknown } | undefined)?.name);
+      const race = nonEmpty((c?.race as { name?: unknown } | undefined)?.name);
+      const level = cleanLevel(c?.level);
+      if (!c || !name || !className || !race || level === null) throw new BlizzardError('unavailable', 'Karakter-svar mangler name/klasse/race/level');
+      const ft = (c.faction as { type?: unknown } | undefined)?.type;
+      return {
+        name, className, race, level,
+        faction: ft === 'ALLIANCE' ? 'alliance' : ft === 'HORDE' ? 'horde' : null,
+        equipment: parseEquipment(equipment),
+        talents: parseTalents(specs),
       };
     },
 

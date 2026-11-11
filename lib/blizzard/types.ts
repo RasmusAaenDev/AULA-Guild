@@ -15,6 +15,17 @@ export type ArmoryCharacter = {
   lastLogin: Date | null;
 };
 
+/** Det en simc-profil bygges af (armory-indgangen). faction: 'alliance' | 'horde' | null (ukendt). */
+export type SimProfile = {
+  name: string;
+  className: string;
+  race: string;
+  level: number;
+  faction: 'alliance' | 'horde' | null;
+  equipment: { slot: string; id: number }[];
+  talents: { id: number; rank: number }[];
+};
+
 export type RecentAchievement = { id: number; name: string; completedAt: Date };
 
 export type RosterMember = { blizzardId: number; slug: string; name: string; surname: string | null; rank: number };
@@ -32,4 +43,6 @@ export type BlizzardClient = {
   getCharacter(slug: string): Promise<ArmoryCharacter>;
   getRecentAchievements(slug: string): Promise<RecentAchievement[]>;
   getGuildRoster(guildSlug: string): Promise<RosterMember[]>;
+  /** Karakter, udstyr og talenter til en simc-profil. not_found hvis karakteren ikke findes. */
+  getSimProfile(slug: string): Promise<SimProfile>;
 };
