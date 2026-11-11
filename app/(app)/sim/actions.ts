@@ -11,13 +11,22 @@ import type { FormState } from '../chat/actions';
 
 const limiter = createSimLimiter();
 
-export async function enqueueSimAction(_prev: FormState, formData: FormData): Promise<FormState> {
+/** Formtilstand med de indtastede værdier, så formularen kan genindsætte dem uden JavaScript (se SimForm). */
+export type SimFormState = FormState & { input?: string; characterId?: string; fightStyle?: string; optimizeBags?: boolean };
+
+function fightStylesFrom(formData: FormData): string[] {
+  const v = formData.get('fightStyle');
+  return v === 'dungeonSlice' ? ['DungeonSlice'] : ['Patchwerk'];
+}
+
+export async function enqueueSimAction(_prev: SimFormState, formData: FormData): Promise<SimFormState> {
   const member = await requireMember();
-  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
-  const fightStyles = [formData.get('patchwerk') === 'on' ? 'Patchwerk' : null, formData.get('dungeonSlice') === 'on' ? 'DungeonSlice' : null].filter((s) => s !== null);
+  const fightStyles = fightStylesFrom(formData);
   const optimizeBags = formData.get('optimizeBags') === 'on';
+  const keep = { input: String(formData.get('input') ?? ''), fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk', optimizeBags };
+  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.', ...keep };
   const r = await enqueueSim(getDb(), { userId: member.userId, limiter, now: Date.now() }, formData.get('input'), { fightStyles, optimizeBags });
-  if (!r.ok) return { error: r.error };
+  if (!r.ok) return { error: r.error, ...keep };
   kickSimQueue();
   revalidatePath('/sim');
   const notice = !r.bags.requested
@@ -28,12 +37,13 @@ export async function enqueueSimAction(_prev: FormState, formData: FormData): Pr
   return { sent: true, notice };
 }
 
-export async function enqueueArmorySimAction(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function enqueueArmorySimAction(_prev: SimFormState, formData: FormData): Promise<SimFormState> {
   const member = await requireMember();
-  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
-  const fightStyles = [formData.get('patchwerk') === 'on' ? 'Patchwerk' : null, formData.get('dungeonSlice') === 'on' ? 'DungeonSlice' : null].filter((s) => s !== null);
+  const fightStyles = fightStylesFrom(formData);
+  const keep = { characterId: String(formData.get('characterId') ?? ''), fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk' };
+  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.', ...keep };
   const r = await enqueueArmorySim(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, formData.get('characterId'), { fightStyles });
-  if (!r.ok) return { error: r.error };
+  if (!r.ok) return { error: r.error, ...keep };
   kickSimQueue();
   revalidatePath('/sim');
   return { sent: true, notice: 'Simulationen er sat i kø. Den bruger det udstyr, armory viser, uden talenter.' };

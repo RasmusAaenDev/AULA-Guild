@@ -297,11 +297,9 @@ details.create .menu a:hover { background: var(--border); }
 .toggle-group { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--nav-active); border-radius: 10px; overflow: hidden; }
 .toggle-option { position: relative; display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; cursor: pointer; color: var(--heading); background: var(--card); font-weight: 600; }
 .toggle-option input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
-.toggle-option.selected { background: var(--nav-active); color: #fff; }
+.toggle-option:has(input:checked) { background: var(--nav-active); color: #fff; }
 .toggle-option:focus-within { outline: 3px solid var(--focus); outline-offset: -3px; }
-.toggle-option.selected:focus-within { outline-color: var(--focus-inverse); }
+.toggle-option:has(input:checked):focus-within { outline-color: var(--focus-inverse); }
 .quick-sim { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .quick-sim .btn { min-height: 44px; }
 .quick-sim-btn { display: inline-flex; align-items: center; gap: 6px; }
-/* Formularer kan først sendes, når siden er hydreret (se HydrationMark). */
-html:not([data-hydrated]) form:not([data-progressive]) button[type='submit'] { opacity: 0.6; cursor: progress; pointer-events: none; }
