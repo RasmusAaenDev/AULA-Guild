@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
-  activeSatire, composeAlleFeed, interleave, SATIRE_VISIBLE, parseSatirePreference, pickSatire, satireMode, effectiveTab, satirePosts, satireNeeded,
+  activeSatire, datedSatire, newestFirst, SATIRE_VISIBLE, parseSatirePreference, satireMode, effectiveTab, satirePosts,
 } from '@/lib/satire';
+import { addDaysToDate, todayInCopenhagen, utcToCopenhagen } from '@/lib/time';
 import { parseTab } from '@/lib/posts-ui';
 
 describe('satire-data', () => {
@@ -52,26 +53,6 @@ describe('satire-data', () => {
   });
 });
 
-describe('pickSatire', () => {
-  it('er deterministisk og har den rette bredde uden dubletter', () => {
-    const a = pickSatire('2026-11-10', 1, 5);
-    const b = pickSatire('2026-11-10', 1, 5);
-    expect(a.map((p) => p.id)).toEqual(b.map((p) => p.id));
-    expect(a).toHaveLength(5);
-    expect(new Set(a.map((p) => p.id)).size).toBe(5);
-  });
-  it('afkorter til 0..antal opslag', () => {
-    expect(pickSatire('2026-11-10', 1, 0)).toEqual([]);
-    expect(pickSatire('2026-11-10', 1, -3)).toEqual([]);
-    expect(new Set(pickSatire('2026-11-10', 1, 99).map((p) => p.id)).size).toBe(SATIRE_VISIBLE);
-  });
-  it('giver forskellige valg for forskellige sider og dage', () => {
-    const ids = (d: string, p: number) => pickSatire(d, p, 6).map((x) => x.id).join(',');
-    expect(ids('2026-11-10', 1)).not.toBe(ids('2026-11-10', 2));
-    expect(ids('2026-11-10', 1)).not.toBe(ids('2026-11-11', 1));
-  });
-});
-
 describe('activeSatire (rotation)', () => {
   const ids = (d: string) => activeSatire(d).map((p) => p.id);
   it('har 20 unikke opslag', () => {
@@ -96,54 +77,60 @@ describe('activeSatire (rotation)', () => {
   });
 });
 
-describe('interleave', () => {
-  const real = (n: number) => Array.from({ length: n }, (_, i) => `r${i + 1}`);
-  const sat = ['s1', 's2', 's3'];
-  const show = (r: string[]) => interleave(r, sat).map((x) => (x.kind === 'real' ? x.item : x.item)).join(' ');
-  it('indsætter ét efter hvert 3. ægte', () => {
-    expect(show(real(7))).toBe('r1 r2 r3 s1 r4 r5 r6 s2 r7');
+describe('datedSatire', () => {
+  const at = (iso: string) => new Date(iso);
+  const days = (key: string, now: Date) => datedSatire(key, now).map((p) => utcToCopenhagen(p.at).date);
+  it('dateres til dateKey − (size−1−k), ét pr. dag, og det seneste er fra i dag', () => {
+    for (const [key, iso] of [['2026-11-10', '2026-11-10T20:00:00Z'], ['2026-07-01', '2026-07-01T20:00:00Z'], ['2026-03-30', '2026-03-30T20:00:00Z']] as const) {
+      const d = datedSatire(key, at(iso));
+      expect(d).toHaveLength(SATIRE_VISIBLE);
+      expect(d.map((p) => p.id)).toEqual(activeSatire(key).map((p) => p.id));
+      expect(days(key, at(iso))).toEqual(Array.from({ length: SATIRE_VISIBLE }, (_, k) => addDaysToDate(key, -(SATIRE_VISIBLE - 1 - k))));
+    }
   });
-  it('slutter uden satire ved færre end 3 ægte og håndterer tom liste', () => {
-    expect(show(real(2))).toBe('r1 r2');
-    expect(interleave([], sat)).toEqual([]);
+  it('giver klokkeslæt mellem 07:30 og 21:30 i 5-minutters trin, uafhængigt af dagen (sommer og vinter)', () => {
+    const late = at('2026-11-10T22:00:00Z');
+    for (const p of datedSatire('2026-11-10', late).slice(0, 19)) {
+      const [h, m] = utcToCopenhagen(p.at).time.split(':').map(Number);
+      const min = h * 60 + m;
+      expect(min).toBeGreaterThanOrEqual(450);
+      expect(min).toBeLessThanOrEqual(1290);
+      expect(min % 5).toBe(0);
+    }
+    for (const key of ['2026-07-15', '2026-12-15', '2026-03-29', '2026-10-25']) {
+      const byId = new Map(datedSatire(key, at(`${key}T23:00:00Z`)).slice(0, -1).map((p) => [p.id, utcToCopenhagen(p.at).time]));
+      const ref = new Map(datedSatire('2026-11-10', late).map((p) => [p.id, utcToCopenhagen(p.at).time]));
+      for (const [id, t] of byId) if (ref.has(id)) expect(t).toBe(ref.get(id));
+    }
   });
-  it('indsætter også efter et eksakt multiplum', () => {
-    expect(show(real(6))).toBe('r1 r2 r3 s1 r4 r5 r6 s2');
+  it('er deterministisk inden for samme minut', () => {
+    const a = datedSatire('2026-11-10', at('2026-11-10T07:00:05Z')).map((p) => p.at.toISOString());
+    const b = datedSatire('2026-11-10', at('2026-11-10T07:00:55Z')).map((p) => p.at.toISOString());
+    expect(a).toEqual(b);
   });
-  it('stopper når satire løber tør og respekterer every', () => {
-    expect(interleave(real(9), ['s1']).filter((x) => x.kind === 'satire')).toHaveLength(1);
-    expect(interleave(real(4), sat, 2).map((x) => x.item).join(' ')).toBe('r1 r2 s1 r3 r4 s2');
-    expect(interleave(real(3), sat, 0).map((x) => x.item).join(' ')).toBe('r1 r2 r3');
+  it('lægger aldrig noget i fremtiden og klamper i dag til nu − 5 min', () => {
+    for (const iso of ['2026-11-10T05:00:00Z', '2026-11-10T06:31:30Z', '2026-11-10T23:00:00Z', '2026-11-09T23:01:00Z', '2026-07-01T00:10:00Z']) {
+      const now = at(iso);
+      const key = todayInCopenhagen(now);
+      const d = datedSatire(key, now);
+      for (const p of d) expect(p.at.getTime()).toBeLessThanOrEqual(now.getTime());
+      expect(utcToCopenhagen(d[d.length - 1].at).date).toBe(key);
+    }
+    const now = at('2026-11-10T06:31:30Z'); // 07:31 dansk
+    const today = datedSatire('2026-11-10', now).at(-1)!;
+    expect(today.at.getTime()).toBeLessThanOrEqual(Date.UTC(2026, 10, 10, 6, 26));
   });
-});
-
-describe('satireNeeded', () => {
-  it('giver mindst 5 på side 1 og ellers ét pr. 3. ægte', () => {
-    expect(satireNeeded(0, 1)).toBe(5);
-    expect(satireNeeded(2, 1)).toBe(5);
-    expect(satireNeeded(30, 1)).toBe(10);
-    expect(satireNeeded(0, 2)).toBe(0);
-    expect(satireNeeded(2, 2)).toBe(1);
-    expect(satireNeeded(9, 2)).toBe(3);
+  it('lader et tidspunkt i dag uberørt, når det allerede er passeret', () => {
+    const early = datedSatire('2026-11-10', at('2026-11-10T22:00:00Z')).at(-1)!;
+    const later = datedSatire('2026-11-10', at('2026-11-10T22:30:00Z')).at(-1)!;
+    expect(early.at.getTime()).toBe(later.at.getTime());
   });
-});
-
-describe('composeAlleFeed', () => {
-  const sat = pickSatire('2026-11-10', 1, 4);
-  it('flette ét efter hvert 3. ægte', () => {
-    const f = composeAlleFeed(['a', 'b', 'c', 'd'], sat, 1);
-    expect(f.map((x) => x.kind)).toEqual(['real', 'real', 'real', 'satire', 'real', 'satire', 'satire', 'satire']);
-  });
-  it('lægger resten af satire sidst på side 1, når der er få ægte opslag', () => {
-    expect(composeAlleFeed(['a', 'b'], sat, 1).map((x) => x.kind)).toEqual(['real', 'real', 'satire', 'satire', 'satire', 'satire']);
-    expect(composeAlleFeed([], sat, 1).map((x) => x.kind)).toEqual(['satire', 'satire', 'satire', 'satire']);
-  });
-  it('viser ét satire-opslag på side 2 med få ægte opslag', () => {
-    expect(composeAlleFeed(['a', 'b'], sat, 2).map((x) => x.kind)).toEqual(['real', 'real', 'satire']);
-  });
-  it('viser ingen satire på tom side 2 eller når det er slået fra', () => {
-    expect(composeAlleFeed([], sat, 2)).toEqual([]);
-    expect(composeAlleFeed(['a', 'b', 'c', 'd'], [], 1).every((x) => x.kind === 'real')).toBe(true);
+  it('newestFirst sorterer nyeste først uden at ændre kilden', () => {
+    const d = datedSatire('2026-11-10', at('2026-11-10T22:00:00Z'));
+    const n = newestFirst(d);
+    expect(n[0].id).toBe(d.at(-1)!.id);
+    expect(d[0].at.getTime()).toBeLessThan(d.at(-1)!.at.getTime());
+    for (let i = 1; i < n.length; i++) expect(n[i - 1].at.getTime()).toBeGreaterThan(n[i].at.getTime());
   });
 });
 
@@ -157,8 +144,8 @@ describe('parseSatirePreference', () => {
 });
 
 describe('fane til indhold', () => {
-  it('flettes kun ind i ALLE og vises kun fuldt i SATIRE', () => {
-    expect(satireMode('alle', true)).toBe('interleaved');
+  it('indgår kun i tidslinjen i ALLE og vises kun fuldt i SATIRE', () => {
+    expect(satireMode('alle', true)).toBe('timeline');
     expect(satireMode('satire', true)).toBe('all');
     for (const t of ['ulaeste', 'vigtige', 'egne', 'gemte'] as const) expect(satireMode(t, true)).toBe('none');
   });

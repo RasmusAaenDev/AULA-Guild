@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
 import { deletePostAction } from '@/app/(app)/opslag/actions';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
+import { ChatItemCard } from '@/components/ChatItemCard';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { ConfirmForm } from '@/components/ConfirmForm';
@@ -23,9 +24,11 @@ import type { PostTab } from '@/lib/posts';
 import type { OverviewTab } from '@/lib/posts-ui';
 import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
-import { SATIRE_COOKIE, activeSatire, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satireNeeded, type SatirePost } from '@/lib/satire';
+import { recentChatItems } from '@/lib/overview-chat';
+import { mergeTimeline } from '@/lib/overview-feed';
+import { SATIRE_COOKIE, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
-import { isSimConfigured } from '@/lib/services';
+import { getChat, isChatConfigured, isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 
 const TAB_ORDER: OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
@@ -49,14 +52,16 @@ export default async function OverviewPage({
   const tab = effectiveTab(parseTab(sp.fane), satireOn);
   const mode = satireMode(tab, satireOn);
   const page = mode === 'all' ? 1 : parsePage(sp.side);
+  const timeline = tab === 'alle' && page === 1;
   const db = getDb();
   const now = new Date();
   const dateKey = todayInCopenhagen(now);
-  const [{ items, hasMore }, unreadCount, unanswered, upcoming] = await Promise.all([
+  const [{ items, hasMore }, unreadCount, unanswered, upcoming, chatItems] = await Promise.all([
     tab === 'satire' ? Promise.resolve({ items: [], hasMore: false }) : listPosts(db, member.userId, tab, page),
     countUnread(db, member.userId),
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
+    timeline ? recentChatItems({ chat: isChatConfigured() ? getChat() : null, db }, now).catch(() => []) : Promise.resolve([]),
   ]);
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
@@ -76,12 +81,21 @@ export default async function OverviewPage({
     .orderBy(desc(highlights.occurredAt), desc(highlights.id))
     .limit(8);
 
-  type Entry = { kind: 'real'; item: (typeof items)[number] } | { kind: 'satire'; item: SatirePost };
+  type Entry =
+    | { kind: 'real'; item: (typeof items)[number] }
+    | { kind: 'chat'; item: (typeof chatItems)[number] }
+    | { kind: 'satire'; item: ReturnType<typeof datedSatire>[number] };
   const feed: Entry[] =
-    mode === 'interleaved'
-      ? composeAlleFeed(items, pickSatire(dateKey, page, satireNeeded(items.length, page)), page)
-      : mode === 'all'
-        ? activeSatire(dateKey).map((item) => ({ kind: 'satire' as const, item }))
+    mode === 'all'
+      ? newestFirst(datedSatire(dateKey, now)).map((item) => ({ kind: 'satire' as const, item }))
+      : timeline
+        ? mergeTimeline({
+            real: items.map((item) => ({ item, at: item.createdAt, pinned: item.pinned })),
+            chat: chatItems.map((item) => ({ item, at: item.at })),
+            satire: mode === 'timeline' ? datedSatire(dateKey, now).map((item) => ({ item, at: item.at })) : [],
+            hasOlder: hasMore,
+            now,
+          })
         : items.map((item) => ({ kind: 'real' as const, item }));
 
   return (
@@ -140,7 +154,7 @@ export default async function OverviewPage({
               <h2>Satire</h2>
               <p>
                 Her er alle de fiktive opslag samlet. De er opdigtede for sjov, efterligner genren fra skolebeskeder og
-                handler ikke om rigtige personer. I Alle-fanen dukker et enkelt af dem op efter hvert tredje ægte opslag.
+                handler ikke om rigtige personer. I Alle-fanen er de flettet ind mellem de ægte opslag efter dato.
                 De tæller ikke som ulæste, kan ikke gemmes og kan ikke kommenteres. Du kan skjule dem med knappen ovenfor.
               </p>
             </section>
@@ -151,7 +165,8 @@ export default async function OverviewPage({
             </section>
           )}
           {feed.map((entry) => {
-            if (entry.kind === 'satire') return <SatireCard key={`satire-${entry.item.id}`} post={entry.item} />;
+            if (entry.kind === 'satire') return <SatireCard key={`satire-${entry.item.id}`} post={entry.item} now={now} />;
+            if (entry.kind === 'chat') return <ChatItemCard key={`chat-${entry.item.id}`} item={entry.item} now={now} />;
             const p = entry.item;
             return (
               <article key={p.id} className={p.unread ? 'card post-card unread' : 'card post-card'}>

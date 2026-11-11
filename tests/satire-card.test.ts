@@ -2,9 +2,11 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { SatireCard } from '@/components/SatireCard';
-import type { SatirePost } from '@/lib/satire';
+import type { DatedSatire } from '@/lib/satire';
 
-const post: SatirePost = {
+const now = new Date('2026-11-10T12:00:00Z');
+const post: DatedSatire = {
+  at: new Date('2026-11-10T08:05:00Z'),
   id: 'x',
   title: 'Husk madpakker',
   body: 'Første afsnit.\n\nAnden afsnit.',
@@ -16,7 +18,7 @@ const post: SatirePost = {
     { author: 'Fru Falsk', body: 'Hvornår?' },
   ],
 };
-const html = renderToStaticMarkup(createElement(SatireCard, { post }));
+const html = renderToStaticMarkup(createElement(SatireCard, { post, now }));
 const count = (s: string, needle: string) => s.split(needle).length - 1;
 
 describe('SatireCard', () => {
@@ -31,7 +33,10 @@ describe('SatireCard', () => {
   it('viser forfatter uden «(fiktiv)»', () => {
     expect(html).toContain('<strong>Fru Opdigtet</strong>');
     expect(html).not.toContain('(fiktiv)');
-    expect(html).not.toMatch(/<time/);
+  });
+  it('viser tidspunktet i <time> som på ægte opslag, uden anden tekst', () => {
+    expect(html).toContain('<time class="muted" dateTime="2026-11-10T08:05:00.000Z" title="10.11.2026 09.05">I dag 09:05</time>');
+    expect(count(html, '<time')).toBe(1);
   });
   it('bruger klovne/joker-ikonet som skjult avatar', () => {
     expect(html).toMatch(/<span class="satire-mask" aria-hidden="true"><svg[^>]*aria-hidden="true"[^>]*data-icon="klovn"/);

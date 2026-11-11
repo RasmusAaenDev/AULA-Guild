@@ -1,5 +1,6 @@
 import data from '@/lib/satire-posts.json';
 import type { OverviewTab } from '@/lib/posts-ui';
+import { addDaysToDate, copenhagenToUtc } from '@/lib/time';
 
 /** Fiktive opslag (statisk indhold, ingen database). Alle personer er opdigtede. */
 export type SatireComment = { author: string; body: string };
@@ -34,16 +35,6 @@ function hashSeed(s: string): number {
   return h >>> 0;
 }
 
-function mulberry32(seed: number): () => number {
-  let a = seed;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /** Antal opslag i den aktive pulje. Puljen glider ét opslag frem pr. dag, så alle opslag roterer ind og ud i en evig løkke. */
 export const SATIRE_VISIBLE = 20;
 
@@ -61,63 +52,51 @@ export function activeSatire(dateKey: string): SatirePost[] {
   return Array.from({ length: size }, (_, k) => satirePosts[(start + k) % n]);
 }
 
-/** Deterministisk udvalg pr. dag (`YYYY-MM-DD`, dansk tid) og side; ingen dubletter; `count` afkortes til 0..puljens størrelse; vælger kun blandt dagens aktive pulje. */
-export function pickSatire(dateKey: string, pageNumber: number, count: number): SatirePost[] {
-  const pool = activeSatire(dateKey);
-  const n = Math.max(0, Math.min(Math.floor(count) || 0, pool.length));
-  const rand = mulberry32(hashSeed(`${dateKey}#${pageNumber}`));
-  const idx = pool.map((_, i) => i);
-  for (let i = idx.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [idx[i], idx[j]] = [idx[j], idx[i]];
-  }
-  return idx.slice(0, n).map((i) => pool[i]);
-}
+export type DatedSatire = SatirePost & { at: Date };
 
-export type FeedItem<T, S> = { kind: 'real'; item: T } | { kind: 'satire'; item: S };
+const SLOT_MIN = 5;
+const FIRST_MINUTE = 7 * 60 + 30;
+const LAST_MINUTE = 21 * 60 + 30;
 
-/** Ét satire-element efter hvert `every`. ægte element; stopper når satire løber tør. */
-export function interleave<T, S>(real: readonly T[], satire: readonly S[], every = 3): Array<FeedItem<T, S>> {
-  const out: Array<FeedItem<T, S>> = [];
-  let s = 0;
-  real.forEach((item, i) => {
-    out.push({ kind: 'real', item });
-    if (every >= 1 && (i + 1) % every === 0 && s < satire.length) out.push({ kind: 'satire', item: satire[s++] });
-  });
-  return out;
-}
-
-/** Mindste antal satire-kort på side 1 af ALLE, så feedet ikke ser tomt ud, når der er få ægte opslag. */
-export const SATIRE_MIN_FIRST_PAGE = 5;
-
-/** Antal satire-kort en side med `realCount` ægte opslag har brug for: mindst SATIRE_MIN_FIRST_PAGE på side 1, ellers ét pr. 3. ægte (mindst ét, hvis siden har ægte opslag). */
-export function satireNeeded(realCount: number, page: number, every = 3): number {
-  const n = Math.floor(realCount / every);
-  if (page === 1) return Math.max(n, SATIRE_MIN_FIRST_PAGE);
-  return n > 0 ? n : realCount > 0 ? 1 : 0;
+/** Deterministisk klokkeslæt (dansk tid, «HH:MM», 07:30–21:30 i 5-minutters trin) ud fra opslagets id. */
+function clockFor(id: string): string {
+  const slots = (LAST_MINUTE - FIRST_MINUTE) / SLOT_MIN + 1;
+  const minutes = FIRST_MINUTE + (hashSeed(id) % slots) * SLOT_MIN;
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
 }
 
 /**
- * Feedet i ALLE: satire flettes ind efter hvert 3. ægte opslag. Er der satire til overs på side 1 (få ægte opslag), lægges resten til sidst,
- * så siden ikke er tom. På side 2+ vises satire kun, hvis siden har ægte opslag (en tom side 2 er «ikke flere opslag»).
+ * Dagens aktive pulje med tidspunkt: opslag k (0..size-1) er fra danske kalenderdag `dateKey − (size−1−k)`, altså ét pr. dag og det seneste
+ * fra i dag. Klokkeslættet afhænger kun af id'et. Et tidspunkt i dag efter `now` flyttes til nu − 5 min (afrundet til hele minutter, men
+ * ikke før dagens begyndelse), så intet opslag ligger i fremtiden. Rækkefølgen er puljens (ældste først).
  */
-export function composeAlleFeed<T>(real: readonly T[], satire: readonly SatirePost[], page: number, every = 3): Array<FeedItem<T, SatirePost>> {
-  const out = interleave(real, satire, every);
-  const used = out.filter((x) => x.kind === 'satire').length;
-  if (page === 1) {
-    for (const item of satire.slice(used)) out.push({ kind: 'satire', item });
-  } else if (satire.length > 0 && used === 0 && real.length > 0) {
-    out.push({ kind: 'satire', item: satire[0] });
-  }
-  return out;
+export function datedSatire(dateKey: string, now: Date): DatedSatire[] {
+  const pool = activeSatire(dateKey);
+  const nowMinute = Math.floor(now.getTime() / 60_000) * 60_000;
+  return pool.map((post, k) => {
+    const day = addDaysToDate(dateKey, -(pool.length - 1 - k));
+    const r = copenhagenToUtc(day, clockFor(post.id));
+    let at = r.ok ? r.utc : new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), 12));
+    if (at.getTime() > now.getTime()) {
+      const start = copenhagenToUtc(day, '00:00');
+      const floor = start.ok ? start.utc.getTime() : at.getTime();
+      at = new Date(Math.min(at.getTime(), Math.max(floor, nowMinute - 5 * 60_000)));
+    }
+    return { ...post, at };
+  });
 }
 
-export type SatireMode = 'none' | 'interleaved' | 'all';
+/** Nyeste først. */
+export function newestFirst<T extends { at: Date }>(items: readonly T[]): T[] {
+  return [...items].sort((a, b) => b.at.getTime() - a.at.getTime());
+}
 
-/** Hvilke faner viser satire: kun ALLE (indflettet) og SATIRE (alle); aldrig når det er slået fra. */
+export type SatireMode = 'none' | 'timeline' | 'all';
+
+/** Hvilke faner viser satire: kun ALLE (som del af tidslinjen) og SATIRE (alle); aldrig når det er slået fra. */
 export function satireMode(tab: OverviewTab, enabled: boolean): SatireMode {
   if (!enabled) return 'none';
-  if (tab === 'alle') return 'interleaved';
+  if (tab === 'alle') return 'timeline';
   if (tab === 'satire') return 'all';
   return 'none';
 }
