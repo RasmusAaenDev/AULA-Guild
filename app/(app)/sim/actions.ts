@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { getDb } from '@/lib/db';
 import { charactersDeps, isSimConfigured, kickSimQueue } from '@/lib/services';
 import { requireMember } from '@/lib/session';
@@ -35,7 +36,19 @@ export async function enqueueArmorySimAction(_prev: FormState, formData: FormDat
   if (!r.ok) return { error: r.error };
   kickSimQueue();
   revalidatePath('/sim');
-  return { sent: true, notice: 'Simulationen er sat i kø. Den bruger det udstyr og de talenter, armory viser.' };
+  return { sent: true, notice: 'Simulationen er sat i kø. Den bruger det udstyr, armory viser, uden talenter.' };
+}
+
+/** «Sim»-knapperne ved en karakter: én kampstil, direkte fra armory; ved succes videre til Skolehjem, hvor loggen kan følges. */
+export async function quickSimAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const member = await requireMember();
+  if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
+  const style = formData.get('style');
+  const r = await enqueueArmorySim(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, formData.get('characterId'), { fightStyles: typeof style === 'string' ? [style] : [] });
+  if (!r.ok) return { error: r.error };
+  kickSimQueue();
+  revalidatePath('/sim');
+  redirect('/sim');
 }
 
 export async function deleteSimAction(_prev: FormState, formData: FormData): Promise<FormState> {

@@ -3,6 +3,8 @@ import { listContacts } from '@/lib/characters';
 import { getDb } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
 import { roleLabel } from '@/lib/messages';
+import { QuickSim } from '@/components/QuickSim';
+import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 import { RefreshButton } from './RefreshButton';
 
@@ -11,6 +13,7 @@ export const dynamic = 'force-dynamic';
 export default async function ContactsPage() {
   const member = await requireMember();
   const contacts = await listContacts(getDb());
+  const simEnabled = isSimConfigured();
   return (
     <>
       <div className="section-head">
@@ -26,6 +29,7 @@ export default async function ContactsPage() {
               <tr>
                 <th>Karakter</th><th>Spiller</th><th>Klasse</th><th>Rolle</th>
                 <th>Level</th><th>Item level</th><th>Rang</th><th>Sidst synkroniseret</th>
+                {simEnabled && <th>Simulér</th>}
                 {member.isOfficer && <th />}
               </tr>
             </thead>
@@ -43,6 +47,7 @@ export default async function ContactsPage() {
                   <td>{c.itemLevel ?? '–'}</td>
                   <td>{c.guildRank ?? '–'}</td>
                   <td>{formatDateTime(c.lastSynced)}</td>
+                  {simEnabled && <td>{c.ownerId === member.userId ? <QuickSim characterId={c.id} /> : <span className="muted">–</span>}</td>}
                   {member.isOfficer && (
                     <td>
                       <form action={unlinkAction}>

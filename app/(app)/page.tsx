@@ -6,6 +6,7 @@ import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { ConfirmForm } from '@/components/ConfirmForm';
+import { QuickSim } from '@/components/QuickSim';
 import { CreateMenu } from '@/components/CreateMenu';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
@@ -23,6 +24,7 @@ import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage,
 import { statusClass } from '@/lib/rsvp-ui';
 import { SATIRE_COOKIE, activeSatire, composeAlleFeed, effectiveTab, parseSatirePreference, pickSatire, satireMode, satireNeeded, type SatirePost } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
+import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 
 const TAB_ORDER: OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
@@ -60,7 +62,7 @@ export default async function OverviewPage({
   const pinned = pinnedEvent(upcoming, now);
   const [{ n: characterCount }] = await db.select({ n: count() }).from(characters).where(eq(characters.userId, member.userId));
   const [row] = await db
-    .select({ name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
+    .select({ id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
@@ -254,6 +256,7 @@ export default async function OverviewPage({
           <section className="card">
             <h2>Dine karakterer</h2>
             {row ? (
+              <>
               <p>
                 <strong>{fullName(row)}</strong> · {row.className}
                 {row.spec ? ` (${row.spec})` : ''}
@@ -264,6 +267,8 @@ export default async function OverviewPage({
                   {row.itemLevel != null ? ` · item level ${row.itemLevel}` : ''}
                 </span>
               </p>
+              {isSimConfigured() && <QuickSim characterId={row.id} />}
+              </>
             ) : (
               <p>
                 Du har ingen karakter endnu. <Link href="/karakter/ny">Tilføj din første karakter</Link>.

@@ -202,6 +202,7 @@ export type Contact = {
   inGuild: boolean;
   lastSynced: Date | null;
   ownerName: string;
+  ownerId: number;
   ownerAvatar: string | null;
 };
 
@@ -221,6 +222,7 @@ export async function listContacts(db: Db): Promise<Contact[]> {
       inGuild: characters.inGuild,
       lastSynced: characters.lastSynced,
       ownerName: users.name,
+      ownerId: users.id,
       ownerAvatar: users.avatar,
     })
     .from(characters)
