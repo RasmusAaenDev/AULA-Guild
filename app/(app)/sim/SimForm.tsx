@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
+import { useHydrated } from '@/components/useHydrated';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
 import { FightStyleToggle, type FightStyleChoice } from './FightStyleToggle';
 import type { FormState } from '../chat/actions';
@@ -18,6 +19,7 @@ export function SimForm() {
   useEffect(() => {
     if (state.sent) setValues((v) => ({ ...v, input: '' }));
   }, [state, setValues]);
+  const hydrated = useHydrated();
   const toggleBags = () => setValues((v) => ({ ...v, optimizeBags: flip(v.optimizeBags) }));
   return (
     <form onSubmit={submitHandler(action)} className="sim-form">
@@ -36,8 +38,8 @@ export function SimForm() {
       </div>
       {state.error && <p className="error" role="alert">{state.error}</p>}
       {state.notice && <p className="muted" role="status">{state.notice}</p>}
-      <button type="submit" className="btn" disabled={pending || values.input.trim() === ''}>
-        {pending ? 'Vent …' : 'Kør simulation'}
+      <button type="submit" className="btn" disabled={!hydrated || pending || values.input.trim() === ''}>
+        {!hydrated ? 'Indlæser …' : pending ? 'Vent …' : 'Kør simulation'}
       </button>
     </form>
   );
