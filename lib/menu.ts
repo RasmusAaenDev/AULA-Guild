@@ -8,7 +8,7 @@ export function menuItems(opts: { simEnabled?: boolean } = {}): MenuItem[] {
     { href: '/', icon: 'overblik', label: 'Overblik', badge: 'posts' },
     { href: '/kalender', icon: 'kalender', label: 'Kalender', badge: 'events' },
     { href: '/chat', icon: 'chat', label: 'Beskeder' },
-    ...(opts.simEnabled ? [{ href: '/sim', icon: 'sim' as const, label: 'Sim' }] : []),
+    ...(opts.simEnabled ? [{ href: '/sim', icon: 'sim' as const, label: 'Skolehjem' }] : []),
     { href: '/galleri', icon: 'galleri', label: 'Galleri' },
     { href: '/kontakter', icon: 'kontakter', label: 'Kontakter' },
     { href: '/filer', icon: 'filer', label: 'Filer' },

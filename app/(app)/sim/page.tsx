@@ -43,7 +43,7 @@ export default async function SimPage() {
   if (!isSimConfigured()) {
     return (
       <>
-        <h1>Sim</h1>
+        <h1>Skolehjem</h1>
         <section className="card"><p>Simulation er ikke sat op.</p></section>
       </>
     );
@@ -52,7 +52,7 @@ export default async function SimPage() {
   const active = sims.some((s) => s.status === 'queued' || s.status === 'running');
   return (
     <>
-      <h1>Sim</h1>
+      <h1>Skolehjem</h1>
       <section className="card">
         <SimForm />
       </section>

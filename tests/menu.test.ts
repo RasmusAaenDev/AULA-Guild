@@ -6,7 +6,7 @@ describe('menuItems', () => {
     expect(menuItems().map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Galleri', 'Kontakter', 'Filer']);
   });
   it('viser Sim efter Beskeder kun når simulatoren er sat op', () => {
-    expect(menuItems({ simEnabled: true }).map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Sim', 'Galleri', 'Kontakter', 'Filer']);
+    expect(menuItems({ simEnabled: true }).map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Skolehjem', 'Galleri', 'Kontakter', 'Filer']);
     expect(menuItems({ simEnabled: false }).some((m) => m.href === '/sim')).toBe(false);
   });
   it('har tæller på Overblik (opslag) og Kalender (events), ellers ingen', () => {
