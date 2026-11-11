@@ -9,6 +9,7 @@ import { SOURCE_LABELS, simStatusLabel, visibleWarnings } from '@/lib/sims-ui';
 import { deleteSimAction } from './actions';
 import { AutoRefresh } from './AutoRefresh';
 import { ArmorySimForm } from './ArmorySimForm';
+import { SimLog } from './SimLog';
 import { SimForm } from './SimForm';
 import { SimStyles } from './SimStyles';
 
@@ -37,6 +38,7 @@ function SimItem({ sim }: { sim: SimView }) {
         </>
       )}
       {sim.status === 'failed' && <p className="error">{sim.error ?? 'Simulationen fejlede.'}</p>}
+      <SimLog text={sim.log} active={sim.status === 'queued' || sim.status === 'running'} />
       <ConfirmForm action={deleteSimAction} fields={{ simId: sim.id }} label="Slet" confirmText="Slet denne simulation?" />
     </li>
   );

@@ -264,6 +264,8 @@ export const simJobs = pgTable(
     status: text('status').$type<SimStatus>().notNull(),
     result: jsonb('result'),
     error: text('error'),
+    // Seneste del (højst ca. 16 KB) af simc-loggen fra workeren; skrives løbende mens jobbet kører. Kun til ejeren.
+    log: text('log'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     startedAt: timestamp('started_at', { withTimezone: true }),
     finishedAt: timestamp('finished_at', { withTimezone: true }),

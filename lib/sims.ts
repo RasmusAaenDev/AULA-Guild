@@ -169,6 +169,8 @@ export type SimView = {
   finishedAt: string | null;
   error: string | null;
   result: SimResult | null;
+  /** Seneste del af simc-loggen (ren tekst), kun for ejeren. */
+  log: string | null;
   source: SimSource;
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
   bags: { requested: boolean; found: number; ignored: number; truncated: number };
@@ -226,7 +228,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
   const rows = await db
     .select({
       id: simJobs.id, status: simJobs.status, createdAt: simJobs.createdAt, finishedAt: simJobs.finishedAt,
-      error: simJobs.error, result: simJobs.result, options: simJobs.options,
+      error: simJobs.error, result: simJobs.result, options: simJobs.options, log: simJobs.log,
     })
     .from(simJobs)
     .where(eq(simJobs.userId, userId))
@@ -241,6 +243,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     finishedAt: r.finishedAt ? r.finishedAt.toISOString() : null,
     error: r.error,
     result: r.status === 'done' ? parseSimResult(r.result) : null,
+    log: r.log,
     source: o.source,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
   };
@@ -260,29 +263,34 @@ export type ClaimedSim = { id: number; userId: number; input: string; options: S
 /** Atomisk: tager det ældste køede job og markerer det som kørende. Samtidige kald får forskellige jobs. */
 export async function claimNextSim(db: Db): Promise<ClaimedSim | null> {
   const rows = await db.execute(sql`
-    update sim_jobs set status = 'running', started_at = now()
+    update sim_jobs set status = 'running', started_at = now(), log = null
     where id = (select id from sim_jobs where status = 'queued' order by id limit 1 for update skip locked)
     returning id, user_id, input, options`);
   const r = rows[0] as { id: number; user_id: number; input: string; options: unknown } | undefined;
   return r ? { id: r.id, userId: r.user_id, input: r.input, options: parseSimOptions(r.options) } : null;
 }
 
+/** Opdaterer loggen på et kørende job (kaldes løbende af runneren). */
+export async function updateSimLog(db: Db, id: number, log: string): Promise<void> {
+  await db.update(simJobs).set({ log }).where(and(eq(simJobs.id, id), eq(simJobs.status, 'running')));
+}
+
 /** Gemmer kun et filtreret resultat; er svaret ubrugeligt, fejler jobbet. Kun kørende jobs ændres. */
-export async function finishSim(db: Db, id: number, rawResult: unknown, extraWarnings?: unknown): Promise<boolean> {
+export async function finishSim(db: Db, id: number, rawResult: unknown, extraWarnings?: unknown, log?: string | null): Promise<boolean> {
   const result = parseSimResult(rawResult, extraWarnings);
-  if (!result) return failSim(db, id, 'Simulatoren gav et uventet svar.');
+  if (!result) return failSim(db, id, 'Simulatoren gav et uventet svar.', log);
   const rows = await db
     .update(simJobs)
-    .set({ status: 'done', result, error: null, finishedAt: new Date() })
+    .set({ status: 'done', result, error: null, finishedAt: new Date(), ...(log !== undefined ? { log } : {}) })
     .where(and(eq(simJobs.id, id), eq(simJobs.status, 'running')))
     .returning({ id: simJobs.id });
   return rows.length > 0;
 }
 
-export async function failSim(db: Db, id: number, error: string): Promise<boolean> {
+export async function failSim(db: Db, id: number, error: string, log?: string | null): Promise<boolean> {
   const rows = await db
     .update(simJobs)
-    .set({ status: 'failed', result: null, error: [...error].slice(0, 300).join(''), finishedAt: new Date() })
+    .set({ status: 'failed', result: null, error: [...error].slice(0, 300).join(''), finishedAt: new Date(), ...(log !== undefined ? { log } : {}) })
     .where(and(eq(simJobs.id, id), eq(simJobs.status, 'running')))
     .returning({ id: simJobs.id });
   return rows.length > 0;

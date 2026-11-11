@@ -288,6 +288,9 @@ details.create .menu a:hover { background: var(--border); }
 .sim-gear .up { color: var(--ok); font-weight: 700; }
 .sim-gear .down { color: var(--no); font-weight: 700; }
 .sim-gear .flat { font-weight: 700; }
+.sim-log { margin: 8px 0; }
+.sim-log summary { cursor: pointer; padding: 6px 0; font-weight: 700; }
+.sim-log-text { margin: 4px 0; padding: 8px 10px; max-height: 16em; overflow: auto; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
 .sim-all summary { cursor: pointer; padding: 6px 0; font-weight: 700; }
 .style-toggle { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
 .style-toggle legend { padding: 0; margin-bottom: 6px; font-weight: 700; }

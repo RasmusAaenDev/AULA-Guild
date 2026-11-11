@@ -1,0 +1,1 @@
+ALTER TABLE "sim_jobs" ADD COLUMN "log" text;
