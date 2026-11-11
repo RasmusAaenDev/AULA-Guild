@@ -378,15 +378,15 @@ describe('tilmeldinger følger karakterskift og frakobling', () => {
     return { a, b, magi, ezzek, zorro, bob, ev, rs, charOf };
   }
 
-  it('skift af aktiv karakter flytter kommende tilmeldinger, men ikke tidligere eller aflyste', async () => {
+  it('skift af aktiv karakter ændrer ikke eksisterende tilmeldinger (hverken kommende, tidligere eller aflyste)', async () => {
     const t = await setup();
     const up = await t.ev(5);
     const past = await t.ev(-5);
     const cancelled = await t.ev(6, true);
     for (const e of [up, past, cancelled]) await t.rs(e, t.a, t.magi);
     await t.rs(up, t.b, t.bob);
-    expect(await setActiveCharacter(db, t.a, t.ezzek, NOW)).toBe(true);
-    expect(await t.charOf(up, t.a)).toBe(t.ezzek);
+    expect(await setActiveCharacter(db, t.a, t.ezzek)).toBe(true);
+    expect(await t.charOf(up, t.a)).toBe(t.magi);
     expect(await t.charOf(past, t.a)).toBe(t.magi);
     expect(await t.charOf(cancelled, t.a)).toBe(t.magi);
     expect(await t.charOf(up, t.b)).toBe(t.bob);
@@ -396,7 +396,7 @@ describe('tilmeldinger følger karakterskift og frakobling', () => {
     const t = await setup();
     const up = await t.ev(5);
     await t.rs(up, t.a, t.magi);
-    expect(await setActiveCharacter(db, t.a, t.bob, NOW)).toBe(false);
+    expect(await setActiveCharacter(db, t.a, t.bob)).toBe(false);
     expect(await t.charOf(up, t.a)).toBe(t.magi);
   });
 

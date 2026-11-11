@@ -106,27 +106,22 @@ export async function addCharacter(
   return { ok: true, characterId: rows[0].id };
 }
 
-export async function setActiveCharacter(
-  db: Db,
-  userId: number,
-  characterId: number,
-  now: Date = new Date(),
-): Promise<boolean> {
-  return db.transaction(async (tx) => {
-    const rows = await tx
-      .update(users)
-      .set({ activeCharacterId: characterId })
-      .where(
-        and(
-          eq(users.id, userId),
-          sql`exists (select 1 from ${characters} where ${characters.id} = ${characterId} and ${characters.userId} = ${userId})`,
-        ),
-      )
-      .returning({ id: users.id });
-    if (rows.length === 0) return false;
-    await reassignUpcomingRsvps(tx, { userId, toCharacterId: characterId, now });
-    return true;
-  });
+/**
+ * Vælger brugerens primære (aktive) karakter. Rører IKKE eksisterende tilmeldinger: en tilmelding hører til den karakter, der
+ * var valgt, da man meldte til/fra, og ændres først, når man selv melder igen (så bruges den karakter, der er valgt da).
+ */
+export async function setActiveCharacter(db: Db, userId: number, characterId: number): Promise<boolean> {
+  const rows = await db
+    .update(users)
+    .set({ activeCharacterId: characterId })
+    .where(
+      and(
+        eq(users.id, userId),
+        sql`exists (select 1 from ${characters} where ${characters.id} = ${characterId} and ${characters.userId} = ${userId})`,
+      ),
+    )
+    .returning({ id: users.id });
+  return rows.length > 0;
 }
 
 export async function setRole(db: Db, userId: number, characterId: number, role: Role): Promise<boolean> {

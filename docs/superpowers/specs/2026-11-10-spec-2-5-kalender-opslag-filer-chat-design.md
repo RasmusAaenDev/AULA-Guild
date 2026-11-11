@@ -19,7 +19,7 @@ UI-sprog: dansk. Tidspunkter gemmes i UTC og vises i `Europe/Copenhagen`.
 ### Beslutninger
 - To event-typer: `raid` og `aften`. Kun officerer opretter raids og serier. Alle medlemmer kan oprette aftener.
 - Tilmelding pr. karakter: `deltager`, `maaske`, `afbud`. Højst én tilmelding pr. bruger pr. event (unik `(event_id, user_id)`). Tilmeldingen kan ændres frem til eventets start.
-- Skifter brugeren aktiv karakter, flytter tilmeldingerne på kommende, ikke-aflyste events med til den nye aktive karakter.
+- En tilmelding hører til den karakter, der var aktiv, da brugeren meldte til/fra. Skifter brugeren aktiv karakter bagefter, ændres eksisterende tilmeldinger IKKE; først når brugeren melder igen, bruges den karakter, der er aktiv da (ændret efter ønske).
 - Ugentlig gentagelse med en regel (serie). Genererede events er almindelige events og kan ændres eller aflyses enkeltvis.
 - Rolleoptælling bruger karakterens selvvalgte rolle. Intet loft pr. rolle.
 

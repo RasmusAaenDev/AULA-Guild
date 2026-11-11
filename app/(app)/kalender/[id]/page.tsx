@@ -24,7 +24,8 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
   if (!event) notFound();
   const [user] = await db.select({ active: users.activeCharacterId }).from(users).where(eq(users.id, member.userId));
   const hasCharacter = user?.active != null;
-  const mine = event.attendees.find((a) => a.userId === member.userId)?.status ?? null;
+  const mineRow = event.attendees.find((a) => a.userId === member.userId);
+  const mine = mineRow?.status ?? null;
   const started = event.startsAt.getTime() <= Date.now();
   const closed = event.cancelled || started;
   const canManage = member.isOfficer || (event.type === 'aften' && event.createdBy === member.userId);
@@ -70,7 +71,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
           </p>
         ) : (
           <>
-            <p className="muted">{mine ? `Din status: ${rsvpLabel(mine)}` : 'Du har ikke svaret endnu'}</p>
+            <p className="muted">{mine ? `Din status: ${rsvpLabel(mine)} som ${mineRow?.characterFullName}` : 'Du har ikke svaret endnu'}</p>
             <RsvpButtons eventId={event.id} current={mine} />
           </>
         )}
