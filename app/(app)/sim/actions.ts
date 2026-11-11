@@ -12,11 +12,18 @@ const limiter = createSimLimiter();
 export async function enqueueSimAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await requireMember();
   if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
-  const r = await enqueueSim(getDb(), { userId: member.userId, limiter, now: Date.now() }, formData.get('input'));
+  const fightStyles = [formData.get('patchwerk') === 'on' ? 'Patchwerk' : null, formData.get('dungeonSlice') === 'on' ? 'DungeonSlice' : null].filter((s) => s !== null);
+  const optimizeBags = formData.get('optimizeBags') === 'on';
+  const r = await enqueueSim(getDb(), { userId: member.userId, limiter, now: Date.now() }, formData.get('input'), { fightStyles, optimizeBags });
   if (!r.ok) return { error: r.error };
   kickSimQueue();
   revalidatePath('/sim');
-  return { sent: true };
+  const notice = !r.bags.requested
+    ? undefined
+    : r.bags.found === 0
+      ? 'Der blev ikke fundet nogen genstande i «Gear from Bags», så kun din nuværende udrustning simuleres.'
+      : `${r.bags.found} genstande fra dine tasker bliver testet${r.bags.truncated > 0 ? ` (${r.bags.truncated} flere end grænsen på 40 blev ignoreret)` : ''}.`;
+  return { sent: true, notice };
 }
 
 export async function deleteSimAction(_prev: FormState, formData: FormData): Promise<FormState> {

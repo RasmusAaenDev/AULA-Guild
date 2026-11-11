@@ -1,0 +1,61 @@
+
+warrior="Fiktivnavn"
+level=11
+race=tauren
+role=
+professions=mining=8
+spec=unknown
+
+talents=CMdB2H0dH1+BPyLxkIpBi/yB4CAAAeAjLAAAAA
+
+# Primary Talents
+# talents=CMdB2H0dH1+BPyLxkIpBi/yB4CAAAeAjLAAAAA
+
+# Sun-beaten Cloak (8)
+back=,id=4958
+# Loose Chain Vest (10)
+chest=,id=2648
+# Brawler's Harness (1)
+shirt=,id=6125
+# Ragged Leather Bracers (4)
+wrist=,id=1370
+# Painted Chain Gloves (5)
+hands=,id=4910
+# Loose Chain Belt (8)
+waist=,id=2635
+# Painted Chain Leggings (5)
+legs=,id=10635
+# Cliff Runner Boots (10)
+feet=,id=4972
+# Goblin Smasher (12)
+main_hand=,id=4964
+
+### Gear from Bags
+#
+# Beaded Cloak (8)
+# back=,id=14088
+#
+# Battle Chain Cloak (9)
+# back=,id=4668
+#
+# Beaded Cuffs (8)
+# wrist=,id=14087
+#
+# War Torn Bands (11)
+# wrist=,id=15482
+#
+# Battle Chain Girdle (10)
+# waist=,id=4669
+#
+# Cheap Blunderbuss (13)
+# main_hand=,id=2778
+#
+# Mining Pick (4)
+# main_hand=,id=2901
+#
+# Feeble Sword (8)
+# main_hand=,id=1413
+#
+# Proud Brave's Guard (9)
+# off_hand=,id=286740
+

@@ -1,0 +1,38 @@
+
+warlock="Fiktivnavn"
+level=10
+race=undead
+role=
+professions=mining=3/
+spec=unknown
+
+talents=CIdBa0K/6fjlwoPQnhZ43PxtUAAAAAAAAYA
+
+# Primary Talents
+# talents=CIdBa0K/6fjlwoPQnhZ43PxtUAAAAAAAAYA
+
+# Adept's Cloak (8)
+back=,id=3833
+# Beaded Wraps of the Eagle (11)
+chest=,id=14094,bonus_id=12718
+# Frayed Bracers (5)
+wrist=,id=3365
+# Heavy Linen Gloves (10)
+hands=,id=4307
+# Patchwork Belt (8)
+waist=,id=3370
+# Native Pants of the Sorcerer (14)
+legs=,id=14097,bonus_id=12745
+# Flax Boots (5)
+feet=,id=3274
+# Forsaken Dagger (5)
+main_hand=,id=3268
+
+### Gear from Bags
+#
+# Barbaric Cloth Gloves (15)
+# hands=,id=3308
+#
+# Barbaric Cloth Boots (15)
+# feet=,id=3307
+

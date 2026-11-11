@@ -111,6 +111,7 @@ describe('autorisation og resultat', () => {
   it('filtrerer resultatet til kendte felter', () => {
     const r = parseSimResult(workerResult({ warnings: ['a', 5, '', 'b'] }))!;
     expect(r).toEqual({
+      styles: [{ fightStyle: 'Patchwerk', dps: { mean: 1234.56, stdDev: 80, meanStdDev: 11.6 }, items: [] }],
       player: { name: 'Fallochli', className: 'hunter', spec: 'unknown', level: 11, race: 'dwarf' },
       iterations: 5000,
       dps: { mean: 1234.56, stdDev: 80, meanStdDev: 11.6 },
@@ -217,7 +218,7 @@ describe('processQueue', () => {
     await processQueue({ db, workerUrl: url + '/', fetch: async (x, init) => { calls.push({ url: x, init }); return json(200, { ok: true, result: workerResult() }); } });
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe('http://simc:8080/run');
-    expect(JSON.parse(calls[0].init!.body as string)).toEqual({ input: PROFILE, iterations: SIM_ITERATIONS });
+    expect(JSON.parse(calls[0].init!.body as string)).toEqual({ input: PROFILE, iterations: SIM_ITERATIONS, fightStyles: ['Patchwerk'] });
     expect(calls[0].init!.signal).toBeInstanceOf(AbortSignal);
     const row = await status(id);
     expect(row.status).toBe('done');

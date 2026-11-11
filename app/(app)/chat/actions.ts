@@ -8,7 +8,7 @@ import { users } from '@/lib/db/schema';
 import { getChat, isChatConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 
-export type FormState = { error?: string; sent?: boolean };
+export type FormState = { error?: string; sent?: boolean; notice?: string };
 
 const limiter = createSendLimiter({ max: 5, windowMs: 60_000, minGapMs: 2000 });
 

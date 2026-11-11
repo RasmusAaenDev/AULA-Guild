@@ -259,6 +259,8 @@ export const simJobs = pgTable(
     // Til senere brug (armory-indgang); bruges ikke endnu.
     characterId: integer('character_id').references(() => characters.id, { onDelete: 'set null' }),
     input: text('input').notNull(),
+    // Valg for jobbet: { fightStyles, optimizeBags, bagItems, ... }. Læses altid defensivt (se lib/sims.ts).
+    options: jsonb('options').$type<Record<string, unknown>>().notNull().default({}),
     status: text('status').$type<SimStatus>().notNull(),
     result: jsonb('result'),
     error: text('error'),

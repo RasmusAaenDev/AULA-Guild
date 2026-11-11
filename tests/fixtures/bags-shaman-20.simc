@@ -1,0 +1,44 @@
+
+shaman="Fiktivnavn"
+level=20
+race=skyborne_horde
+role=
+professions=leatherworking=38/skinning=149
+spec=unknown
+
+talents=CEdBzT2eoXLGqEykspPS/k8VfDAAYAzYGzDAAAA
+
+# Primary Talents
+# talents=CEdBzT2eoXLGqEykspPS/k8VfDAAYAzYGzDAAAA
+
+# Honorbound Cloak (15)
+back=,id=286426
+# Inscribed Leather Breastplate (21)
+chest=,id=2985
+# Deckhand's Shirt (14)
+shirt=,id=5107
+# Ritual Bands of the Sorcerer (18)
+wrist=,id=14122,bonus_id=12745
+# Ceremonial Leather Gloves (15)
+hands=,id=3314
+# Belt of Blades (15)
+waist=,id=263405
+# Dredgemire Leggings (18)
+legs=,id=15450
+# Scouting Boots of the Wolf (22)
+feet=,id=6582,bonus_id=12726,content_tuning=5254
+# Ancient Heirloom (1)
+finger1=,id=264908
+# Clay Ring of Spirit (22)
+finger2=,id=11993,bonus_id=12730
+# Battering Hammer of Spirit (23)
+main_hand=,id=3198,bonus_id=12730,content_tuning=5254
+
+### Gear from Bags
+#
+# Fishing Pole (1)
+# main_hand=,id=6256
+#
+# Skinning Knife (4)
+# main_hand=,id=7005
+

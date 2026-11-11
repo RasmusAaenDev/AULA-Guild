@@ -2,23 +2,28 @@
 // samtidige kald (enqueue, opstart, timejob) aldrig kører to jobs parallelt.
 
 import type { Db } from '@/lib/db';
-import { claimNextSim, failSim, finishSim } from '@/lib/sims';
+import { claimNextSim, type SimOptions, failSim, finishSim } from '@/lib/sims';
 
 export const SIM_ITERATIONS = 5000;
-export const SIM_TIMEOUT_MS = 120_000;
+export const SIM_TIMEOUT_MS = 300_000 // workerens egen grænse er 240 s;
 export const UNREACHABLE = 'Simulatoren svarer ikke. Prøv igen om lidt.';
 
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 type RunnerState = { running?: Promise<void>; again?: boolean };
 const g = globalThis as unknown as { __aulaSimRunner?: RunnerState };
 
-async function runOne(db: Db, workerUrl: string, f: Fetch, job: { id: number; input: string }): Promise<void> {
+async function runOne(db: Db, workerUrl: string, f: Fetch, job: { id: number; input: string; options: SimOptions }): Promise<void> {
   let res: Response;
   try {
     res = await f(`${workerUrl.replace(/\/+$/, '')}/run`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ input: job.input, iterations: SIM_ITERATIONS }),
+      body: JSON.stringify({
+        input: job.input,
+        iterations: SIM_ITERATIONS,
+        fightStyles: job.options.fightStyles,
+        ...(job.options.bagItems.length > 0 ? { bagItems: job.options.bagItems } : {}),
+      }),
       signal: AbortSignal.timeout(SIM_TIMEOUT_MS),
     });
   } catch {

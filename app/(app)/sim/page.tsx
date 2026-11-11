@@ -4,10 +4,11 @@ import { formatDateTime } from '@/lib/format';
 import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 import { listMySims, type SimView } from '@/lib/sims';
-import { simDpsLabel, simStatusLabel } from '@/lib/sims-ui';
+import { simStatusLabel } from '@/lib/sims-ui';
 import { deleteSimAction } from './actions';
 import { AutoRefresh } from './AutoRefresh';
 import { SimForm } from './SimForm';
+import { SimStyles } from './SimStyles';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,7 @@ function SimItem({ sim }: { sim: SimView }) {
       {detail && <p className="muted">{detail}</p>}
       {sim.status === 'done' && sim.result && (
         <>
-          <p className="sim-dps">{simDpsLabel(sim.result)}</p>
+          <SimStyles sim={sim} />
           {sim.result.iterations !== null && <p className="muted">{sim.result.iterations.toLocaleString('da-DK')} gennemløb</p>}
           {sim.result.warnings.length > 0 && (
             <ul className="sim-warnings">{sim.result.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
