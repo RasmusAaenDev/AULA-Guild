@@ -5,6 +5,8 @@ const API = 'https://eu.api.blizzard.com';
 const TOKEN_URL = 'https://oauth.battle.net/token';
 const NAMESPACE = 'profile-forever-eu';
 const LOCALE = 'en_GB';
+// Intet Blizzard-kald må hænge for evigt (en formular ville så vise «henter …» uden slut).
+const REQUEST_TIMEOUT_MS = 15_000;
 
 type RawCharacter = {
   id: number;
@@ -175,6 +177,7 @@ export function createBlizzardClient(opts: {
     let res: Response;
     try {
       res = await doFetch(TOKEN_URL, {
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         method: 'POST',
         headers: {
           Authorization: 'Basic ' + Buffer.from(`${opts.clientId}:${opts.clientSecret}`).toString('base64'),
@@ -200,7 +203,7 @@ export function createBlizzardClient(opts: {
       const bearer = await getToken();
       let res: Response;
       try {
-        res = await doFetch(url, { headers: { Authorization: `Bearer ${bearer}` } });
+        res = await doFetch(url, { headers: { Authorization: `Bearer ${bearer}` }, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       } catch {
         throw new BlizzardError('unavailable', 'Netværksfejl');
       }

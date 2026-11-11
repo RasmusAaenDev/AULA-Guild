@@ -303,3 +303,5 @@ details.create .menu a:hover { background: var(--border); }
 .quick-sim { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
 .quick-sim .btn { min-height: 44px; }
 .quick-sim-btn { display: inline-flex; align-items: center; gap: 6px; }
+/* Formularer kan først sendes, når siden er hydreret (se HydrationMark). */
+html:not([data-hydrated]) form button[type='submit'] { opacity: 0.6; cursor: progress; pointer-events: none; }

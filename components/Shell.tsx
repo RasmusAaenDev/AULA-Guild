@@ -4,6 +4,7 @@ import type { Member } from '@/lib/session';
 import { menuItems } from '@/lib/menu';
 import { unreadLabel } from '@/lib/posts-ui';
 import { CharacterSwitcher } from './CharacterSwitcher';
+import { HydrationMark } from './HydrationMark';
 import { NavLink } from './NavLink';
 import { ProfileMenu } from './ProfileMenu';
 import { ThemeToggle } from './ThemeToggle';
@@ -25,6 +26,7 @@ export function Shell({
   };
   return (
     <>
+      <HydrationMark />
       <a className="skip-link" href="#main">Spring til indhold</a>
       <header className="topbar">
         <Link href="/" className="logo" aria-label="Aula, gå til forsiden">Aula</Link>
