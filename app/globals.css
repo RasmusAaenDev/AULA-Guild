@@ -76,7 +76,7 @@ main:focus { outline: none; }
 .topbar-right { flex: none; }
 details.profile summary > span:last-child { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .layout { display: flex; min-height: calc(100vh - 56px); }
-.sidenav { width: 100px; background: var(--nav); display: flex; flex-direction: column; position: sticky; top: 56px; align-self: flex-start; height: calc(100vh - 56px); overflow-y: auto; }
+.sidenav { z-index: 15; width: 100px; background: var(--nav); display: flex; flex-direction: column; position: sticky; top: 56px; align-self: flex-start; height: calc(100vh - 56px); overflow-y: auto; }
 .navlink { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 4px; color: #fff; text-decoration: none; font-size: 13px; }
 .navicon { position: relative; display: inline-flex; }
 .navicon .icon { display: block; }
@@ -110,7 +110,7 @@ details.profile .menu { position: absolute; right: 0; top: 40px; width: 280px; b
 
 @media (max-width: 700px) {
   .layout { flex-direction: column-reverse; }
-  .sidenav { width: 100%; flex-direction: row; position: sticky; top: auto; bottom: 0; align-self: auto; height: auto; overflow-y: visible; }
+  .sidenav { width: 100%; flex-direction: row; position: sticky; top: auto; bottom: 0; z-index: 15; align-self: auto; height: auto; overflow-y: visible; }
   .navlink { flex: 1; min-width: 0; padding: 8px 2px; font-size: 12px; gap: 2px; }
   .navlink .icon { width: 24px; height: 24px; }
   .navlink > span:last-child { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
