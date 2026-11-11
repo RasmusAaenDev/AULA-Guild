@@ -60,4 +60,16 @@ describe('mergeTimeline', () => {
     mergeTimeline({ ...base, real: r });
     expect(r.map((x) => x.item)).toEqual(['a', 'b']);
   });
+  it('fletter galleri-kort ind: samme vindue som chat, og ved lighed ægte, chat, galleri, satire', () => {
+    const out = mergeTimeline({
+      real: [real('r1', 3), real('r2', 3), real('r3', 30)],
+      chat: [other('c', 3)],
+      gallery: [other('g', 3), other('gammel', 100)],
+      satire: [other('s', 3)],
+      hasOlder: true,
+      now,
+    });
+    expect(show(out)).toBe('r1 r2 c g s r3');
+    expect(out.map((e) => e.kind)).toEqual(['real', 'real', 'chat', 'gallery', 'satire', 'real']);
+  });
 });

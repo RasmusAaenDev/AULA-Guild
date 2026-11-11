@@ -4,6 +4,7 @@ import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
 import { deletePostAction } from '@/app/(app)/opslag/actions';
 import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { ChatItemCard } from '@/components/ChatItemCard';
+import { GalleryItemCard } from '@/components/GalleryItemCard';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { ConfirmForm } from '@/components/ConfirmForm';
@@ -25,6 +26,7 @@ import type { OverviewTab } from '@/lib/posts-ui';
 import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
 import { recentChatItems } from '@/lib/overview-chat';
+import { recentGalleryItems } from '@/lib/overview-gallery';
 import { mergeTimeline } from '@/lib/overview-feed';
 import { SATIRE_COOKIE, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
@@ -56,12 +58,13 @@ export default async function OverviewPage({
   const db = getDb();
   const now = new Date();
   const dateKey = todayInCopenhagen(now);
-  const [{ items, hasMore }, unreadCount, unanswered, upcoming, chatItems] = await Promise.all([
+  const [{ items, hasMore }, unreadCount, unanswered, upcoming, chatItems, galleryItems] = await Promise.all([
     tab === 'satire' ? Promise.resolve({ items: [], hasMore: false }) : listPosts(db, member.userId, tab, page),
     countUnread(db, member.userId),
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
     timeline ? recentChatItems({ chat: isChatConfigured() ? getChat() : null, db }, now).catch(() => []) : Promise.resolve([]),
+    timeline ? recentGalleryItems({ db }, now).catch(() => []) : Promise.resolve([]),
   ]);
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);
@@ -84,6 +87,7 @@ export default async function OverviewPage({
   type Entry =
     | { kind: 'real'; item: (typeof items)[number] }
     | { kind: 'chat'; item: (typeof chatItems)[number] }
+    | { kind: 'gallery'; item: (typeof galleryItems)[number] }
     | { kind: 'satire'; item: ReturnType<typeof datedSatire>[number] };
   const feed: Entry[] =
     mode === 'all'
@@ -92,6 +96,7 @@ export default async function OverviewPage({
         ? mergeTimeline({
             real: items.map((item) => ({ item, at: item.createdAt, pinned: item.pinned })),
             chat: chatItems.map((item) => ({ item, at: item.at })),
+            gallery: galleryItems.map((item) => ({ item, at: item.at })),
             satire: mode === 'timeline' ? datedSatire(dateKey, now).map((item) => ({ item, at: item.at })) : [],
             hasOlder: hasMore,
             now,
@@ -167,6 +172,7 @@ export default async function OverviewPage({
           {feed.map((entry) => {
             if (entry.kind === 'satire') return <SatireCard key={`satire-${entry.item.id}`} post={entry.item} now={now} />;
             if (entry.kind === 'chat') return <ChatItemCard key={`chat-${entry.item.id}`} item={entry.item} now={now} />;
+            if (entry.kind === 'gallery') return <GalleryItemCard key={`gallery-${entry.item.id}`} item={entry.item} now={now} />;
             const p = entry.item;
             return (
               <article key={p.id} className={p.unread ? 'card post-card unread' : 'card post-card'}>

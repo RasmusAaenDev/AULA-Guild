@@ -256,6 +256,11 @@ details.create .menu a:hover { background: var(--border); }
 .satire-comments h4 { margin: 0 0 4px; font-size: 14px; color: var(--sat-ink); }
 .satire-comments p { margin: 4px 0; overflow-wrap: anywhere; }
 .chat-item-card { border-left: 6px solid var(--nav-active); }
+.gallery-item-card { border-left: 6px solid var(--nav-active); }
+.gallery-thumbs { list-style: none; margin: 8px 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 96px)); gap: 8px; }
+.gallery-thumbs a { display: block; }
+.gallery-thumbs img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; background: var(--border); }
+@media (max-width: 480px) { .gallery-thumbs { grid-template-columns: repeat(2, minmax(0, 96px)); } }
 .chat-item-title { display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
 .chat-item-title svg { flex: none; }
 .chat-item-text { white-space: pre-wrap; }
