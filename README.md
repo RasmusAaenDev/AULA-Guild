@@ -33,7 +33,7 @@ Se `.env.example`. Ingen hemmeligheder må committes. Nye valgfrie variabler:
 | `DISCORD_BOT_TOKEN`, `DISCORD_CHAT_CHANNEL_ID` | ikke sat | Chatten er kun aktiv, hvis begge er sat |
 | `SIMC_WORKER_URL` | ikke sat | Adressen på simc-worker (fx `http://simc:8080`); uden den er Sim-siden slået fra |
 
-`AUTH_URL` skal være den adresse, siden nås på (produktion: `https://aula.aaensoftware.com`); uploadruten afviser forespørgsler med en anden `Origin`. Generér `AUTH_SECRET` og `CRON_SECRET` hver for sig med:
+`AUTH_URL` skal være den adresse, siden nås på (produktion: `https://aula-forever.dk`); uploadruten afviser forespørgsler med en anden `Origin`. Generér `AUTH_SECRET` og `CRON_SECRET` hver for sig med:
 
 ```bash
 openssl rand -base64 32
@@ -43,7 +43,7 @@ openssl rand -base64 32
 
 Registrér redirect-URL'erne i Discord-applikationens OAuth2-indstillinger:
 
-- Produktion: `https://aula.aaensoftware.com/api/auth/callback/discord`
+- Produktion: `https://aula-forever.dk/api/auth/callback/discord`
 - Lokal udvikling: `http://localhost:3000/api/auth/callback/discord`
 
 ## Build og drift

@@ -249,7 +249,7 @@ describe('createChatClient', () => {
   it('sender User-Agent', async () => {
     const { client, calls } = setup(() => jsonResponse(200, [msg('1')]));
     await client.getMessages(CHANNEL);
-    expect((calls[0].init?.headers as Record<string, string>)['User-Agent']).toBe('DiscordBot (https://aula.aaensoftware.com, 1.0)');
+    expect((calls[0].init?.headers as Record<string, string>)['User-Agent']).toBe('DiscordBot (https://aula-forever.dk, 1.0)');
   });
 
   it('tilføjer vedhæftningsmarkør også når der er tekst', async () => {

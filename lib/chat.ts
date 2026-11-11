@@ -223,7 +223,7 @@ export function createChatClient(opts: {
   const forcedReadOnly = new Set(opts.readOnlyChannelIds ?? []);
   const hidden = new Set(opts.hiddenChannelIds ?? []);
   const api = 'https://discord.com/api/v10';
-  const userAgent = 'DiscordBot (https://aula.aaensoftware.com, 1.0)';
+  const userAgent = 'DiscordBot (https://aula-forever.dk, 1.0)';
   const authHeaders = { Authorization: `Bot ${opts.token}`, 'User-Agent': userAgent };
 
   let blockedUntil = 0;
