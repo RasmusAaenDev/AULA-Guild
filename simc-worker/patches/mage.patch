@@ -33,18 +33,20 @@ index 16312c8..a161782 100644
 +void mage( player_t* );
  }  // namespace mage_apl
 diff --git a/engine/class_modules/sc_mage.cpp b/engine/class_modules/sc_mage.cpp
-index aa3634d..93da1ed 100644
+index aa3634d..5187a0a 100644
 --- a/engine/class_modules/sc_mage.cpp
 +++ b/engine/class_modules/sc_mage.cpp
-@@ -2,18 +2,52 @@
+@@ -2,18 +2,59 @@
  // Dedmonwakeen's DPS-DPM Simulator.
  // Send questions to natehieter@gmail.com
  // ==========================================================================
 +//
 +// AULA-RETTELSE (simc-worker/patches/mage.patch i AULA-Guild):
 +// Grov basismodel for Forever-mage, bygget efter warlock-modulets skabelon.
-+// Kun spells der ikke afhaenger af talenter (rank efter spillerens level),
-+// ingen talent-effekter. Wand (Shoot) og Evocation til mana-styring.
++// Kun spells der ikke afhaenger af talenter (rank efter spillerens level).
++// Talenternes passive effekter laeses fra spildata (parse_all_passive_talents);
++// talent-spells, procs og frossen-tilstand er ikke med. Wand (Shoot) og
++// Evocation til mana-styring.
 +// Alle tal kommer fra spildata og vaabendata.
 +// Fjernes naar upstream selv implementerer klassen.
  
@@ -86,6 +88,11 @@ index aa3634d..93da1ed 100644
 +
 +  struct
 +  {
++    player_talent_t wand_specialization;
++  } talent;
++
++  struct
++  {
 +    spell_ranks_t arcane_missiles;
 +    spell_ranks_t evocation;
 +    spell_ranks_t fire_blast;
@@ -95,7 +102,7 @@ index aa3634d..93da1ed 100644
  };
  
  // MAGE MODULE INTERFACE ====================================================
-@@ -38,10 +72,272 @@ public:
+@@ -38,10 +79,290 @@ public:
    void register_actor_initializers( sim_t* ) const override {}
  };
  
@@ -207,6 +214,15 @@ index aa3634d..93da1ed 100644
 +  // Wandens hastighed, ikke spell-haste.
 +  timespan_t execute_time() const override
 +  { return base_execute_time; }
++
++  // Wand Specialization: +13/25 % wand-skade (rank-vaerdien fra spildataens kurve).
++  double composite_da_multiplier( const action_state_t* s ) const override
++  {
++    double m = mage_spell_t::composite_da_multiplier( s );
++    if ( p()->talent.wand_specialization.ok() )
++      m *= 1.0 + p()->talent.wand_specialization->effectN( 1 ).percent();
++    return m;
++  }
 +
 +  bool ready() override
 +  {
@@ -344,8 +360,17 @@ index aa3634d..93da1ed 100644
 +    spell_container_t().set_spell( 25304 ),  // 60
 +  };
 +
-+  // Kun klassens passiver; talenter laeses bevidst ikke (grov model).
 +  parse_all_class_passives();
++  // Talenternes passive effekter direkte fra spildata (som warlock, priest, shaman m.fl.):
++  // Add Flat/Percent Modifier paa de beroerte spells (fx Improved Frostbolt, Ice Shards,
++  // Arcane Impact) og spillerstats (fx Precision, Arcane Mind, Arcane Instability).
++  parse_all_passive_talents();
++
++  // Wand Specialization (6057) er i spildata Modify Damage Done% for alle magiske skoler med
++  // kravet "Requires weapon: Wand", som simc ikke ser; registreret ville den give ALLE spells
++  // bonussen. Den fjernes derfor (som i priest-modulet) og laegges kun paa Shoot.
++  talent.wand_specialization = find_talent_spell( talent_tree::CLASS, "Wand Specialization" );
++  deregister_passive_spell( talent.wand_specialization );
 +}
 +
 +void mage_t::init_action_list()

@@ -52,6 +52,9 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(read(src, MAGE_APL), /add_action\( "evocation,if=mana\.pct<10" \)[\s\S]*add_action\( "shoot" \)/);
     assert.match(read(src, MAGE), /find_spell\( 5019 \)/);
     assert.match(read(src, MAGE), /set_spell\( 12051 \)/);
+    // Talenternes passive effekter fra spildata; Wand Specialization kun på Shoot.
+    assert.match(read(src, MAGE), /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
+    assert.match(read(src, MAGE), /deregister_passive_spell\( talent\.wand_specialization \)/);
     assert.equal(readFileSync(out, 'utf8'), 'mage applied\n');
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl.
     const again = run(APPLY, [src, out]);

@@ -47,7 +47,8 @@ meningen: så skal et menneske se på, om vores eller upstreams version skal bru
 
 **Hvad:** Grov basismodel for Forever-mage efter warlock-modulets skabelon (`sc_warlock.cpp`, `apl/warlock.cpp`):
 mana som primær ressource, `init_spells` med `spell_ranks_t` (rank vælges efter spillerens level med
-`rank.<spell>.find_rank()`), `create_action`, `init_action_list` og `init_base_stats`. Magen arver fra
+`rank.<spell>.find_rank()`), `create_action`, `init_action_list` og `init_base_stats`. Talenternes passive effekter
+læses med simcs egen `parse_all_passive_talents()` (se «Talenter» nedenfor). Magen arver fra
 `parse_player_effects_t` (som druid og priest), så Evocations regen-effekter kan læses direkte fra spildataen.
 
 **Filer:** `engine/class_modules/sc_mage.cpp` (modulet), `engine/class_modules/apl/mage.cpp` (rotationen mellem
@@ -103,9 +104,7 @@ item-opslag og en delt nedkøling. Det er ikke enkelt at gøre rigtigt, så `def
 
 Udeladt med vilje:
 
-- **Talenter**: kun `parse_all_class_passives()` (ikke `parse_all_passive_talents()` som warlock), fordi
-  simulatoren endnu ikke kan læse talenter pålideligt fra armory. **Arcane Wrath** (1326079-82) og **Ice Lance**
-  (1312002 m.fl.) er talenter i Forever (`trait_data.inc`) og er derfor ikke med; Fingers of Frost er en talent-proc.
+- **Talent-spells og -procs** (se «Talenter» nedenfor): kun de passive talenter virker.
 - **Fire Blast 400616-400623** (15 s nedkøling, ingen GCD) findes også i spildataen, men ser ud til at stamme fra en
   rune-/sæsonvariant; vi bruger trænerens Fire Blast (2136-familien).
 - **Kanal-afbrydelse ved skade** (Evocation, «Channel Interrupt: Damage») modelleres ikke; magen tager ingen
@@ -113,6 +112,48 @@ Udeladt med vilje:
 - Ingen basis-konstanter for crit o.l.: modsat warlock/shaman/priest bruger mage `player_t`'s værdier fra spildata.
 - Bog-ranks på level 60 (Frostbolt 25304, Fireball 25306, Arcane Missiles 25345) tages med som i warlock-modulet
   (25307), selvom de i spillet kræver en bog.
+
+### Talenter
+
+Appen sender armory-talenterne som `talents=` (se `lib/simc-talents.ts` i appen). `init_spells` kalder
+`parse_all_passive_talents()` efter `parse_all_class_passives()`, præcis som warlock, priest, shaman, warrior, hunter og
+druid. Simc registrerer så hvert valgt passivt talents aura-effekter direkte fra spildataen, med rankens værdi fra
+talentkurven (`trait_definition_effect`): *Add Flat/Percent Modifier* på de berørte spells og spillerstats.
+
+**Med nu (gratis via spildata):** Improved Frostbolt (−0,1-0,5 s cast), Ice Shards (+20-100 % crit-bonus på Frost),
+Precision (+2/4/6 % spell-hit), Frost Channeling (−5/10/15 % mana på Frost-spells), Arcane Impact, Arcane Mind
+(+Int % og crit-bonus på Arcane), Arcane Instability (+skade og crit), Arcane Meditation (mana-regen under cast),
+Incineration, Accelerant (−cast Fireball), Critical Mass, Improved Fire Blast (−nedkøling), Improved Flamestrike og
+Improved Cone of Cold (spells der ikke er i rotationen endnu). Utility-talenter (rækkevidde, rustning, pushback) parses
+også, men påvirker ikke DPS.
+
+**Wand Specialization (6057)** er i spildataen *Modify Damage Done%* for alle magiske skoler med kravet «Requires
+weapon: Wand», som simc ikke ser: registreret ville den give Frostbolt og alle andre spells +25 %. Den afregistreres
+derfor (`deregister_passive_spell`, samme mønster som priest-modulet) og lægges i stedet kun på Shoot (+13/25 %).
+
+**Mangler stadig (kræver håndskrevet kode):** talent-spells **Ice Lance**, **Arcane Blast**, **Arcane Wrath**,
+**Pyroblast** og Blast Wave (ingen handlinger); procs og tilstande **Fingers of Frost**, **Shatter**, **Frostbite**
+(frossent mål), Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage, Heating Up, Ignite, Improved
+Scorch, Master of Elements, Fire Power; aktive buffs Arcane Power, Presence of Mind, Combustion, Ice Barrier og Cold
+Snap; Arcane Subtlety (aura 123, uden for simcs passivliste). Rotationen vælger stadig ikke efter talenter.
+
+**Målt** (ezzek, level 35 Frost: Wand Spec 2, Improved Frostbolt 5, Precision 2, Ice Shards 5, Frostbite 3, Frost
+Channeling 1, Ice Lance, Ice Block, Shatter 3, Cold Snap, Fingers of Frost 2; samme indstillinger og seed 42 som
+ovenfor): Patchwerk **35,3 → 44,1** DPS (+25 %), DungeonSlice **30,9 → 38,3** (+24 %). Uden `talents=` er tallene
+uændrede (35,3 / 30,9). Alle 53 mage-talenter på én gang (level 60) kører uden fejl.
+
+**Håndregnet mod spildata** (simc-log, samme profil):
+
+- *Improved Frostbolt* rank 5: kurven giver −500 ms (`setting talent Improved Frostbolt … rank 5 … new=-500`);
+  Frostbolt 8407 har 3000 ms → **2,5 s** (log: `schedules execute` 1,504 → `performs` 4,004).
+- *Ice Shards* rank 5: +100 % crit-bonus på Frost → crit = 1 + 0,5 × 2 = **2,0 ×** hit: Frostbolt hit 156,1, crit
+  **312,2**. Fire Blast (Fire) er uændret 1,5 ×: 176,7 / 265,1.
+- *Precision* rank 2: +4 % hit; target level 38 giver 17 % miss → **13 %** (målt 12,99 % på Frostbolt).
+- *Frost Channeling* rank 1: −5 % mana: Frostbolt 130 → **123,5**.
+- *Wand Specialization* rank 2: Shoot 43,5 × 1,25 = **54,4** (målt 54,4; crit 81,6 = 1,5 ×).
+
+Regression: warrior, shaman, warlock, priest og hunter fra guildens armory (med og uden `talents=`) giver
+bit-for-bit samme DPS med den nye og den forrige mage-rettelse.
 
 ### Rotation (Frost, standard)
 
@@ -128,7 +169,7 @@ Begrundelse og kilder (brugerens guides: Icy Veins «WoW Forever Mage/Frost Mage
 Fire- og Arcane Mage-guides, Skycoach' Mage-guide):
 
 - **Frostbolt-spam med Fire Blast på nedkøling** er den simple Frost-leveling-rotation fra guiderne; Ice Lance og
-  Fingers of Frost er talenter og udelades (se ovenfor).
+  Fingers of Frost er talenter, der kræver egen kode, og udelades (se «Talenter»).
 - **Evocation ved lav mana:** Icy Veins' Forever-guide beskriver Evocation som en 8 s kanal, der giver det meste af
   manaen tilbage. Tærsklen 10 % er **vores antagelse** (ikke et tal fra guiderne): lav nok til at Evocation næsten
   ikke spilder mana (mage 35: 228 + 2160 ≈ puljen på 2289), og høj nok til at den bruges, før magen står tør.
