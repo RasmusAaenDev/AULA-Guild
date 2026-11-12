@@ -131,6 +131,9 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
       assert.match(read(src, SHAMAN), new RegExp(`if \\( name == "${a}" \\)`), a);
     }
     assert.match(read(src, SHAMAN_APL), /run_action_list,name=caster,if=variable\.caster[\s\S]*add_action\( "stormstrike" \)[\s\S]*caster->add_action\( "lightning_bolt,[^"]*" \)/);
+    // shaman: mana fra Mana Spring Totem (alle) og Mana Tide Totem (Restoration)
+    for (const a of ['mana_spring_totem', 'mana_tide_totem']) assert.match(read(src, SHAMAN), new RegExp(`if \\( name == "${a}" \\)`), a);
+    assert.match(read(src, SHAMAN_APL), /precombat->add_action\( "mana_spring_totem" \)[\s\S]*caster->add_action\( "mana_tide_totem,if=mana\.pct<50" \)/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl. Druid-rettelsen er i upstream-stil uden
     // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md).
@@ -649,9 +652,9 @@ test('warlock og shaman droppes, når upstream selv har alle dele (uden vores ma
     writeFileSync(path.join(src, WARLOCK_APL), read(src, WARLOCK_APL).replace('  default_->add_action( "shadow_bolt" );',
       '  default_->add_action( "life_tap,if=mana.pct<10" );\n  default_->add_action( "bane_of_agony" );\n  default_->add_action( "shadow_bolt" );'));
     writeFileSync(path.join(src, SHAMAN), read(src, SHAMAN).replace('  if ( name == "earth_shock" )',
-      '  if ( name == "lightning_bolt" ) return new a_t();\n  if ( name == "stormstrike" ) return new b_t();\n  if ( name == "earth_shock" )'));
+      '  if ( name == "lightning_bolt" ) return new a_t();\n  if ( name == "stormstrike" ) return new b_t();\n  if ( name == "mana_spring_totem" ) return new c_t();\n  if ( name == "earth_shock" )'));
     writeFileSync(path.join(src, SHAMAN_APL), read(src, SHAMAN_APL).replace('  default_->add_action( "auto_attack" );',
-      '  default_->add_action( "auto_attack" );\n  default_->add_action( "stormstrike" );\n  default_->add_action( "lightning_bolt" );'));
+      '  default_->add_action( "auto_attack" );\n  default_->add_action( "mana_spring_totem" );\n  default_->add_action( "stormstrike" );\n  default_->add_action( "lightning_bolt" );'));
     const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR shaman/);
