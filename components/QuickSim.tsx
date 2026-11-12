@@ -12,10 +12,10 @@ export function QuickSim({ characterId }: { characterId: number }) {
   return (
     <form action={action} className="quick-sim" data-progressive>
       <input type="hidden" name="characterId" value={characterId} />
-      <button type="submit" name="style" value="Patchwerk" className="btn secondary quick-sim-btn" disabled={off} aria-label="Sim Patchwerk: ét mål (fra armory, uden talenter)" title="Patchwerk: ét mål (fra armory, uden talenter)">
+      <button type="submit" name="style" value="Patchwerk" className="btn secondary quick-sim-btn" disabled={off} aria-label="Sim Patchwerk: ét mål (udstyr og talenter fra armory)" title="Patchwerk: ét mål (udstyr og talenter fra armory)">
         <Icon name="person" size={22} />
       </button>
-      <button type="submit" name="style" value="DungeonSlice" className="btn secondary quick-sim-btn" disabled={off} aria-label="Sim Dungeon Slice: gruppe af mål (fra armory, uden talenter)" title="Dungeon Slice: gruppe af mål (fra armory, uden talenter)">
+      <button type="submit" name="style" value="DungeonSlice" className="btn secondary quick-sim-btn" disabled={off} aria-label="Sim Dungeon Slice: gruppe af mål (udstyr og talenter fra armory)" title="Dungeon Slice: gruppe af mål (udstyr og talenter fra armory)">
         <Icon name="gruppe" size={22} />
       </button>
       {state.error && <p className="error" role="alert">{state.error}</p>}

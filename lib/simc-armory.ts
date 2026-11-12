@@ -3,6 +3,7 @@
 
 import type { SimProfile } from '@/lib/blizzard/types';
 import { CLASS_KEYS, MAX_NAME_LEN, MAX_VALUE_LEN } from '@/lib/simc-input';
+import { encodeTalents, talentWarning } from '@/lib/simc-talents';
 
 /** Blizzards pladstyper (equipment.slot.type) -> simc-nøgler. SHIRT og TABARD er med vilje udeladt (påvirker ikke DPS). */
 export const ARMORY_SLOTS: Readonly<Record<string, string>> = {
@@ -44,23 +45,34 @@ export function cleanPlayerName(name: string): string {
   return cut === '' ? 'Karakter' : cut;
 }
 
-export function buildSimInput(profile: SimProfile): string {
+/**
+ * Profilen til simc plus beskeder til brugeren (fx talenter der ikke kunne oversættes).
+ * Talenterne skrives som `talents=` (simcs loadout-streng, se lib/simc-talents.ts); `spec=unknown` er nødvendig,
+ * for uden spec afviser simc strengen, og i Forever giver enhver spec-tekst klassens eneste spec.
+ */
+export function buildSimProfile(profile: SimProfile): { input: string; warnings: string[] } {
+  const cls = classToken(profile.className);
   const lines = [
-    `${classToken(profile.className)}="${cleanPlayerName(profile.name)}"`,
+    `${cls}="${cleanPlayerName(profile.name)}"`,
     `level=${profile.level}`,
     `race=${raceToken(profile.race, profile.faction)}`,
     'region=eu',
     'server=forever',
     'spec=unknown',
   ];
-  // Værdien må højst være MAX_VALUE_LEN tegn; ekstra talenter droppes hellere end at hele profilen afvises.
-  let talents = '';
-  for (const t of profile.talents) {
-    const next = `${talents === '' ? '' : '/'}${t.id}:${t.rank}`;
-    if (talents.length + next.length > MAX_VALUE_LEN) break;
-    talents += next;
+  const warnings: string[] = [];
+  if (profile.talents.length > 0) {
+    // Et ukendt talent-id når aldrig simc: det udelades her (simc ville ellers indlæse forkerte talenter eller stoppe).
+    const t = encodeTalents(cls, profile.talents);
+    if (t.used.length > 0 && t.talents !== null && t.talents.length <= MAX_VALUE_LEN) {
+      lines.push(`talents=${t.talents}`);
+      const w = talentWarning(t.dropped.length);
+      if (w) warnings.push(w);
+    } else {
+      const w = talentWarning(profile.talents.length);
+      if (w) warnings.push(w);
+    }
   }
-  if (talents !== '') lines.push(`legacy_talents=${talents}`);
   const seen = new Set<string>();
   for (const e of profile.equipment) {
     const key = ARMORY_SLOTS[e.slot];
@@ -68,7 +80,11 @@ export function buildSimInput(profile: SimProfile): string {
     seen.add(key);
     lines.push(`${key}=,id=${e.id}`);
   }
-  return lines.join('\n');
+  return { input: lines.join('\n'), warnings };
+}
+
+export function buildSimInput(profile: SimProfile): string {
+  return buildSimProfile(profile).input;
 }
 
 export const isSimClass = (className: string): boolean => CLASS_KEYS.has(classToken(className));

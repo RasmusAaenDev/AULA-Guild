@@ -140,6 +140,8 @@ export type SimOptions = {
   bagFound: number;
   bagIgnored: number;
   bagTruncated: number;
+  /** Beskeder til brugeren fra da jobbet blev lagt i kø (fx talenter fra armory, der ikke kunne oversættes). */
+  notices: string[];
 };
 
 const count0 = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 10_000 ? v : 0);
@@ -157,7 +159,20 @@ export function parseSimOptions(raw: unknown): SimOptions {
     bagFound: count0(o.bagFound),
     bagIgnored: count0(o.bagIgnored),
     bagTruncated: count0(o.bagTruncated),
+    notices: sanitizeNotices(o.notices),
   };
+}
+
+const MAX_NOTICES = 5;
+/** Højst 5 beskeder á 200 tegn, uden kontroltegn. */
+export function sanitizeNotices(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((n): n is string => typeof n === 'string')
+    // eslint-disable-next-line no-control-regex
+    .map((n) => [...n.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').trim()].slice(0, 200).join(''))
+    .filter((n) => n !== '')
+    .slice(0, MAX_NOTICES);
 }
 
 export type SimEnqueueOptions = { fightStyles?: unknown; optimizeBags?: unknown };
@@ -174,11 +189,17 @@ export type SimView = {
   source: SimSource;
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
   bags: { requested: boolean; found: number; ignored: number; truncated: number };
+  /** Beskeder fra da jobbet blev lagt i kø (vises sammen med jobbet). */
+  notices: string[];
 };
 
 export async function enqueueSim(
   db: Db,
-  deps: { userId: number; limiter: SendLimiter; now: number; /** Armory-indgangen: karakteren der simuleres. */ characterId?: number; source?: SimSource },
+  deps: {
+    userId: number; limiter: SendLimiter; now: number;
+    /** Armory-indgangen: karakteren der simuleres. */ characterId?: number; source?: SimSource;
+    /** Beskeder der gemmes med jobbet og vises sammen med det. */ notices?: string[];
+  },
   rawInput: unknown,
   rawOptions: SimEnqueueOptions = {},
 ): Promise<({ ok: true; id: number; bags: SimView['bags'] } | SimFail)> {
@@ -201,6 +222,7 @@ export async function enqueueSim(
     ...(deps.source === 'armory' ? { source: 'armory' } : {}),
     ...(bag.items.length > 0 ? { bagItems: bag.items } : {}),
     bagFound: bag.items.length, bagIgnored: bag.ignored, bagTruncated: bag.truncated,
+    ...(deps.notices && deps.notices.length > 0 ? { notices: sanitizeNotices(deps.notices) } : {}),
   };
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(7302)`); // serialiserer grænserne
@@ -246,6 +268,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     log: r.log,
     source: o.source,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
+    notices: o.notices,
   };
   });
 }

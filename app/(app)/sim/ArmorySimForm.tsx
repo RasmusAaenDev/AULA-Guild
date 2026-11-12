@@ -20,7 +20,7 @@ export function ArmorySimForm({ characters }: { characters: { id: number; fullNa
         </select>
       </div>
       <FightStyleToggle defaultValue={state.fightStyle === 'dungeonSlice' ? 'dungeonSlice' : 'patchwerk'} />
-      <p className="muted">Bruger det udstyr, armory viser. Talenter kan simulatoren endnu ikke læse fra armory, så simulationen kører uden talenter.</p>
+      <p className="muted">Bruger det udstyr og de talenter, armory viser.</p>
       {state.error && <p className="error" role="alert">{state.error}</p>}
       {state.notice && <p className="muted" role="status">{state.notice}</p>}
       <button type="submit" className="btn" disabled={pending}>{pending ? 'Vent …' : 'Kør simulation'}</button>

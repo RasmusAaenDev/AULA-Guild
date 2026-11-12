@@ -27,6 +27,9 @@ function SimItem({ sim }: { sim: SimView }) {
         <span className="muted">{formatDateTime(new Date(sim.createdAt))}</span>
       </div>
       {detail && <p className="muted">{detail}</p>}
+      {sim.notices.length > 0 && (
+        <ul className="sim-warnings">{sim.notices.map((n, i) => <li key={i}>{n}</li>)}</ul>
+      )}
       {sim.status === 'done' && sim.result && (
         <>
           <SimStyles sim={sim} />

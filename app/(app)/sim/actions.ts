@@ -46,7 +46,7 @@ export async function enqueueArmorySimAction(_prev: SimFormState, formData: Form
   if (!r.ok) return { error: r.error, ...keep };
   kickSimQueue();
   revalidatePath('/sim');
-  return { sent: true, notice: 'Simulationen er sat i kø. Den bruger det udstyr, armory viser, uden talenter.' };
+  return { sent: true, notice: ['Simulationen er sat i kø. Den bruger det udstyr og de talenter, armory viser.', ...r.notices].join(' ') };
 }
 
 /** «Sim»-knapperne ved en karakter: én kampstil, direkte fra armory; ved succes videre til Skolehjem, hvor loggen kan følges. */

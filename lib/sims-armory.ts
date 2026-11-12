@@ -7,8 +7,8 @@ import { characters } from '@/lib/db/schema';
 import { BlizzardError, type BlizzardClient } from '@/lib/blizzard/types';
 import type { SendLimiter } from '@/lib/chat-send';
 import { parseId } from '@/lib/site-chat';
-import { buildSimInput, isSimClass } from '@/lib/simc-armory';
-import { FIGHT_STYLES, enqueueSim, isFightStyle, type SimEnqueueOptions, type SimFail } from '@/lib/sims';
+import { buildSimProfile, isSimClass } from '@/lib/simc-armory';
+import { FIGHT_STYLES, enqueueSim, isFightStyle, type SimEnqueueOptions, type SimFail, type SimView } from '@/lib/sims';
 
 export const ARMORY_NOT_FOUND = 'Karakteren blev ikke fundet i armory. Tjek at den findes på WoW Forever.';
 export const ARMORY_UNAVAILABLE = 'Armory er ikke tilgængelig lige nu. Prøv igen om lidt.';
@@ -22,7 +22,7 @@ export async function enqueueArmorySim(
   deps: { userId: number; limiter: SendLimiter; now: number; blizzard: BlizzardClient },
   rawCharacterId: unknown,
   rawOptions: Pick<SimEnqueueOptions, 'fightStyles'>,
-): Promise<ReturnType<typeof enqueueSim>> {
+): Promise<{ ok: true; id: number; bags: SimView['bags']; notices: string[] } | SimFail> {
   const fail = (reason: SimFail['reason'], error: string): SimFail => ({ ok: false, reason, error });
   const id = parseId(rawCharacterId);
   if (id === null) return fail('not_found', 'Vælg en af dine karakterer.');
@@ -40,10 +40,12 @@ export async function enqueueArmorySim(
     return fail('invalid', armoryErrorMessage(e));
   }
   if (!isSimClass(profile.className)) return fail('invalid', 'Klassen støttes ikke i WoW Forever-simulatoren.');
-  return enqueueSim(
+  const { input, warnings } = buildSimProfile(profile);
+  const r = await enqueueSim(
     db,
-    { userId: deps.userId, limiter: deps.limiter, now: deps.now, characterId: ch.id, source: 'armory' },
-    buildSimInput(profile),
+    { userId: deps.userId, limiter: deps.limiter, now: deps.now, characterId: ch.id, source: 'armory', notices: warnings },
+    input,
     { fightStyles: fs, optimizeBags: false },
   );
+  return r.ok ? { ...r, notices: warnings } : r;
 }

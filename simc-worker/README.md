@@ -30,7 +30,7 @@ Lille HTTP-tjeneste der kører [SimulationCraft (simc-forever)](https://github.c
 Oven på simc ligger Aulas rettelser i `patches/` (én pr. klasse; se `patches/PATCHES.md`). De anvendes i bygget af `patches/apply.sh`; har upstream selv implementeret klassen (efter `<klasse>.check`), droppes vores rettelse automatisk, og passer en rettelse ikke, fejler bygget.
 
 1. **Tjek den nye commit uden at bygge:** `sh simc-worker/patches/check-upstream.sh <ny-sha>` (eller `main`). Én linje pr. klasse: `OK (kan anvendes)`, `DROP (upstream har den nu)` eller `KONFLIKT (skal flettes: …)`. CI kører samme tjek mod simc-forever `main` ved hvert byg og skriver rapporten i jobbets summary (kun information).
-2. **Alle OK eller DROP:** ret `ARG SIMC_REF`, kopiér de rene upstream-filer, som rettelserne rører, til `test/fixtures/simc-upstream/` (se 3c; testen sammenligner dem med patchens `index`-linjer), byg og kør testene.
+2. **Alle OK eller DROP:** ret `ARG SIMC_REF`, regenerér appens talenttabel med `node scripts/gen-simc-talents.mjs <simc-klon på ny-sha>` (armory-talenterne kodes som `talents=` ud fra simcs `trait_data.inc`; `tests/simc-talents.test.ts` fejler, indtil `lib/simc-talents.generated.ts` har samme SIMC_REF), kopiér de rene upstream-filer, som rettelserne rører, til `test/fixtures/simc-upstream/` (se 3c; testen sammenligner dem med patchens `index`-linjer), byg og kør testene.
 3. **KONFLIKT – lav rettelsen igen** i en arbejdskopi:
    ```sh
    git clone https://github.com/simulationcraft/simc-forever.git simc && cd simc && git checkout <ny-sha>

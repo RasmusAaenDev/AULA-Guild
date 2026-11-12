@@ -4,7 +4,9 @@ import { createSendLimiter } from '@/lib/chat-send';
 import { characters, simJobs, users } from '@/lib/db/schema';
 import { BlizzardError, type SimProfile } from '@/lib/blizzard/types';
 import { ARMORY_NOT_FOUND, ARMORY_UNAVAILABLE, enqueueArmorySim } from '@/lib/sims-armory';
-import { buildSimInput, cleanPlayerName, raceToken } from '@/lib/simc-armory';
+import { buildSimInput, buildSimProfile, cleanPlayerName, raceToken } from '@/lib/simc-armory';
+import { encodeTalents } from '@/lib/simc-talents';
+import { SIMC_TALENTS } from '@/lib/simc-talents.generated';
 import { validateSimcInput } from '@/lib/simc-input';
 import { claimNextSim, finishSim, listMySims, parseSimResult } from '@/lib/sims';
 import { NO_ROTATION_TEXT, SOURCE_LABELS, hasNoDps, noRotationMessages, visibleWarnings } from '@/lib/sims-ui';
@@ -24,7 +26,8 @@ const warrior: SimProfile = {
     { slot: 'FINGER_1', id: 1013 }, { slot: 'FINGER_2', id: 1014 }, { slot: 'TRINKET_1', id: 1015 }, { slot: 'TRINKET_2', id: 1016 },
     { slot: 'MAIN_HAND', id: 1017 }, { slot: 'OFF_HAND', id: 1018 }, { slot: 'RANGED', id: 1019 }, { slot: 'AMMO', id: 1020 },
   ],
-  talents: [{ id: 900001, rank: 5 }, { id: 900002, rank: 1 }],
+  // 135462 Enrage (max 5), 135458 Death Wish (max 1); 900001 findes ikke i simcs data og udelades med en advarsel.
+  talents: [{ id: 135462, rank: 5 }, { id: 135458, rank: 1 }, { id: 900001, rank: 2 }],
 };
 
 describe('buildSimInput', () => {
@@ -32,7 +35,7 @@ describe('buildSimInput', () => {
     const input = buildSimInput(warrior);
     expect(input.split('\n')).toEqual([
       'warrior="Krigeren"', 'level=21', 'race=dwarf', 'region=eu', 'server=forever', 'spec=unknown',
-      'legacy_talents=900001:5/900002:1',
+      `talents=${encodeTalents('warrior', [{ id: 135462, rank: 5 }, { id: 135458, rank: 1 }]).talents}`,
       'head=,id=1001', 'neck=,id=1002', 'shoulders=,id=1003', 'back=,id=1004', 'chest=,id=1005', 'wrist=,id=1008',
       'hands=,id=1009', 'waist=,id=1010', 'legs=,id=1011', 'feet=,id=1012', 'finger1=,id=1013', 'finger2=,id=1014',
       'trinket1=,id=1015', 'trinket2=,id=1016', 'main_hand=,id=1017', 'off_hand=,id=1018', 'ranged=,id=1019',
@@ -47,7 +50,7 @@ describe('buildSimInput', () => {
     const shaman = buildSimInput({ ...warrior, name: 'Shamy', className: 'Shaman', race: 'Mag\'har Orc', faction: 'horde', talents: [], equipment: [] });
     expect(validateSimcInput(shaman)).toMatchObject({ ok: true, className: 'shaman' });
     expect(shaman).toContain('race=maghar_orc');
-    expect(shaman).not.toContain('legacy_talents');
+    expect(shaman).not.toContain('talents=');
   });
   it('renser navnet til tilladte tegn og afkorter til 40', () => {
     expect(cleanPlayerName('Tørn"; rm -rf /\n$x')).toBe('Tørn rm -rf x');
@@ -65,9 +68,15 @@ describe('buildSimInput', () => {
     expect(raceToken('Ny Ukendt Race', null)).toBe('ny_ukendt_race');
     expect(raceToken('!!!')).toBe('unknown');
   });
-  it('dropper talenter der ville give for lang værdi', () => {
-    const many = Array.from({ length: 200 }, (_, i) => ({ id: 100000 + i, rank: 1 }));
-    const r = validateSimcInput(buildSimInput({ ...warrior, talents: many }));
+  it('skriver talents= (ikke legacy_talents) og advarer om talenter der ikke kunne oversættes', () => {
+    const { input, warnings } = buildSimProfile(warrior);
+    expect(input).not.toContain('legacy_talents');
+    expect(input).not.toContain('900001');
+    expect(warnings).toEqual(['1 talent kunne ikke oversættes; simuleringen kører uden det.']);
+    // Alle 53 warrior-talenter på max rank: strengen holder sig langt under værdigrænsen.
+    const nodes = SIMC_TALENTS.classes.warrior.nodes;
+    const all = Array.from({ length: nodes.length / 4 }, (_, i) => ({ id: nodes[i * 4 + 2], rank: 3 }));
+    const r = validateSimcInput(buildSimInput({ ...warrior, talents: all }));
     expect(r.ok).toBe(true);
   });
 });
@@ -91,7 +100,7 @@ describe('enqueueArmorySim', () => {
     const c = await mkChar(u.id, 'krigeren-far');
     const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior } });
     const r = await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk', 'DungeonSlice'] });
-    expect(r).toMatchObject({ ok: true, bags: { requested: false, found: 0 } });
+    expect(r).toMatchObject({ ok: true, bags: { requested: false, found: 0 }, notices: ['1 talent kunne ikke oversættes; simuleringen kører uden det.'] });
     expect(blizzard.calls).toEqual(['simprofile:krigeren-far']);
     const [row] = await db.select().from(simJobs);
     expect(row).toMatchObject({ userId: u.id, characterId: c.id, status: 'queued' });
@@ -101,6 +110,8 @@ describe('enqueueArmorySim', () => {
     const [view] = await listMySims(db, u.id);
     expect(view.source).toBe('armory');
     expect(SOURCE_LABELS[view.source]).toBe('Armory');
+    expect(view.notices).toEqual(['1 talent kunne ikke oversættes; simuleringen kører uden det.']);
+    expect(row.input).toMatch(/^talents=[A-Za-z0-9+/]+$/m);
   });
   it('afviser en andens karakter, ukendt id og karakter uden ejer — uden at kalde Blizzard', async () => {
     const a = await mkUser();
