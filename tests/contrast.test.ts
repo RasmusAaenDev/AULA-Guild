@@ -105,7 +105,14 @@ for (const [name, t] of Object.entries(themes)) {
       ['satire: --sat-ink (etiket) på --sat-bg', t['sat-ink'], t['sat-bg'], 4.5],
       ['satire: stiplet kant mod --bg', t['sat-border'], t.bg, 3],
       ['satire: stiplet kant mod --sat-bg', t['sat-border'], t['sat-bg'], 3],
+      ['satire-kommentar: --text på --card (boble)', t.text, t.card, 4.5],
+      ['satire-kommentar: navn --sat-ink på --card', t['sat-ink'], t.card, 4.5],
+      ['satire-kommentar: «Vis flere» --heading på --sat-bg', t.heading, t['sat-bg'], 4.5],
+      ['satire-kommentar: venstre kant mod --card', t['sat-border'], t.card, 3],
     );
+    for (let i = 0; i < 6; i++) {
+      pairs.push([`satire-kommentar: initial (--sat-av-fg) på --sat-av-${i}`, t['sat-av-fg'], t[`sat-av-${i}`], 4.5]);
+    }
     const clsKeys = [...classKeys, 'ukendt'];
     for (const k of clsKeys) {
       pairs.push(

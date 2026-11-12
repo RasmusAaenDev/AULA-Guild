@@ -15,6 +15,7 @@
   --ok: #1b6e38; --maybe: #7d5200; --no: #b3261e; --on-status: #ffffff;
   --focus-inverse: #ffffff;
   --sat-bg: #fff4d6; --sat-border: #7a4f00; --sat-badge: #4a1d7a; --sat-badge-fg: #ffffff; --sat-ink: #5b3a00;
+  --sat-av-fg: #ffffff; --sat-av-0: #8a3b12; --sat-av-1: #1f5f8b; --sat-av-2: #6b3fa0; --sat-av-3: #1b6e38; --sat-av-4: #a30b52; --sat-av-5: #4d6370;
   --star: #8a5a00;
   --on-cls: #ffffff; --check-bg: #ffffff; --check-fg: #005b6b;
   --bar: #00788c;
@@ -30,6 +31,7 @@
     --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
     --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
     --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
+    --sat-av-fg: #0f1a1f; --sat-av-0: #f0b84a; --sat-av-1: #7fd0e0; --sat-av-2: #e4ccff; --sat-av-3: #5fd38a; --sat-av-4: #ff8fb5; --sat-av-5: #c9d6dc;
     --bar: #7fd0e0;
   }
 }
@@ -39,6 +41,7 @@
   --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
   --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
   --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
+  --sat-av-fg: #0f1a1f; --sat-av-0: #f0b84a; --sat-av-1: #7fd0e0; --sat-av-2: #e4ccff; --sat-av-3: #5fd38a; --sat-av-4: #ff8fb5; --sat-av-5: #c9d6dc;
   --bar: #7fd0e0;
 }
 
@@ -257,8 +260,24 @@ details.create .menu a:hover { background: var(--border); }
 .satire-body { white-space: pre-line; overflow-wrap: anywhere; margin: 0 0 8px; }
 .satire-card .muted { color: var(--muted); }
 .satire-comments { border-top: 1px dashed var(--sat-border); margin-top: 10px; padding-top: 8px; }
-.satire-comments h4 { margin: 0 0 4px; font-size: 14px; color: var(--sat-ink); }
-.satire-comments p { margin: 4px 0; overflow-wrap: anywhere; }
+.satire-comments h4 { margin: 0 0 8px; font-size: 14px; color: var(--sat-ink); }
+.satire-comment-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.satire-comment { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
+.satire-comment.is-reply { margin-left: 20px; }
+.satire-avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: var(--sat-av-fg); }
+.sat-av-0 { background: var(--sat-av-0); } .sat-av-1 { background: var(--sat-av-1); } .sat-av-2 { background: var(--sat-av-2); }
+.sat-av-3 { background: var(--sat-av-3); } .sat-av-4 { background: var(--sat-av-4); } .sat-av-5 { background: var(--sat-av-5); }
+.satire-bubble { flex: 1; min-width: 0; background: var(--card); border-left: 3px solid var(--sat-border); border-radius: 4px 12px 12px 12px; padding: 6px 10px 7px; }
+.satire-comment-name { display: block; font-size: 13px; color: var(--sat-ink); }
+.satire-bubble p { margin: 2px 0 0; overflow-wrap: anywhere; line-height: 1.4; }
+.satire-more { margin-top: 8px; }
+.satire-more summary { cursor: pointer; font-weight: 700; font-size: 14px; color: var(--heading); padding: 4px 0; }
+.satire-more summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.satire-more[open] summary { margin-bottom: 8px; }
+@media (max-width: 480px) {
+  .satire-comment.is-reply { margin-left: 12px; }
+  .satire-avatar { width: 28px; height: 28px; font-size: 13px; }
+}
 .chat-item-card { border-left: 6px solid var(--nav-active); }
 .gallery-item-card { border-left: 6px solid var(--nav-active); }
 .gallery-thumbs { list-style: none; margin: 8px 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 96px)); gap: 8px; }
