@@ -57,7 +57,7 @@ Filerne ligger allerede i simcs byggelister, så intet andet skal røres.
 
 **Upstream-tjek (`mage.check`):** `sc_mage.cpp` har flere end 150 linjer, `apl/mage.cpp` indeholder `add_action`,
 og `sc_mage.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er `sc_mage.cpp` 47 linjer og
-APL'en tom; med rettelsen er modulet 826 linjer.
+APL'en tom; med rettelsen er modulet 1086 linjer.
 
 ### Spells (alle tal fra spildata, intet opfundet)
 
@@ -77,6 +77,10 @@ Kun spells en mage lærer hos træneren; id'er og levels er slået op i `engine/
 | Scorch | 2948:22, 8444:28, 8445:34, 8446:40, 10205:46, 10206:52, 10207:58 | 1,5 s cast; se «Fire-pakken» |
 | Pyroblast (talent) | 11366:20, 12505:24, 12522:30, 12523:36, 12524:42, 12525:48, 12526:54, 18809:60 | 6 s cast, direkte + DoT (4 ticks à 3 s); kun med talentet |
 | Combustion (talent) | 11129:40 | ingen GCD, 180 s nedkøling; se «Fire-pakken» |
+| Arcane Blast (talent) | 400574:20, 1239696:30, 1239697:40, 1239699:50, 1239700:60 | 1,5 s cast, 15 % basis-mana; se «Arcane-pakken» |
+| Arcane Wrath (talent) | 1326079:25, 1326080:36, 1326081:48, 1326082:60 | 3,5 s cast, 6 s nedkøling; se «Arcane-pakken» |
+| Presence of Mind (talent) | 12043 | ingen GCD, 180 s nedkøling |
+| Arcane Power (talent) | 12042 | ingen GCD, 15 s, 180 s nedkøling |
 
 **Shoot (5019)** ifølge spildataen: «Requires weapon: Wand», «Uses Ranged Slot», «Auto Repeat», Spell Type Magic,
 effekt *Weapon Damage NoSchool* (17), 30 yards, 20 yards/s. Skaden er altså wandens våbenskade, som simc allerede
@@ -142,9 +146,11 @@ Barrier); se næste afsnit.
 **Med via håndskrevet kode (Fire):** Fire-pakken (Scorch, Pyroblast, Ignite, Improved Scorch, Heating Up,
 Combustion, Master of Elements, Fire Power); se «Fire-pakken».
 
-**Mangler stadig (kræver håndskrevet kode):** talent-spells **Arcane Blast**, **Arcane Wrath** og Blast Wave (ingen
-handlinger); procs og tilstande Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage; aktive buffs
-Arcane Power, Presence of Mind og Cold Snap; Arcane Subtlety (aura 123, uden for simcs passivliste).
+**Med via håndskrevet kode (Arcane):** Arcane-pakken (Arcane Blast, Arcane Wrath, Missile Barrage, Arcane
+Concentration/Clearcasting, Presence of Mind, Arcane Power); se «Arcane-pakken».
+
+**Mangler stadig:** Blast Wave (AoE), Winter's Chill (kun Cone of Cold), Cold Snap og Arcane Subtlety (aura 123,
+modstand, som simc-forever ikke modellerer). «Mind Mastery» findes ikke som talent i Forevers `trait_data.inc`.
 
 **Målt før Frost-pakken** (ezzek, level 35 Frost: Wand Spec 2, Improved Frostbolt 5, Precision 2, Ice Shards 5, Frostbite 3, Frost
 Channeling 1, Ice Lance, Ice Block, Shatter 3, Cold Snap, Fingers of Frost 2; samme indstillinger og seed 42 som
@@ -204,6 +210,7 @@ Fingers of Frost virker uanset.
 ```
 evocation,if=mana.pct<10   # lav mana og Evocation klar (480 s nedkøling: højst én gang i en kamp på 5 min.)
 call_action_list,name=fire,if=<Fire-nøgle>&!<Frost-nøgle>   # se «Rotation (Fire)»; ellers videre herfra
+call_action_list,name=arcane,if=<Arcane-nøgle>&!<Frost-nøgle>&!<Fire-nøgle>   # se «Rotation (Arcane)»
 ice_barrier,if=!buff.ice_barrier.up                     # kun med talentet
 ice_lance,if=buff.fingers_of_frost.up|debuff.frozen.up  # kun med talentet
 fire_blast                 # på nedkøling, når manaen rækker
@@ -242,6 +249,9 @@ Rotationen vælges i APL'en med `talent.<navn>.enabled` (konstanter, så valget 
 - **Frost-nøgle:** Ice Lance, Fingers of Frost eller Ice Barrier → Frost-listen ovenfor (uændret). Frost vinder,
   hvis en hybrid har nøgletalenter fra flere træer, så en Frost-mage aldrig får en anden rotation.
 - **Fire-nøgle:** Ignite, Pyroblast, Improved Scorch, Heating Up eller Combustion (og ingen Frost-nøgle) → `fire`.
+- **Arcane-nøgle:** Arcane Blast, Arcane Wrath, Missile Barrage, Presence of Mind eller Arcane Power (og hverken
+  Frost- eller Fire-nøgle) → `arcane`. Arcane Concentration er ikke en nøgle (det er et almindeligt Frost-hybridvalg);
+  en «Arcane Fire»-hybrid med fx Pyroblast får Fire-rotationen.
 - **Ingen nøgle:** grundrotationen (`fire_blast`, `frostbolt`, `fireball`, `shoot`), præcis som før. Rene passive
   talenter (fx Accelerant, Incineration, Critical Mass) skifter ikke rotation.
 
@@ -279,6 +289,7 @@ scorch,if=talent.improved_scorch.enabled&(debuff.fire_vulnerability.stack<5|debu
 combustion                              # på nedkøling (ingen GCD)
 pyroblast,if=buff.heating_up.stack>=3   # 1,5 s cast med 3 stak
 fire_blast                              # på nedkøling
+arcane_missiles,if=buff.missile_barrage.up   # kun med Missile Barrage (Warcraft Tavern, Fire trin 8)
 fireball                                # filler
 shoot                                   # wand, når der ikke er mana til Fireball
 ```
@@ -312,7 +323,7 @@ Improved Flamestrike 1. Før = forrige mage.patch (grundrotation + passiver), ef
 
 Håndregning (simc-log, Patchwerk, seed 42):
 
-- **Scorch** rank 4 (8446, level 40): 93 + 1,2 × (45 − 40) = 99 (simc 98: kommatal-afrunding nedad af 98,999…)
+- **Scorch** rank 4 (8446, level 40, skalerer til max level 44): 93 + 1,2 × (44 − 40) = 97,8 → **98** (log `base=98`)
   + 0,429 × 11 fire-spellpower = **102,72**; første Scorch med Fire Power × 1 (Pyroblast-DoT) = **105,80** (log
   105,8006), crit × 1,5 = **158,70** (log). Med 2 stak Fire Vulnerability og 3 Fire-effekter: × 1,06 × 1,09 =
   **118,68** (log 118,6815).
@@ -335,6 +346,95 @@ Regression (binær med forrige mod ny mage.patch, samme indstillinger): hunter-1
 warlock-25, paladin-39 (holy og ret), rogue-33, mage-20, mage-35, ezzek (Frost, med og uden talenter), Frost 45,
 level 45 med kun passive Frost-, Fire- eller Arcane-talenter giver bit-for-bit samme DPS i Patchwerk og DungeonSlice.
 `check-upstream.sh` giver OK mod 3c1d319 og main (1b8e01d); de tre rettelser kan anvendes i alle seks rækkefølger.
+
+### Arcane-pakken (håndskrevet; alle tal fra spildata, antagelser markeret)
+
+- **Arcane Blast** (talent; højere ranks kræver det): 1,5 s cast, 15 % af basis-manaen. Efter hver cast en stak
+  400573 (op til 4): +12 % af Intellect som spell damage (effekt 1, aura 174 «spell damage of stat %», som simc
+  ikke parser; håndskrevet i `composite_spell_power`) og +100 % mana-pris på Arcane Blast pr. stak (effekt 2, via
+  `parse_effects`). «Lasts 18 sec from time of initial application»: varigheden fornyes ikke af nye stakke.
+  **Antagelse:** stakken lægges efter castet, så castets egen skade og pris bruger de forrige stakke.
+- **Arcane Wrath** (talent): 3,5 s cast (−Accelerant), 6 s nedkøling, projektil. Effekt 2: ekstra spell damage =
+  5 % af max mana, med koefficient 1 som effekt 1.
+- **Missile Barrage** (400588; 20/40 %): hvert landet Arcane Blast med rankens chance, Arcane Wrath, Fireball og
+  Frostbolt med den halve. Buffen 400589 (15 s): næste Arcane Missiles −50 % varighed og −100 % mana (`parse_effects`)
+  og et missil hver 0,5 s (effekt 2: −500 ms), altså samme fem missiler på halv tid og gratis.
+- **Arcane Concentration** (11213; 2-10 %): efter ethvert landet skadeshit (også wand og hvert enkelt Arcane
+  Missile: proc-flagene omfatter «White Ranged»), højst én gang pr. sekund (spildataens ICD). Clearcasting
+  (12536, 15 s) gør næste skadesspell, som spildataen lister, gratis (−1000 er tiendedele: −100 %) og bruges af den.
+- **Presence of Mind** (12043): ingen GCD; næste spell med cast-tid i spildataens liste bliver instant
+  (`parse_effects`) og bruger buffen. «Cooldown On Event»: de 180 s starter, når effekten er brugt.
+- **Arcane Power** (12042): ingen GCD, 15 s +30 % skade (direkte og periodisk) og +30 % mana-pris (`parse_effects`).
+- **Gratis via spildata:** Arcane Impact, Arcane Mind, Arcane Instability, Arcane Meditation (fra før).
+
+### Rotation (Arcane)
+
+```
+variable,name=arcane_blast_max_stacks,value=2   # parameter: højst 2 stak af mana-hensyn (Mobalytics)
+variable,name=missiles_need_barrage,value=1     # parameter: Arcane Missiles kun på Missile Barrage
+arcane_power                                    # på nedkøling (ingen GCD)
+arcane_blast,if=buff.clearcasting.up            # Clearcasting bruges på Arcane Blast
+arcane_missiles,if=buff.missile_barrage.up|!variable.missiles_need_barrage
+presence_of_mind,if=!buff.clearcasting.up&(!talent.arcane_wrath.enabled|cooldown.arcane_wrath.ready&mana>=action.arcane_wrath.cost)
+arcane_wrath                                    # på nedkøling (med Presence of Mind når den er klar)
+fire_blast                                      # på nedkøling
+arcane_blast,if=buff.arcane_blast.stack<variable.arcane_blast_max_stacks
+# derefter grundrotationen: frostbolt (fisker efter Missile Barrage), fireball, shoot
+```
+
+Kilder (læst 12.11.2026): **Warcraft Tavern** «Arcane Mage Guide» (Forever): «Cast Arcane Blast to build up stacks
+… starting an 18-second rotation», «Always use Arcane Concentration procs on Arcane Blast», «Cast Arcane Missiles
+instantly when Missile Barrage procs. Ideally, start casting it once AB reaches 2 stacks», «Cast Arcane Wrath at 3
+or 4 Arcane Blast stacks depending on your current mana pool», Arcane Power og Presence of Mind (på Arcane Wrath) ved
+4 stak. **wowtbc.gg** (Warcraft Forever Arcane): «Cast Arcane Power with any on-use effects», «Cast Arcane Missiles
+with Missile Barrage procs», «Cast Arcane Wrath. Cast with Presence of Mind if available», «Cast Arcane Blast if below
+4 stacks (adjust based on your mana/gear)». **Icy Veins** (Forever Arcane Leveling) og **Mobalytics** (Forever
+Arcane) gav HTTP 403; kun søgeuddrag og opgavens resumé: Icy Veins «Frostbolt, Arcane Wrath, Arcane Blast 1–3 gange
+til en Missile Barrage-proc, så Arcane Missiles, Frost Nova/Fire Blast»; Mobalytics: aldrig over 2 stak (mana).
+
+Valg og forenklinger: stakgrænsen 2 følger leveling-guiderne (Icy Veins/Mobalytics), ikke Warcraft Tavern/wowtbc.gg's
+max-niveau-råd om 3-4 stak; derfor bindes Arcane Power og Presence of Mind ikke til 4 stak (Arcane Power på
+nedkøling, Presence of Mind på Arcane Wrath). Workeren tillader ikke `actions=`, så parametrene kan kun ændres i
+koden. Clearcasting-Arcane Blast kan give 3-4 stak (målt: kun med Clearcasting). Frost Nova er ikke med (se Frost).
+Pyroblast/Heating Up i wowtbc.gg's liste gælder en Arcane/Fire-hybrid, som her får Fire-rotationen.
+
+### Arcane-pakken: målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
+
+Ingen guild-mage har Arcane-talenter; profilen er konstrueret som Fire 45 (ezzeks udstyr, appens talentkoder): level
+45, Wand Specialization 2, Improved Channeling 2, Arcane Subtlety 2, Arcane Concentration 5, Missile Barrage 2,
+Arcane Impact 3, Arcane Blast, Arcane Meditation 3, Arcane Wrath, Presence of Mind, Arcane Mind 5, Arcane
+Instability 3, Arcane Power, Arcane Geometry 2, Magic Absorption 2, Arcane Resilience 1 (36 point).
+
+| Profil | Patchwerk før → efter | DungeonSlice før → efter |
+|---|---|---|
+| Arcane 45 | 54,59 → **84,54** (+55 %) | 47,61 → **73,18** (+54 %) |
+| Arcane 45, kun passive Arcane-talenter | 54,59 → 54,59 | 47,61 → 47,61 |
+
+Håndregning (simc-log, Patchwerk, seed 42; Intellect i kamp 153 = 150 × 1,02 Arcane Intellect, max mana 3020):
+
+- **Arcane Blast** rank 3 (1239697, level 40, max 48): 101 + 1 × 5 = **106** (log) + 0,429 × 11 = 110,72 × 1,03
+  (Arcane Instability) × 1,3 (Arcane Power) = **148,25** (log 148,2527). Med 1 stak: spellpower 11 + 0,12 × 153 =
+  29,4 → simc runder total-spellpower til **29**: (106 + 0,429 × 29) × 1,339 = **158,59** (log). Crit × 2,0 (Arcane
+  Mind 5). Pris: 143 × (1 + 1 stak) × 1,3 = **371,8** (log), med 2 stak × 3 × 1,3 = **557,7** (log).
+- **Arcane Wrath** rank 2 (1326080, level 36, max 47): 187 + 2,3 × 9 = 207,7 → **208**; spellpower 11 + 0,05 × 3020 =
+  **162** (log); (208 + 162) × 1,339 = **495,43** (log, Arcane Power + Presence of Mind ved t = 0).
+- **Arcane Missiles** rank 5 (8417/8418, level 40, max 44): missil 95 + 0,7 × 4 = 97,8 → 98 + 0,286 × 48 (2 stak) =
+  111,73 × 1,339 = **149,60** (log). Med Missile Barrage: 0 mana, 5 missiler med 0,5 s mellemrum (log).
+- **Missile Barrage** (rank 2: 40 % / 20 %): forventet 0,4 × 21,56 landede Arcane Blast + 0,2 × (11,02 Arcane Wrath +
+  11,44 Frostbolt) = **13,11** pr. kamp; observeret 13,03 (start 12,53 + fornyelser 0,50). Alle Arcane Missiles-casts
+  havde Missile Barrage (12,50 casts; log-tjek af 40 kampe: 486/486).
+- **Arcane Concentration** rank 5 (10 %, ICD 1 s): i 40 log-kampe (seed 1-40) gav 627 af 6603 skadeshit uden aktiv
+  ICD Clearcasting = **9,5 %** (forventet 10 %; standardfejl ca. 0,4 %-point).
+- **Stakke og buffs (40 log-kampe):** hver Arcane Blast-stak varede præcis 18,0 s fra første stak (491 af 491);
+  Arcane Blast ved 2+ stak kun med Clearcasting (161 af 161); Presence of Mind brugt på Arcane Wrath 78 af 78
+  gange; Arcane Power 2 gange pr. kamp (180 s).
+
+Rimelighed: Arcane 45 (84,5) ligger over Frost 45 (68,2), fordi Missile Barrage gør 12,5 Arcane Missiles pr. kamp
+gratis (7010 skade, 28 %), og Arcane Wrath får 151 ekstra spellpower fra max mana. Begge dele er spildata for Forever,
+men tallene er ikke sammenlignet med spillet. Wanden står for 15 % af skaden (Fire 29 %).
+
+Regression (binær med Fire-pakken mod denne): alle profiler fra Fire-afsnittet og Fire 45 giver bit-for-bit samme DPS
+(Fire 45 har ikke Missile Barrage). `check-upstream.sh` OK mod 3c1d319 og main (1b8e01d); alle seks rækkefølger.
 
 ### Frost-pakken: målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
 
