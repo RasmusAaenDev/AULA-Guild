@@ -6,10 +6,10 @@ import { countUnread } from '@/lib/posts';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { isSimConfigured } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const member = await requireMember();
+  const member = await requireUser();
   const db = getDb();
   const [characters, [user], unread, unanswered] = await Promise.all([
     listMyCharacters(db, member.userId),

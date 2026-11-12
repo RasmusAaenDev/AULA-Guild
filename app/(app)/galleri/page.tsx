@@ -1,7 +1,7 @@
 import { getDb } from '@/lib/db';
 import { env } from '@/lib/env';
 import { listFiles } from '@/lib/files';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { ConfirmForm } from '@/components/ConfirmForm';
 import { UploadForm } from '@/components/UploadForm';
 import { deleteFileAction } from '../filer/actions';
@@ -9,7 +9,7 @@ import { deleteFileAction } from '../filer/actions';
 export const dynamic = 'force-dynamic';
 
 export default async function GalleryPage() {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const items = await listFiles(getDb(), 'galleri');
   return (
     <>

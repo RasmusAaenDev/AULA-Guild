@@ -1,22 +1,30 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 
-export type Member = { userId: number; name: string; image: string | null; isOfficer: boolean };
+export type Member = { userId: number; name: string; isGuildMember: boolean; isOfficer: boolean };
 
-export async function requireMember(): Promise<Member> {
+/** Enhver indlogget bruger (også gæster). Uden session: til /login. */
+export async function requireUser(): Promise<Member> {
   const session = await auth();
-  if (!session?.user) redirect('/login');
-  if (!session.user.isMember || !session.user.id) redirect('/ingen-adgang');
+  if (!session?.user?.id) redirect('/login');
   return {
     userId: session.user.id,
     name: session.user.name ?? 'Ukendt',
-    image: session.user.image ?? null,
-    isOfficer: session.user.isOfficer,
+    isGuildMember: session.user.isGuildMember === true,
+    isOfficer: session.user.isOfficer === true,
   };
 }
 
+/** Kun brugere med en verificeret karakter i guilden. Gæster sendes til /ingen-adgang. */
+export async function requireGuildMember(): Promise<Member> {
+  const member = await requireUser();
+  if (!member.isGuildMember) redirect('/ingen-adgang');
+  return member;
+}
+
+/** Kun officerer; alle andre får en fejl (bruges af handlinger, ikke sider). */
 export async function requireOfficer(): Promise<Member> {
-  const member = await requireMember();
+  const member = await requireUser();
   if (!member.isOfficer) throw new Error('Forbidden');
   return member;
 }

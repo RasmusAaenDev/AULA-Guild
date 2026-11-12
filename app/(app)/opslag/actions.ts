@@ -6,7 +6,7 @@ import { getDb } from '@/lib/db';
 import { parseId } from '@/lib/parse';
 import { addComment, createPost, deleteComment, deletePost, markPostRead, setPinned, toggleBookmark } from '@/lib/posts';
 import { commentNotFound, postMessage } from '@/lib/posts-ui';
-import { requireMember, requireOfficer } from '@/lib/session';
+import { requireGuildMember, requireOfficer, requireUser } from '@/lib/session';
 
 export type FormState = { error?: string };
 
@@ -22,7 +22,7 @@ function revalidatePosts(postId?: number) {
 }
 
 export async function createPostAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const result = await createPost(getDb(), member.userId, {
     title: field(formData, 'title'),
     body: field(formData, 'body'),
@@ -33,7 +33,7 @@ export async function createPostAction(_prev: FormState, formData: FormData): Pr
 }
 
 export async function addCommentAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const postId = parseId(field(formData, 'postId'));
   if (postId === null) return { error: postMessage('not_found') };
   const result = await addComment(getDb(), member.userId, postId, field(formData, 'body'));
@@ -47,7 +47,7 @@ export async function addCommentAction(_prev: FormState, formData: FormData): Pr
 
 // Slet og fastgør har samme signatur som de øvrige formularhandlinger, så ConfirmForm kan genbruges.
 export async function deletePostAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const postId = parseId(field(formData, 'postId'));
   if (postId === null) return { error: postMessage('not_found') };
   const result = await deletePost(getDb(), member, postId);
@@ -60,7 +60,7 @@ export async function deletePostAction(_prev: FormState, formData: FormData): Pr
 }
 
 export async function deleteCommentAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const postId = parseId(field(formData, 'postId'));
   const commentId = parseId(field(formData, 'commentId'));
   if (commentId === null) return { error: commentNotFound };
@@ -81,7 +81,7 @@ export async function setPinnedAction(_prev: FormState, formData: FormData): Pro
 }
 
 export async function markReadAction(postId: number): Promise<void> {
-  const member = await requireMember();
+  const member = await requireUser();
   const id = parseId(String(postId));
   if (id === null) return;
   await markPostRead(getDb(), member.userId, id);
@@ -90,7 +90,7 @@ export async function markReadAction(postId: number): Promise<void> {
 
 /** Gem/fjern bogmærke. Brugerens eget bogmærke; kræver kun medlemskab. */
 export async function toggleBookmarkAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireUser();
   const postId = parseId(field(formData, 'postId'));
   if (postId === null) return { error: postMessage('not_found') };
   const result = await toggleBookmark(getDb(), member.userId, postId);

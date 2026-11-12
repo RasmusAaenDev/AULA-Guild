@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getDb } from '@/lib/db';
 import { charactersDeps, isSimConfigured, kickSimQueue } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { createSimLimiter, deleteMySim, enqueueSim } from '@/lib/sims';
 import { enqueueArmorySim, enqueueArmorySimByName } from '@/lib/sims-armory';
 import type { FormState } from '../chat/actions';
@@ -20,7 +20,7 @@ function fightStylesFrom(formData: FormData): string[] {
 }
 
 export async function enqueueSimAction(_prev: SimFormState, formData: FormData): Promise<SimFormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const fightStyles = fightStylesFrom(formData);
   const optimizeBags = formData.get('optimizeBags') === 'on';
   const keep = { input: String(formData.get('input') ?? ''), fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk', optimizeBags };
@@ -38,7 +38,7 @@ export async function enqueueSimAction(_prev: SimFormState, formData: FormData):
 }
 
 export async function enqueueArmorySimAction(_prev: SimFormState, formData: FormData): Promise<SimFormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const fightStyles = fightStylesFrom(formData);
   const characterName = String(formData.get('characterName') ?? '');
   const keep = { characterName, fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk' };
@@ -52,7 +52,7 @@ export async function enqueueArmorySimAction(_prev: SimFormState, formData: Form
 
 /** «Sim»-knapperne ved en karakter: én kampstil, direkte fra armory; ved succes videre til Skolehjem, hvor loggen kan følges. */
 export async function quickSimAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.' };
   const style = formData.get('style');
   const r = await enqueueArmorySim(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, formData.get('characterId'), { fightStyles: typeof style === 'string' ? [style] : [] });
@@ -63,7 +63,7 @@ export async function quickSimAction(_prev: FormState, formData: FormData): Prom
 }
 
 export async function deleteSimAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const r = await deleteMySim(getDb(), member.userId, formData.get('simId'));
   if (!r.ok) return { error: r.error };
   revalidatePath('/sim');

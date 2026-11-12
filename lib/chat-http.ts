@@ -15,12 +15,13 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 
 /** Svarlogikken bag GET /api/chat; ruten klarer kun at hente session og klient. */
 export async function chatResponse(
-  user: { isMember?: boolean; id?: string | number; isOfficer?: boolean } | undefined,
+  user: { isGuildMember?: boolean; id?: string | number; isOfficer?: boolean } | undefined,
   chat: ChatClient | null,
   channelId: string | null,
   db: Db,
 ): Promise<Response> {
-  if (!user?.isMember || !user.id) {
+  // Egne kanaler: alle indloggede. Discord-kanaler: kun guildens medlemmer.
+  if (!user?.id) {
     return NextResponse.json({ error: 'Du skal være logget ind.' }, { status: 401, headers: NO_STORE });
   }
   if (channelId?.startsWith(SITE_PREFIX)) {
@@ -32,6 +33,9 @@ export async function chatResponse(
       { messages: messages.map((m) => ({ id: m.id, author: m.authorName, content: m.content, timestamp: m.createdAt, canDelete: canDeleteMessage(actor, m), mine: m.userId !== null && m.userId === actor.userId })) },
       { headers: NO_STORE },
     );
+  }
+  if (!user.isGuildMember) {
+    return NextResponse.json({ error: 'Kun for guildens medlemmer.' }, { status: 403, headers: NO_STORE });
   }
   if (!chat) {
     return NextResponse.json({ error: 'Chatten er ikke sat op.' }, { status: 404, headers: NO_STORE });

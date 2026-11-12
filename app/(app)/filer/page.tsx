@@ -2,7 +2,7 @@ import { getDb } from '@/lib/db';
 import { env } from '@/lib/env';
 import { listFiles } from '@/lib/files';
 import { fileTypeLabel, formatBytes, formatFileDate } from '@/lib/files-ui';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { ConfirmForm } from '@/components/ConfirmForm';
 import { UploadForm } from '@/components/UploadForm';
 import { deleteFileAction } from './actions';
@@ -11,7 +11,7 @@ import { FilePinForm } from './FilePinForm';
 export const dynamic = 'force-dynamic';
 
 export default async function FilesPage() {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const items = await listFiles(getDb(), 'filer');
   return (
     <>

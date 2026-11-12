@@ -5,12 +5,12 @@ import { countsLabel, eventTypeLabel, formatTimeRange, groupByDay, rsvpLabel } f
 import { getDb } from '@/lib/db';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
 import { statusClass } from '@/lib/rsvp-ui';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CalendarPage() {
-  const member = await requireMember();
+  const member = await requireUser();
   const db = getDb();
   const [items, unanswered] = await Promise.all([
     listUpcomingEvents(db, member.userId),

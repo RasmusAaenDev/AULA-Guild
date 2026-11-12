@@ -6,13 +6,13 @@ import type { MyCharacter } from '@/lib/characters';
 import { setActiveAction, setRoleAction, signOutAction } from '@/app/(app)/actions';
 
 export function ProfileMenu({
-  name, image, characters, activeId,
-}: { name: string; image: string | null; characters: MyCharacter[]; activeId: number | null }) {
+  name, characters, activeId,
+}: { name: string; characters: MyCharacter[]; activeId: number | null }) {
   const active = characters.find((c) => c.id === activeId) ?? null;
   return (
     <DetailsMenu className="profile">
       <summary>
-        {image ? <img className="avatar" src={image} alt="" /> : <span className="avatar" />}
+        <span className="avatar" />
         <span>{active ? active.fullName : name}</span>
       </summary>
       <div className="menu">

@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db';
 import { parseId } from '@/lib/parse';
 import { getPost } from '@/lib/posts';
 import { authorLabel, formatAbsolute } from '@/lib/posts-ui';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 import { deleteCommentAction, deletePostAction } from '../actions';
 import { BookmarkButton } from '../BookmarkButton';
 import { CommentForm } from '../CommentForm';
@@ -15,7 +15,7 @@ import { PinForm } from '../PinForm';
 export const dynamic = 'force-dynamic';
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
-  const member = await requireMember();
+  const member = await requireUser();
   const { id: rawId } = await params;
   const id = parseId(rawId);
   if (id === null) notFound();

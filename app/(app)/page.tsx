@@ -32,7 +32,7 @@ import { mergeTimeline } from '@/lib/overview-feed';
 import { SATIRE_COOKIE, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
 import { getChat, isChatConfigured, isSimConfigured } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 const TAB_ORDER: OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
 const EMPTY: Record<OverviewTab, string> = {
@@ -49,7 +49,7 @@ export default async function OverviewPage({
 }: {
   searchParams: Promise<{ fane?: string | string[]; side?: string | string[] }>;
 }) {
-  const member = await requireMember();
+  const member = await requireUser();
   const sp = await searchParams;
   const satireOn = parseSatirePreference((await cookies()).get(SATIRE_COOKIE)?.value);
   const tab = effectiveTab(parseTab(sp.fane), satireOn);
@@ -64,8 +64,11 @@ export default async function OverviewPage({
     countUnread(db, member.userId),
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
-    timeline ? recentChatItems({ chat: isChatConfigured() ? getChat() : null, db }, now).catch(() => []) : Promise.resolve([]),
-    timeline ? recentGalleryItems({ db }, now).catch(() => []) : Promise.resolve([]),
+    // Gæster ser hverken Discord-beskeder eller galleri (kun for guildens medlemmer).
+    timeline
+      ? recentChatItems({ chat: isChatConfigured() && member.isGuildMember ? getChat() : null, db }, now).catch(() => [])
+      : Promise.resolve([]),
+    timeline && member.isGuildMember ? recentGalleryItems({ db }, now).catch(() => []) : Promise.resolve([]),
   ]);
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.
   const { shown: nextEvents, rsvpIds } = selectNextEvents(upcoming, now);

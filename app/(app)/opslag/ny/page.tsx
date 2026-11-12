@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { PostForm } from '../PostForm';
 
 export default async function NewPostPage() {
-  await requireMember();
+  await requireGuildMember();
   return (
     <>
       <h1>Nyt opslag</h1>

@@ -3,12 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { cooldownMessage, createRefreshGate, refreshMessage, type RefreshState } from '@/lib/refresh';
 import { runSync } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 const gate = createRefreshGate();
 
 export async function refreshArmoryAction(_prev: RefreshState): Promise<RefreshState> {
-  await requireMember();
+  await requireUser();
   const taken = gate.take(Date.now());
   if (!taken.ok) return cooldownMessage(taken.waitSeconds);
   let result;

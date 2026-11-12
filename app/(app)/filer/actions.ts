@@ -5,7 +5,7 @@ import { getDb } from '@/lib/db';
 import { deleteFile, setFilePinned } from '@/lib/files';
 import { fileMessage } from '@/lib/files-ui';
 import { parseId } from '@/lib/parse';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { filesDeps } from '@/lib/services';
 
 export type FormState = { error?: string };
@@ -22,7 +22,7 @@ function revalidateFiles() {
 
 // Samme signatur som de øvrige formularhandlinger, så ConfirmForm kan genbruges. Rettigheder tjekkes i lib/files.
 export async function deleteFileAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const fileId = parseId(field(formData, 'fileId'));
   if (fileId === null) return { error: fileMessage('not_found') };
   const { uploadDir } = filesDeps();
@@ -33,7 +33,7 @@ export async function deleteFileAction(_prev: FormState, formData: FormData): Pr
 }
 
 export async function setFilePinnedAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const fileId = parseId(field(formData, 'fileId'));
   if (fileId === null) return { error: fileMessage('not_found') };
   const result = await setFilePinned(getDb(), member, fileId, field(formData, 'pinned') === 'true');

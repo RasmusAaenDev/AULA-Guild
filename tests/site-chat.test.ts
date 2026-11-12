@@ -244,21 +244,23 @@ describe('GET /api/chat for egne kanaler', () => {
     const c = await mkChannel(a.id, 'Snak');
     await postMessage(db, deps(a.id), c.id, 'hej');
     await postMessage(db, deps(b.id), c.id, 'dav');
-    const get = (user: { isMember: boolean; id: string; isOfficer?: boolean }, k: string) => chatResponse(user, null, k, db);
-    const res = await get({ isMember: true, id: String(a.id) }, `egen-${c.id}`);
+    const get = (user: { isGuildMember: boolean; id: string; isOfficer?: boolean }, k: string) => chatResponse(user, null, k, db);
+    const res = await get({ isGuildMember: true, id: String(a.id) }, `egen-${c.id}`);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.messages.map((m: { content: string; canDelete: boolean }) => [m.content, m.canDelete])).toEqual([['hej', true], ['dav', false]]);
     expect(JSON.stringify(body)).not.toContain('discord');
-    const off = await (await get({ isMember: true, id: String(b.id), isOfficer: true }, `egen-${c.id}`)).json();
+    const off = await (await get({ isGuildMember: true, id: String(b.id), isOfficer: true }, `egen-${c.id}`)).json();
     expect(off.messages.every((m: { canDelete: boolean }) => m.canDelete)).toBe(true);
     // «mine» følger forfatteren, ikke sletteretten (officeren ejer ikke a's besked).
     expect(body.messages.map((m: { mine: boolean }) => m.mine)).toEqual([true, false]);
     expect(off.messages.map((m: { mine: boolean }) => m.mine)).toEqual([false, true]);
-    expect((await get({ isMember: true, id: '1' }, 'egen-abc')).status).toBe(404);
-    expect((await get({ isMember: true, id: '1' }, 'egen-99999999999')).status).toBe(404);
+    // Gæster (uden guild-karakter) må læse egne kanaler.
+    expect((await get({ isGuildMember: false, id: String(a.id) }, `egen-${c.id}`)).status).toBe(200);
+    expect((await get({ isGuildMember: true, id: '1' }, 'egen-abc')).status).toBe(404);
+    expect((await get({ isGuildMember: true, id: '1' }, 'egen-99999999999')).status).toBe(404);
     await deleteChannel(db, act(a), c.id);
-    expect((await get({ isMember: true, id: String(a.id) }, `egen-${c.id}`)).status).toBe(404);
+    expect((await get({ isGuildMember: true, id: String(a.id) }, `egen-${c.id}`)).status).toBe(404);
     expect((await chatResponse(undefined, null, `egen-${c.id}`, db)).status).toBe(401);
   });
 });

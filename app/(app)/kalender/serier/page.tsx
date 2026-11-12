@@ -7,14 +7,14 @@ import { eventTypeLabel, seriesKeptMessage, weekdayNames } from '@/lib/calendar-
 import { getDb } from '@/lib/db';
 import { listSeries } from '@/lib/series';
 import { parseId } from '@/lib/parse';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SeriesPage({
   searchParams,
 }: { searchParams: Promise<{ kept?: string; rediger?: string }> }) {
-  const member = await requireMember();
+  const member = await requireUser();
   if (!member.isOfficer) redirect('/kalender');
   const { kept, rediger } = await searchParams;
   const series = await listSeries(getDb());

@@ -16,8 +16,6 @@ export const officerMaxRank = z.preprocess(
 
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
-  DISCORD_GUILD_ID: z.string().min(1),
-  DISCORD_OFFICER_ROLE_ID: z.string().min(1),
   BLIZZARD_CLIENT_ID: z.string().min(1),
   BLIZZARD_CLIENT_SECRET: z.string().min(1),
   BLIZZARD_GUILD_SLUG: z.string().min(1).default('aula'),

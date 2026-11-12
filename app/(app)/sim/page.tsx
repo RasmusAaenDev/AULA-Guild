@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { isSimConfigured } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { FIGHT_STYLES, listMySims } from '@/lib/sims';
 import { isActiveStatus, parseSubjectFilter, previousDps, simSubject, subjectFilterNames, type PreviousDps } from '@/lib/sims-ui';
 import { AutoRefresh } from './AutoRefresh';
@@ -16,7 +16,7 @@ import { SimStreamer } from './SimStreamer';
 export const dynamic = 'force-dynamic';
 
 export default async function SimPage({ searchParams }: { searchParams: Promise<{ karakter?: string | string[] }> }) {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   if (!isSimConfigured()) {
     return (
       <>

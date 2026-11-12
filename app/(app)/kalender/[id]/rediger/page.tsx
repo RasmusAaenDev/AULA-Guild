@@ -3,13 +3,13 @@ import { EventForm } from '../../EventForm';
 import { getDb } from '@/lib/db';
 import { getEvent } from '@/lib/events';
 import { parseId } from '@/lib/parse';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 import { utcToCopenhagen } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const { id: rawId } = await params;
   const id = parseId(rawId);
   if (id === null) notFound();

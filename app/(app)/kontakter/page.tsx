@@ -6,14 +6,14 @@ import { roleLabel } from '@/lib/messages';
 import { armoryUrl } from '@/lib/armory';
 import { QuickSim } from '@/components/QuickSim';
 import { isSimConfigured } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 import { GuildStar } from '@/components/GuildStar';
 import { RefreshButton } from './RefreshButton';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ContactsPage() {
-  const member = await requireMember();
+  const member = await requireUser();
   const contacts = await listContacts(getDb());
   const simEnabled = isSimConfigured();
   return (

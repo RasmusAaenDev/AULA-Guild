@@ -6,14 +6,14 @@ import { listMyCharacters } from '@/lib/characters';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { getChat, isChatConfigured } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireGuildMember } from '@/lib/session';
 
 export type FormState = { error?: string; sent?: boolean; notice?: string };
 
 const limiter = createSendLimiter({ max: 5, windowMs: 60_000, minGapMs: 2000 });
 
 export async function sendChatMessageAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const configured = isChatConfigured();
   let characterName: string | null = null;
   if (configured) {

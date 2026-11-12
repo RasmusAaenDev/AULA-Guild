@@ -10,7 +10,7 @@ import { cancelEvent, createEvent, updateEvent } from '@/lib/events';
 import { clearRsvp, setRsvp } from '@/lib/rsvps';
 import { createSeries, deactivateSeries, updateSeries } from '@/lib/series';
 import { parseId, parseWeekday } from '@/lib/parse';
-import { requireMember, requireOfficer } from '@/lib/session';
+import { requireGuildMember, requireOfficer, requireUser } from '@/lib/session';
 import { copenhagenToUtc } from '@/lib/time';
 
 export type FormState = { error?: string };
@@ -51,7 +51,7 @@ function revalidateCalendar(eventId?: number) {
 }
 
 export async function createEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const type = z.enum(eventTypes).safeParse(field(formData, 'type'));
   const parsed = eventSchema.safeParse({
     title: field(formData, 'title'),
@@ -76,7 +76,7 @@ export async function createEventAction(_prev: FormState, formData: FormData): P
 }
 
 export async function updateEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const eventId = parseId(field(formData, 'eventId'));
   const parsed = eventSchema.safeParse({
     title: field(formData, 'title'),
@@ -100,7 +100,7 @@ export async function updateEventAction(_prev: FormState, formData: FormData): P
 }
 
 export async function cancelEventAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireGuildMember();
   const eventId = parseId(field(formData, 'eventId'));
   if (eventId === null) return { error: calendarMessage('not_found') };
   const result = await cancelEvent(getDb(), member, eventId);
@@ -110,7 +110,7 @@ export async function cancelEventAction(_prev: FormState, formData: FormData): P
 }
 
 export async function setRsvpAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireUser();
   const eventId = parseId(field(formData, 'eventId'));
   const status = z.enum(rsvpStatuses).safeParse(field(formData, 'status'));
   if (eventId === null || !status.success) return { error: FIELDS_ERROR };
@@ -124,7 +124,7 @@ export async function setRsvpAction(_prev: FormState, formData: FormData): Promi
 }
 
 export async function clearRsvpAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const member = await requireMember();
+  const member = await requireUser();
   const eventId = parseId(field(formData, 'eventId'));
   if (eventId === null) return { error: FIELDS_ERROR };
   const result = await clearRsvp(getDb(), member.userId, eventId);

@@ -5,7 +5,6 @@ import { createBlizzardClient } from '@/lib/blizzard/client';
 import type { BlizzardClient } from '@/lib/blizzard/types';
 import type { CharactersDeps } from '@/lib/characters';
 import { getDb } from '@/lib/db';
-import { fetchAccess } from '@/lib/discord-access';
 import { env } from '@/lib/env';
 import type { StorageDeps } from '@/lib/files';
 import { processQueue } from '@/lib/sim-runner';
@@ -14,6 +13,9 @@ import { runJobs, type JobsResult } from '@/lib/jobs';
 import { generateSeriesEvents } from '@/lib/series';
 import { syncRoster, type SyncResult } from '@/lib/sync';
 import { upsertUser } from '@/lib/users';
+import { deriveAccess } from '@/lib/access';
+import { syncAccountCharacters } from '@/lib/account-characters';
+import type { AuthDeps } from '@/lib/auth-callbacks';
 
 const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient; __aulaSync?: Promise<SyncResult> };
 
@@ -59,11 +61,12 @@ export async function runScheduledJobs(): Promise<JobsResult> {
   return result;
 }
 
-export function authDeps() {
+export function authDeps(): AuthDeps {
   return {
-    fetchAccess: (accessToken: string) =>
-      fetchAccess({ accessToken, guildId: env().DISCORD_GUILD_ID, officerRoleId: env().DISCORD_OFFICER_ROLE_ID }),
-    upsertUser: (u: { battlenetId: string; battletag: string }) => upsertUser(getDb(), u),
+    upsertUser: (u) => upsertUser(getDb(), u),
+    // TODO(opgave 5): hent kontoens karakterer med fetchAccountCharacters(accessToken) og send dem med.
+    syncAccountCharacters: async ({ userId }) => syncAccountCharacters(getDb(), getBlizzard(), userId, []),
+    deriveAccess: (userId) => deriveAccess(getDb(), userId, { officerMaxRank: env().OFFICER_MAX_RANK }),
   };
 }
 

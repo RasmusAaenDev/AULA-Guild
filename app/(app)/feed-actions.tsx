@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { PostCard } from '@/components/PostCard';
 import { getDb } from '@/lib/db';
 import { handleFeedRequest } from '@/lib/post-feed';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 export type FeedSliceResult =
   | { ok: false }
@@ -13,10 +13,10 @@ export type FeedSliceResult =
 /**
  * Henter `limit` opslag efter de første `offset` i fanens liste og returnerer de renderede kort (samme `PostCard`
  * som siden). Kun ægte opslag; satire, chat og galleri flettes kun ind på side 1. Ikke-medlemmer sendes videre af
- * `requireMember` og får ingen data.
+ * `requireUser` og får ingen data.
  */
 export async function loadPostsAction(tab: string, offset: number, limit: number): Promise<FeedSliceResult> {
-  const member = await requireMember();
+  const member = await requireUser();
   const result = await handleFeedRequest(getDb(), member.userId, tab, offset, limit);
   if (!result.ok) return { ok: false };
   const now = new Date();

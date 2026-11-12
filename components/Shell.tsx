@@ -31,7 +31,7 @@ export function Shell({
         <CharacterSwitcher characters={characters} activeId={activeId} />
         <div className="topbar-right">
           <ThemeToggle />
-          <ProfileMenu name={member.name} image={member.image} characters={characters} activeId={activeId} />
+          <ProfileMenu name={member.name} characters={characters} activeId={activeId} />
         </div>
       </header>
       <div className="layout">

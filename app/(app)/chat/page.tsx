@@ -7,7 +7,7 @@ import { pickChannel } from '@/lib/chat-ui';
 import { getDb } from '@/lib/db';
 import { canDeleteChannel, listChannels } from '@/lib/site-chat';
 import { getChat } from '@/lib/services';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 import { ChatView } from './ChatView';
 import { NewChannelForm } from './NewChannelForm';
 import { SiteChatView } from './SiteChatView';
@@ -15,9 +15,10 @@ import { SiteChatView } from './SiteChatView';
 export const dynamic = 'force-dynamic';
 
 export default async function ChatPage({ searchParams }: { searchParams: Promise<{ kanal?: string | string[] }> }) {
-  const member = await requireMember();
+  const member = await requireUser();
   const cfg = chatConfig();
-  const chat = cfg ? getChat() : null;
+  // Discord-kanalerne vises kun for guildens medlemmer; egne kanaler for alle indloggede.
+  const chat = cfg && member.isGuildMember ? getChat() : null;
   const { kanal } = await searchParams;
   const requested = typeof kanal === 'string' ? kanal : Array.isArray(kanal) ? kanal[0] : undefined;
   const own = await listChannels(getDb());

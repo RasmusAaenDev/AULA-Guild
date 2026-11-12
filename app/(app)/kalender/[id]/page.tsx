@@ -11,12 +11,12 @@ import { rsvpStatuses, users } from '@/lib/db/schema';
 import { getEvent } from '@/lib/events';
 import { roleLabel } from '@/lib/messages';
 import { parseId } from '@/lib/parse';
-import { requireMember } from '@/lib/session';
+import { requireUser } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
-  const member = await requireMember();
+  const member = await requireUser();
   const { id: rawId } = await params;
   const id = parseId(rawId);
   if (id === null) notFound();

@@ -9,7 +9,7 @@ import { roles, type Role } from '@/lib/db/schema';
 import { addCharacterMessage } from '@/lib/messages';
 import { parseId } from '@/lib/parse';
 import { charactersDeps } from '@/lib/services';
-import { requireMember, requireOfficer } from '@/lib/session';
+import { requireUser, requireOfficer } from '@/lib/session';
 
 /** `name`/`role` sendes tilbage ved fejl, så formularen kan genindsætte det indtastede uden JavaScript. */
 export type AddState = { error?: string; name?: string; role?: string };
@@ -19,14 +19,14 @@ function toRole(value: FormDataEntryValue | null): Role | null {
 }
 
 export async function setActiveAction(formData: FormData): Promise<void> {
-  const member = await requireMember();
+  const member = await requireUser();
   const id = parseId(formData.get('characterId'));
   if (id) await setActiveCharacter(getDb(), member.userId, id);
   revalidatePath('/', 'layout');
 }
 
 export async function setRoleAction(formData: FormData): Promise<void> {
-  const member = await requireMember();
+  const member = await requireUser();
   const id = parseId(formData.get('characterId'));
   const role = toRole(formData.get('role'));
   if (id && role) await setRole(getDb(), member.userId, id, role);
@@ -41,7 +41,7 @@ export async function unlinkAction(formData: FormData): Promise<void> {
 }
 
 export async function addCharacterAction(_prev: AddState, formData: FormData): Promise<AddState> {
-  const member = await requireMember();
+  const member = await requireUser();
   const role = toRole(formData.get('role'));
   const name = String(formData.get('name') ?? '');
   if (!role) return { error: 'Vælg en rolle.', name };

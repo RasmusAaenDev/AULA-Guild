@@ -8,8 +8,8 @@ const db = {} as Db;
 const chat: ChatClient = { listChannels: async () => ({ channels: [] }), getMessages: async () => ({ messages: [], stale: false }), sendMessage: async () => ({ ok: true }) };
 
 describe('chatResponse', () => {
-  it('401 JSON uden medlemssession', async () => {
-    for (const user of [undefined, { isMember: false, id: '1' }, { isMember: true }]) {
+  it('401 JSON uden session', async () => {
+    for (const user of [undefined, { isGuildMember: true }, { isGuildMember: true, id: 0 }]) {
       const res = await chatResponse(user, chat, '123', db);
       expect(res.status).toBe(401);
       expect(res.headers.get('content-type')).toContain('application/json');
@@ -17,13 +17,19 @@ describe('chatResponse', () => {
       expect(await res.json()).toEqual({ error: 'Du skal være logget ind.' });
     }
   });
+  it('403 JSON for gæster i Discord-kanaler', async () => {
+    const res = await chatResponse({ isGuildMember: false, id: '1' }, chat, '123', db);
+    expect(res.status).toBe(403);
+    expect(res.headers.get('cache-control')).toBe('no-store');
+    expect(await res.json()).toEqual({ error: 'Kun for guildens medlemmer.' });
+  });
   it('404 JSON når chatten ikke er sat op', async () => {
-    const res = await chatResponse({ isMember: true, id: '1' }, null, '123', db);
+    const res = await chatResponse({ isGuildMember: true, id: '1' }, null, '123', db);
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: 'Chatten er ikke sat op.' });
   });
   it('200 med resultatet og no-store', async () => {
-    const res = await chatResponse({ isMember: true, id: '1' }, chat, '123', db);
+    const res = await chatResponse({ isGuildMember: true, id: '1' }, chat, '123', db);
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('no-store');
     expect(await res.json()).toEqual({ messages: [], stale: false });
