@@ -14,8 +14,8 @@ export type MenuItem = {
 export const LOCKED_LABEL = 'kræver guild-medlemskab';
 
 /**
- * Venstremenuens rækkefølge (efter AULA): Sim vises kun når simulatoren er sat op; Beskeder vises altid (egne kanaler kræver
- * ikke Discord); tæller-bobler på Overblik og Kalender. Uden `viewer` eller for medlemmer er intet låst; for gæster er
+ * Venstremenuens rækkefølge (efter AULA): Sim vises kun når simulatoren er sat op; Beskeder vises altid (egne kanaler er åbne
+ * for alle); tæller-bobler på Overblik og Kalender. Uden `viewer` eller for medlemmer er intet låst; for gæster er
  * Skolehjem, Galleri og Filer låst.
  */
 export function menuItems(opts: { simEnabled?: boolean; viewer?: Viewer } = {}): MenuItem[] {

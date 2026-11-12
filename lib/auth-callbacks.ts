@@ -65,7 +65,7 @@ export async function applySignIn(
 
 /**
  * Eksisterende session: genberegn adgang fra databasen højst hvert 10. minut; fejl beholder den eksisterende adgang.
- * Tokens uden Battle.net-id (fx fra Discord-tiden) afvises med null, så brugeren logges ud.
+ * Tokens uden Battle.net-id (fx fra før skiftet til Battle.net) afvises med null, så brugeren logges ud.
  */
 export async function revalidateToken(
   deps: Pick<AuthDeps, 'deriveAccess' | 'now'>,

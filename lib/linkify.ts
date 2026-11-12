@@ -1,5 +1,5 @@
 // Ren funktion der deler en tekst i tekst- og linkstykker. Kun http/https; teksten bevares tegn for tegn undtagen
-// de `<`/`>` der omslutter et link i Discords `<url>`-form. Ingen HTML: kalderen laver React-noder.
+// de `<`/`>` der omslutter et link i `<url>`-formen. Ingen HTML: kalderen laver React-noder.
 
 export type LinkPart = { type: 'text' | 'link'; text: string; href?: string };
 
@@ -55,7 +55,7 @@ export function linkify(text: string): LinkPart[] {
     const open = raw.startsWith('<');
     const close = raw.endsWith('>');
     const body = raw.slice(open ? 1 : 0, close ? -1 : undefined);
-    // Discords `<url>`-form er præcis; ellers klippes afsluttende tegnsætning af.
+    // `<url>`-formen er præcis; ellers klippes afsluttende tegnsætning af.
     const url = open && close ? body : trimUrl(body);
     if (!isSafe(url)) continue;
     pushText(text.slice(pos, m.index));

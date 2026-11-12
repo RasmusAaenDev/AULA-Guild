@@ -35,7 +35,7 @@ import { recentGalleryItems } from '@/lib/overview-gallery';
 import { mergeTimeline } from '@/lib/overview-feed';
 import { SATIRE_COOKIE, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
-import { getChat, isChatConfigured, isSimConfigured } from '@/lib/services';
+import { isSimConfigured } from '@/lib/services';
 import { requireUser } from '@/lib/session';
 
 const TAB_ORDER: OverviewTab[] = ['alle', 'ulaeste', 'vigtige', 'egne', 'gemte', 'satire'];
@@ -69,10 +69,8 @@ export default async function OverviewPage({
     countUnread(db, member.userId),
     countUnansweredUpcoming(db, member.userId, now),
     listUpcomingEvents(db, member.userId, now, { limit: 100 }),
-    // Gæster ser hverken Discord-beskeder eller galleri (kun for guildens medlemmer).
-    timeline
-      ? recentChatItems({ chat: isChatConfigured() && member.isGuildMember ? getChat() : null, db }, now).catch(() => [])
-      : Promise.resolve([]),
+    // Egne kanaler er åbne for alle indloggede; galleriet kun for guildens medlemmer.
+    timeline ? recentChatItems({ db }, now).catch(() => []) : Promise.resolve([]),
     timeline && member.isGuildMember ? recentGalleryItems({ db }, now).catch(() => []) : Promise.resolve([]),
   ]);
   // Hurtig tilmelding til næste raid og næste aften; de er altid med i udvalget.

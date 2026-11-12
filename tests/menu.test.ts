@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LOCKED_LABEL, menuHref, menuItems } from '@/lib/menu';
 
 describe('menuItems', () => {
-  it('viser altid Beskeder efter Kalender, også uden Discord', () => {
+  it('viser altid Beskeder efter Kalender', () => {
     expect(menuItems().map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Galleri', 'Kontakter', 'Filer']);
   });
   it('viser Sim efter Beskeder kun når simulatoren er sat op', () => {

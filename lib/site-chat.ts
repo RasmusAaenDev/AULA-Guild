@@ -1,4 +1,4 @@
-// Egne chat-kanaler, kun i vores database (aldrig Discord). Ren DB-logik uden Next, så den kan testes.
+// Egne chat-kanaler, kun i vores database. Ren DB-logik uden Next, så den kan testes.
 // Autorisation håndhæves her, ikke kun i UI'et.
 
 import { and, asc, count, desc, eq, isNull, sql } from 'drizzle-orm';
@@ -22,6 +22,8 @@ const fail = (reason: Reason, error: string): Fail => ({ ok: false, reason, erro
 
 export type SiteChannel = { id: number; name: string; createdBy: number | null };
 export type SiteMessage = { id: number; userId: number | null; characterId: number | null; authorName: string; content: string; createdAt: string };
+/** Med karakterens nuværende slug (til armory-link), eller null hvis beskeden ikke (længere) har en karakter. */
+export type ListedMessage = SiteMessage & { characterSlug: string | null };
 
 const MAX_INT = 2_147_483_647;
 
@@ -163,7 +165,7 @@ export async function postMessage(
 }
 
 /** De seneste `limit` beskeder, ældste først. Slettet eller ukendt kanal giver null. */
-export async function listMessages(db: Db, channelId: unknown, opts: { limit?: number } = {}): Promise<SiteMessage[] | null> {
+export async function listMessages(db: Db, channelId: unknown, opts: { limit?: number } = {}): Promise<ListedMessage[] | null> {
   const channel = await getChannel(db, channelId);
   if (!channel) return null;
   const limit = Math.min(Math.max(Math.trunc(opts.limit ?? MESSAGE_PAGE), 1), 200);
@@ -171,8 +173,10 @@ export async function listMessages(db: Db, channelId: unknown, opts: { limit?: n
     .select({
       id: chatMessages.id, userId: chatMessages.userId, characterId: chatMessages.characterId,
       authorName: chatMessages.authorName, content: chatMessages.content, createdAt: chatMessages.createdAt,
+      characterSlug: characters.slug,
     })
     .from(chatMessages)
+    .leftJoin(characters, eq(characters.id, chatMessages.characterId))
     .where(and(eq(chatMessages.channelId, channel.id), isNull(chatMessages.deletedAt)))
     .orderBy(desc(chatMessages.id))
     .limit(limit);

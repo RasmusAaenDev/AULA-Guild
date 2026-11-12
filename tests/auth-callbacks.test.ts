@@ -84,9 +84,9 @@ describe('revalidateToken', () => {
   const base = { userId: 7, battlenetId: '1', isGuildMember: true, isOfficer: true, checkedAt: NOW };
   const derive = (a = { isGuildMember: false, isOfficer: false }) => vi.fn(async () => a);
 
-  it('afviser tokens uden Battle.net-id (fx gamle Discord-sessioner)', async () => {
+  it('afviser tokens uden Battle.net-id (fx sessioner fra før skiftet)', async () => {
     const d = { deriveAccess: derive(), now: () => NOW };
-    expect(await revalidateToken(d, { userId: 7, discordId: '5', isMember: true })).toBeNull();
+    expect(await revalidateToken(d, { userId: 7, isMember: true })).toBeNull();
     expect(await revalidateToken(d, { battlenetId: '1' })).toBeNull();
   });
 

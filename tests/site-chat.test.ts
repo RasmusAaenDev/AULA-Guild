@@ -147,7 +147,7 @@ describe('sletning og autorisation', () => {
 });
 
 describe('beskeder', () => {
-  it('validerer som Discord-skrivning: tom, NUL, kontroltegn, længde, linjeskift', async () => {
+  it('validerer: tom, NUL, kontroltegn, længde, linjeskift', async () => {
     const a = await mkUser();
     const c = await mkChannel(a.id, 'Snak');
     for (const bad of ['', '   ', 'a\u0000b', 'a\u0007b', 'a‮b'.replace('‮', ' '), 'x'.repeat(501), 'a\n\n\n\n\n\nb', 7, null]) {
@@ -170,11 +170,13 @@ describe('beskeder', () => {
     await db.update(characters).set({ name: 'Nyt', surname: 'Navn' }).where(eq(characters.id, a.characterId!));
     const msgs = (await listMessages(db, c.id))!;
     expect(msgs[0]).toMatchObject({ authorName: 'Magi Far', userId: a.id, characterId: a.characterId });
+    expect(msgs[0].characterSlug).toMatch(/^magi-far\d+$/);
     await postMessage(db, deps(a.id), c.id, 'efter');
     expect((await listMessages(db, c.id))!.map((m) => m.authorName)).toEqual(['Magi Far', 'Nyt Navn']);
     await db.delete(characters).where(eq(characters.id, a.characterId!));
     const after = (await listMessages(db, c.id))!;
     expect(after[0].characterId).toBeNull();
+    expect(after[0].characterSlug).toBeNull();
     expect(after[0].authorName).toBe('Magi Far');
   });
   it('kræver aktiv karakter', async () => {
@@ -238,18 +240,20 @@ describe('id-validering', () => {
 });
 
 describe('GET /api/chat for egne kanaler', () => {
-  it('virker uden Discord, giver canDelete pr. besked og 404 for slettet/ugyldig kanal', async () => {
+  it('giver canDelete pr. besked, armory-link og 404 for slettet/ugyldig kanal', async () => {
     const a = await mkUser();
     const b = await mkUser();
     const c = await mkChannel(a.id, 'Snak');
     await postMessage(db, deps(a.id), c.id, 'hej');
     await postMessage(db, deps(b.id), c.id, 'dav');
-    const get = (user: { isGuildMember: boolean; id: string; isOfficer?: boolean }, k: string) => chatResponse(user, null, k, db);
+    const get = (user: { isGuildMember: boolean; id: string; isOfficer?: boolean }, k: string) => chatResponse(user, k, db);
     const res = await get({ isGuildMember: true, id: String(a.id) }, `egen-${c.id}`);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.messages.map((m: { content: string; canDelete: boolean }) => [m.content, m.canDelete])).toEqual([['hej', true], ['dav', false]]);
-    expect(JSON.stringify(body)).not.toContain('discord');
+    expect(Object.keys(body.messages[0]).sort()).toEqual(['armoryUrl', 'author', 'canDelete', 'content', 'id', 'mine', 'timestamp']);
+    expect(body.messages.map((m: { author: string }) => m.author)).toEqual(['Magi Far', 'Magi Far']);
+    expect(body.messages[0].armoryUrl).toMatch(/armory\/character\/magi-far\d+$/);
     const off = await (await get({ isGuildMember: true, id: String(b.id), isOfficer: true }, `egen-${c.id}`)).json();
     expect(off.messages.every((m: { canDelete: boolean }) => m.canDelete)).toBe(true);
     // «mine» følger forfatteren, ikke sletteretten (officeren ejer ikke a's besked).
@@ -261,6 +265,6 @@ describe('GET /api/chat for egne kanaler', () => {
     expect((await get({ isGuildMember: true, id: '1' }, 'egen-99999999999')).status).toBe(404);
     await deleteChannel(db, act(a), c.id);
     expect((await get({ isGuildMember: true, id: String(a.id) }, `egen-${c.id}`)).status).toBe(404);
-    expect((await chatResponse(undefined, null, `egen-${c.id}`, db)).status).toBe(401);
+    expect((await chatResponse(undefined, `egen-${c.id}`, db)).status).toBe(401);
   });
 });

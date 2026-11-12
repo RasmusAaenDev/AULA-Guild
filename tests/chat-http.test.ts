@@ -1,42 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import type { ChatClient } from '@/lib/chat';
 import type { Db } from '@/lib/db';
-import { chatResponse } from '@/lib/chat-http';
+import { chatResponse, parseSiteChannel } from '@/lib/chat-http';
 
-// Ingen beskeder med forfattere i disse tests, så databasen røres ikke.
-const db = {} as Db;
-const chat: ChatClient = { listChannels: async () => ({ channels: [] }), getMessages: async () => ({ messages: [], stale: false }), sendMessage: async () => ({ ok: true }) };
+// Ingen af disse tilfælde når databasen; en db der kaster, bekræfter det.
+const db = new Proxy({}, { get: () => { throw new Error('databasen må ikke røres'); } }) as Db;
 
 describe('chatResponse', () => {
-  it('401 JSON uden session', async () => {
+  it('401 JSON uden session, før noget andet', async () => {
     for (const user of [undefined, { isGuildMember: true }, { isGuildMember: true, id: 0 }]) {
-      const res = await chatResponse(user, chat, '123', db);
+      const res = await chatResponse(user, 'egen-1', db);
       expect(res.status).toBe(401);
       expect(res.headers.get('content-type')).toContain('application/json');
       expect(res.headers.get('cache-control')).toBe('no-store');
       expect(await res.json()).toEqual({ error: 'Du skal være logget ind.' });
     }
   });
-  it('403 JSON for gæster i Discord-kanaler', async () => {
-    const res = await chatResponse({ isGuildMember: false, id: '1' }, chat, '123', db);
-    expect(res.status).toBe(403);
+  it('400 når kanalen mangler', async () => {
+    const res = await chatResponse({ id: '1' }, null, db);
+    expect(res.status).toBe(400);
     expect(res.headers.get('cache-control')).toBe('no-store');
-    expect(await res.json()).toEqual({ error: 'Kun for guildens medlemmer.' });
+    expect(await res.json()).toEqual({ error: 'Kanal mangler.' });
   });
-  it('404 JSON når chatten ikke er sat op', async () => {
-    const res = await chatResponse({ isGuildMember: true, id: '1' }, null, '123', db);
-    expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: 'Chatten er ikke sat op.' });
+  it('404 for alt andet end en egen kanal', async () => {
+    for (const k of ['123456789012345678', 'egen-', 'egen-abc', 'egen-0', 'egen-99999999999']) {
+      const res = await chatResponse({ id: '1' }, k, db);
+      expect(res.status, k).toBe(404);
+      expect(await res.json()).toEqual({ error: 'Kanalen findes ikke.' });
+    }
   });
-  it('200 med resultatet og no-store', async () => {
-    const res = await chatResponse({ isGuildMember: true, id: '1' }, chat, '123', db);
-    expect(res.status).toBe(200);
-    expect(res.headers.get('cache-control')).toBe('no-store');
-    expect(await res.json()).toEqual({ messages: [], stale: false });
-  });
-  it('tjekker session før chat (ingen kald uden login)', async () => {
-    let called = 0;
-    await chatResponse(undefined, { listChannels: async () => ({ channels: [] }), getMessages: async () => { called++; return { messages: [], stale: false }; }, sendMessage: async () => ({ ok: true }) }, '123', db);
-    expect(called).toBe(0);
+});
+
+describe('parseSiteChannel', () => {
+  it('kender kun `egen-<id>`', () => {
+    expect(parseSiteChannel('egen-7')).toBe(7);
+    for (const v of ['7', '123456789012345678', 'egen-x', undefined, 7]) expect(parseSiteChannel(v)).toBeNull();
   });
 });

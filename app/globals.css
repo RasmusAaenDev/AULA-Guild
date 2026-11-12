@@ -187,8 +187,6 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .chat-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; align-items: start; }
 .chat-channels { padding: 14px 10px; }
 .chat-channels-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; margin: 0 0 6px; padding: 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--heading); }
-.chat-channels ul + .chat-channels-title { margin-top: 16px; }
-.chat-channels-sub { font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); }
 .chat-channels ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .chat-chan { display: flex; gap: 10px; align-items: center; min-height: 44px; padding: 6px 10px 6px 6px; border-radius: 10px; color: var(--text); text-decoration: none; overflow-wrap: anywhere; }
 .chat-chan:hover { background: var(--bg); }
@@ -198,7 +196,6 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .chat-chan[aria-current='page'] { background: var(--nav-active); color: #fff; }
 .chat-chan[aria-current='page'] .chat-chan-name { font-weight: 800; }
 .chat-chan[aria-current='page'] .chat-chan-icon { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px #fff; }
-.chat-readonly { display: flex; align-items: center; gap: 6px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--border); }
 @media (max-width: 700px) {
   .chat-layout { grid-template-columns: minmax(0, 1fr); }
   .chat-channels { padding: 12px 8px; }
@@ -244,7 +241,6 @@ a.chat-link:hover { text-decoration-thickness: 2px; }
 .chat-send { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 48px; min-width: 48px; border-radius: 14px; }
 .chat-send:disabled { opacity: 0.6; cursor: not-allowed; }
 .chat-form .error { margin: 8px 0 0; }
-.chat-new { position: absolute; right: 24px; bottom: 96px; border-radius: 999px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); }
 @media (max-width: 480px) {
   .chat-gutter { width: 30px; }
   .chat-avatar { width: 30px; height: 30px; font-size: 14px; }
@@ -252,7 +248,6 @@ a.chat-link:hover { text-decoration-thickness: 2px; }
   .chat-msg.is-cont .chat-time { font-size: 10px; }
   .chat-bubble { padding: 6px 10px 7px; }
   .chat-send span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .chat-new { right: 12px; }
 }
 
 /* Overblik: hovedkolonne + højre kolonne fra 1100 px */

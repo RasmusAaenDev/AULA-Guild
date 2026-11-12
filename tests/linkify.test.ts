@@ -22,7 +22,7 @@ describe('linkify', () => {
     expect(linkify('(se https://x.dk/a)')).toEqual([t('(se '), l('https://x.dk/a'), t(')')]);
     expect(linkify('https://en.wikipedia.org/wiki/Foo_(bar).')).toEqual([l('https://en.wikipedia.org/wiki/Foo_(bar)'), t('.')]);
   });
-  it('håndterer Discords <url>-form', () => {
+  it('håndterer <url>-formen', () => {
     expect(linkify('se <https://x.dk/a.> nu')).toEqual([t('se '), l('https://x.dk/a.'), t(' nu')]);
   });
   it('lukkende > uden åbnende klippes af linket', () => {

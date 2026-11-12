@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+import { formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
 
 describe('formatMessageTime', () => {
   const now = new Date('2026-11-10T12:00:00Z');
@@ -27,19 +27,6 @@ describe('isNearBottom', () => {
   });
   it('følger med når alt kan ses', () => {
     expect(isNearBottom({ scrollTop: 0, clientHeight: 500, scrollHeight: 300 })).toBe(true);
-  });
-});
-
-describe('chatErrorMessage', () => {
-  it('giver danske tekster for hver fejl', () => {
-    expect(chatErrorMessage('no_access')).toBe('Botten har ikke adgang til kanalen.');
-    expect(chatErrorMessage('not_found')).toMatch(/kanal/);
-    expect(chatErrorMessage('unavailable')).toMatch(/Discord/);
-    expect(chatErrorMessage(undefined)).toBeNull();
-  });
-  it('har et tip om Message Content Intent', () => {
-    expect(chatHintMessage('no_content_intent')).toMatch(/Message Content Intent/);
-    expect(chatHintMessage(undefined)).toBeNull();
   });
 });
 

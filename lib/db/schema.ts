@@ -57,7 +57,7 @@ export const eventSeries = pgTable('event_series', {
   startTime: text('start_time').notNull(),
   durationMinutes: integer('duration_minutes').notNull(),
   active: boolean('active').notNull().default(true),
-  // Null når opretteren er slettet (fx ved skiftet fra Discord til Battle.net).
+  // Null når opretteren er slettet (fx ved skiftet til Battle.net-login).
   createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -112,7 +112,7 @@ export const posts = pgTable(
     id: serial('id').primaryKey(),
     // Null når forfatteren er slettet; så vises kun authorName.
     authorId: integer('author_id').references(() => users.id, { onDelete: 'set null' }),
-    // Forfatternavn som tekst for opslag uden ejer (sat af migrationen fra Discord-tiden).
+    // Forfatternavn som tekst for opslag uden ejer (sat af migrationen til Battle.net-login).
     authorName: text('author_name'),
     title: text('title').notNull(),
     body: text('body').notNull(),
@@ -184,7 +184,7 @@ export const files = pgTable(
     // Serverens eget tilfældige id (crypto.randomUUID()); aldrig afledt af brugerinput.
     storageKey: text('storage_key').notNull().unique(),
     uploadedBy: integer('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
-    // Uploaderens navn som tekst for filer uden ejer (sat af migrationen fra Discord-tiden).
+    // Uploaderens navn som tekst for filer uden ejer (sat af migrationen til Battle.net-login).
     uploaderName: text('uploader_name'),
     pinned: boolean('pinned').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -193,7 +193,7 @@ export const files = pgTable(
   (t) => [index('files_section_created_at_idx').on(t.section, t.createdAt)],
 );
 
-// Egne chat-kanaler: findes kun i vores database, aldrig i Discord.
+// Egne chat-kanaler: findes kun i vores database.
 export const chatChannels = pgTable(
   'chat_channels',
   {

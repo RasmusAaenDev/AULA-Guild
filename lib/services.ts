@@ -1,6 +1,4 @@
 import path from 'node:path';
-import { chatConfig } from '@/lib/chat-config';
-import { createChatClient, type ChatClient } from '@/lib/chat';
 import { createBlizzardClient } from '@/lib/blizzard/client';
 import type { BlizzardClient } from '@/lib/blizzard/types';
 import type { CharactersDeps } from '@/lib/characters';
@@ -18,7 +16,7 @@ import { syncAccountCharacters } from '@/lib/account-characters';
 import { fetchAccountCharacters } from '@/lib/blizzard/account';
 import type { AuthDeps } from '@/lib/auth-callbacks';
 
-const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient; __aulaSync?: Promise<SyncResult> };
+const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaSync?: Promise<SyncResult> };
 
 export function getBlizzard(): BlizzardClient {
   g.__aulaBlizzard ??= createBlizzardClient({
@@ -80,22 +78,4 @@ export function filesDeps(): StorageDeps {
     maxBytes: e.MAX_UPLOAD_MB * 1024 * 1024,
     maxTotalBytes: e.MAX_TOTAL_MB * 1024 * 1024,
   };
-}
-
-export function isChatConfigured(): boolean {
-  return chatConfig() !== null;
-}
-
-/** Chat-klienten (delt cache på tværs af anmodninger), eller null hvis chatten ikke er sat op. */
-export function getChat(): ChatClient | null {
-  const cfg = chatConfig();
-  if (!cfg) return null;
-  g.__aulaChat ??= createChatClient({
-    token: cfg.token,
-    channelId: cfg.channelId,
-    // Kun disse kanaler vises. Standardkanalen er den WoW-linkede, som Discord ikke lader bots skrive i.
-    visibleChannels: ['rio', 'wow-news', 'wow'],
-    readOnlyChannelIds: [cfg.channelId],
-  });
-  return g.__aulaChat;
 }

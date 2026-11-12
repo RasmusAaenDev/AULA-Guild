@@ -9,7 +9,7 @@ import { ChatThread } from './ChatThread';
 import { deleteSiteChannelAction, deleteSiteMessageAction, sendSiteMessageAction } from './site-actions';
 import type { FormState } from './actions';
 
-type SiteMsg = { id: number; author: string; content: string; timestamp: string; canDelete: boolean; mine?: boolean };
+type SiteMsg = { id: number; author: string; armoryUrl?: string | null; content: string; timestamp: string; canDelete: boolean; mine?: boolean };
 
 function isMessages(v: unknown): v is { messages: SiteMsg[] } {
   return typeof v === 'object' && v !== null && Array.isArray((v as { messages?: unknown }).messages);
