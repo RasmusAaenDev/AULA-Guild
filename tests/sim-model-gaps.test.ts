@@ -8,6 +8,7 @@ import type { SimView } from '@/lib/sims';
 vi.mock('@/app/(app)/sim/actions', () => ({ deleteSimAction: async () => ({}) }));
 
 const GROV = 'Grov model: klassen er implementeret af Aula, ikke af SimulationCraft. Tallene er vejledende.';
+const GROV_FIX = "Grov model: SimulationCraft's grundmodel med Aulas rettelser. Tallene er vejledende.";
 
 describe('modelGap (ren logik)', () => {
   it('upstream-klasser uden vores rettelse får en konkret advarsel', () => {
@@ -30,6 +31,24 @@ describe('modelGap (ren logik)', () => {
     expect(modelGap({ className: 'priest', spec: 'Holy' }, [GROV])).toBeNull();
     expect(modelGap({ className: 'druid', spec: 'Balance' }, [GROV])).toBeNull();
     expect(modelGap({ className: 'druid', spec: null }, [GROV])).toBeNull();
+    // Warlock og shaman (rettelse oven på upstream): ukendt spec giver ingen advarsel.
+    expect(modelGap({ className: 'warlock', spec: null }, [GROV_FIX])).toBeNull();
+    expect(modelGap({ className: 'shaman', spec: 'shaman' }, [GROV_FIX])).toBeNull();
+  });
+  it('warlock og shaman med vores rettelse: gul advarsel med det, rettelsen ikke dækker', () => {
+    const demo = modelGap({ className: 'warlock', spec: 'Demonology' }, [GROV_FIX]);
+    expect(demo).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Warlock (Demonology) fuldt ud' });
+    expect(demo?.missing).toMatch(/Voidwalker/);
+    for (const spec of ['Affliction', 'Destruction']) {
+      expect(modelGap({ className: 'warlock', spec }, [GROV_FIX])?.missing, spec).toMatch(/Life Tap koster ikke liv/);
+    }
+    const ele = modelGap({ className: 'shaman', spec: 'Elemental Combat' }, [GROV_FIX]);
+    expect(ele).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Shaman (Elemental Combat) fuldt ud' });
+    expect(ele?.missing).toMatch(/Mana Spring/);
+    expect(modelGap({ className: 'shaman', spec: 'Enhancement' }, [GROV_FIX])?.missing).toMatch(/Windfury Weapon/);
+    expect(modelGap({ className: 'shaman', spec: 'Restoration' }, [GROV_FIX])?.missing).toMatch(/healing/);
+    // Uden rettelsen er det stadig den røde upstream-advarsel.
+    expect(modelGap({ className: 'warlock', spec: 'Demonology' }, [])?.kind).toBe('upstream');
   });
   it('specs vores rettelse ikke dækker: delvis advarsel kun sammen med «Grov model»', () => {
     const holy = modelGap({ className: 'paladin', spec: 'Holy' }, [GROV]);

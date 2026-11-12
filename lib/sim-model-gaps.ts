@@ -4,9 +4,9 @@
 // To slags huller:
 // - `upstream`: klassen kører på SimulationCraft's egen grundmodel (ingen Aula-rettelse). Teksten vises kun, når
 //   resultatet IKKE er markeret «Grov model» (workerens advarsel for vores rettelser). Får klassen en rettelse
-//   (fx druid og priest), falder advarslen væk af sig selv, så snart workeren melder «Grov model».
-// - `withFix`: vores egen rettelse dækker ikke denne spec (fx paladin Holy, rogue Subtlety). Vises kun sammen med
-//   «Grov model», fordi det er vores model, der mangler noget.
+//   (druid, priest, warlock, shaman), falder advarslen væk af sig selv, så snart workeren melder «Grov model».
+// - `withFix`: vores egen rettelse dækker ikke denne spec (fx paladin Holy, rogue Subtlety, warlock-pets,
+//   shaman-totems). Vises kun sammen med «Grov model», fordi det er vores model, der mangler noget.
 // Uden kendt spec bruges klassens fælles tekst (`*`), hvis der er en.
 
 export type ModelGapKind = 'upstream' | 'partial';
@@ -30,9 +30,18 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
   },
   shaman: {
     '*': { upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock' },
-    elemental: { upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock' },
-    enhancement: { upstream: 'Stormstrike, Windfury, Lightning Shield, Maelstrom Weapon og Flurry' },
-    restoration: { upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock' },
+    elemental: {
+      upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock',
+      withFix: 'Mana Spring-, Magma- og Fire Nova Totem, mana-drikke og Call of Flame. Når manaen er brugt, venter shamanen på den (ingen wand)',
+    },
+    enhancement: {
+      upstream: 'Stormstrike, Windfury, Lightning Shield, Maelstrom Weapon og Flurry',
+      withFix: 'Windfury Weapon, Lightning Shield og andre totems end Searing, Strength of Earth og Windfury. Maelstrom Weapons proc-rate er et skøn',
+    },
+    restoration: {
+      upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock',
+      withFix: 'healing (kun skade simuleres), Mana Spring- og Mana Tide Totem. Shamanen simuleres som Elemental uden dens talenter',
+    },
   },
   druid: {
     '*': { upstream: 'Wrath og Moonfire uden Moonkin Form: under level 40 kaster druiden ingenting og slår kun med staven. Der er heller ingen kat-rotation' },
@@ -51,9 +60,18 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
   },
   warlock: {
     '*': { upstream: 'Life Tap og wand, så warlocken går tom for mana og står stille. Heller ingen Bane of Agony, Drain Life eller Siphon Life' },
-    affliction: { upstream: 'Life Tap og wand, så warlocken går tom for mana og står stille. Heller ingen Bane of Agony, Drain Life eller Siphon Life' },
-    demonology: { upstream: 'Life Tap og wand, og kun Imp (ingen Voidwalker, Felhunter, Succubus eller Demonic Sacrifice)' },
-    destruction: { upstream: 'Life Tap og wand, og ingen Conflagrate, Shadowburn, Searing Pain eller Incinerate' },
+    affliction: {
+      upstream: 'Life Tap og wand, så warlocken går tom for mana og står stille. Heller ingen Bane of Agony, Drain Life eller Siphon Life',
+      withFix: 'Drain Life, Drain Soul, Nightfall og Amplify Curse, og Life Tap koster ikke liv (simuleringen antager en healer)',
+    },
+    demonology: {
+      upstream: 'Life Tap og wand, og kun Imp (ingen Voidwalker, Felhunter, Succubus eller Demonic Sacrifice)',
+      withFix: 'Voidwalker, Felhunter, Succubus og Demonic Sacrifice: kun Imp, med stats tilpasset level 3-10. Life Tap koster ikke liv (simuleringen antager en healer)',
+    },
+    destruction: {
+      upstream: 'Life Tap og wand, og ingen Conflagrate, Shadowburn, Searing Pain eller Incinerate',
+      withFix: 'Searing Pain, Soul Fire og Curse of the Elements, og Life Tap koster ikke liv (simuleringen antager en healer)',
+    },
   },
   paladin: {
     holy: { withFix: 'Holy Shock. Paladinen simuleres med Retribution-rotationen og Seal of Righteousness' },
