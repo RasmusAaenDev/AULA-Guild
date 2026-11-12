@@ -49,7 +49,10 @@ Et ugyldigt regulært udtryk eller handlingsnavn giver exit 2 (aldrig «findes i
 **Tomme klasser (mage, paladin, rogue):** heuristikken er bevidst simpel (`min_lines` + `contains add_action` +
 `not_contains AULA-RETTELSE`). Har upstream kun delvist implementeret klassen (fx flere linjer, men ingen
 rotation), holder betingelserne ikke, rettelsen passer heller ikke, og bygget stopper som en konflikt. Det er
-meningen: så skal et menneske se på, om vores eller upstreams version skal bruges.
+meningen: så skal et menneske se på, om vores eller upstreams version skal bruges. Paladin og rogue tester
+desuden på de spec-dele, rettelsen har (paladin: `holy_shock`, `holy_shield`; rogue: `backstab`, `hemorrhage`,
+`ghostly_strike`), så en upstream-grundmodel uden Holy/Protection hhv. Combat/Subtlety ikke får vores rettelse
+droppet (testet i `test/patches.test.mjs`).
 
 **Klasser upstream allerede har en grundmodel af (druid, priest, warlock, shaman):** her holder
 linjeantal og `add_action` fra dag ét, så den heuristik ville droppe rettelsen med det samme. `.check` skal i stedet
@@ -585,8 +588,11 @@ Prot-paladin (fx guildens level 39) kører samme rotation med Seal of Righteousn
 rækkefølge (testet i `test/patches.test.mjs`).
 
 **Upstream-tjek (`paladin.check`):** `sc_paladin.cpp` har flere end 150 linjer, `apl/paladin.cpp` indeholder
-`add_action`, og `sc_paladin.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er
-`sc_paladin.cpp` 52 linjer og APL'en tom (0 DPS); med rettelsen er modulet 656 linjer.
+`add_action`, upstream opretter selv `holy_shock` og `holy_shield` (`has_action`), APL'en bruger en af
+`holy_shock`/`holy_shield`/`righteous_fury`, og `sc_paladin.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved
+`SIMC_REF` 3c1d319 er `sc_paladin.cpp` 52 linjer og APL'en tom (0 DPS); med rettelsen er modulet 847 linjer.
+Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/paladin` (to commits oven på `SIMC_REF`); patchen er
+`git diff 3c1d319..aula/paladin`. Den passer også uændret på upstream `main` `1b8e01d`.
 
 ### Spells (fra spildata; afvigelser står under «Antagelser»)
 
@@ -663,7 +669,7 @@ stakbuffen «Echo of …», men mekanikken er server-side og ikke beskrevet nok 
 (Method skifter til Seal of Righteousness ved 3 stakke), **Seal of the Crusader** og **Judgement of the Crusader**
 (åbningen), **Exorcism** (kun Undead/Demon), **Holy Shock** (Holy-talent, Methods alternative opbygning), Reckoning,
 Vindication (debuff på målet), Repentance, auraer og blessings, Libram/Twist of Light, Improved Hammer of Wrath og
-Retribution-sætbonusser. **Benediction på Judgement:** Judgements pris er en procent af base mana, og simcs passiv-parser
+Retribution-sætbonusser (Holy Shock er siden tilføjet, se «Holy og Protection» nedenfor). **Benediction på Judgement:** Judgements pris er en procent af base mana, og simcs passiv-parser
 ændrer kun den faste pris; Judgement koster derfor de fulde 6 % (51 i stedet for 46 mana på level 39).
 
 ### Rotation (Retribution, standard)
@@ -758,6 +764,81 @@ Regression (samme seed og indstillinger, binær med kun mage.patch mod binær me
 hunter-11, warrior-11, shaman-20, warlock-10, mage-20 og mage-35 giver bit-for-bit samme DPS i Patchwerk og
 DungeonSlice. Rettelsen rører kun de tre paladin-filer.
 
+### Holy og Protection (tilføjet 2026-11-12)
+
+Auditten fandt, at Holy og Protection kørte Ret-rotationen med Seal of Righteousness (Holy 72,6, Prot 68,9 mod Ret
+83,6 på level 40). Rettelsen giver dem deres egne evner; spec'en afgøres af talenterne (`variable.prot` =
+Templar's Bulwark, Redoubt, Holy Shield, Swift Judgement eller Shieldsworn; Holy Shock og Divine Favor er kun klar
+med talentet). Alle tal fra spildata (`simc spell_query`):
+
+| Spell | Ranks (id: level) | Spildata og model |
+|---|---|---|
+| Holy Shock (Holy-talent) | 1311606: 30, 20473: 40, 20929: 48, 20930: 56 | driveren giver pris (160/225/275/325 mana), GCD 1,5 s og 10 s nedkøling; skaden er skade-spellen (1311604, 25912, 25911, 25902): School Damage, Holy, SP 0,429 (r2: 182). Kan crit'e og misse (spell-tabellen) |
+| Divine Favor (Holy-talent 20216) | – | 4 % base mana, 120 s; næste Holy Shock +100 % crit (effekt 1) |
+| Righteous Fury | 25780: 10 | kun trussel og forsvar, ingen skade. Spildataens pris (30 % base mana) bliver 0 i simc (set i loggen) |
+| Holy Shield (Protection-talent) | 20925: 30, 20927: 40, 20928: 50, 1239570: 60 | 10 s, 10 s nedkøling, kræver skjold (`has_shield_equipped`); skade pr. blok = effekt 2 (75/110/153/221) + 0,08 × SP, Holy |
+| Swift Judgement (Protection-talent 1310994) | – | 60 s, ingen pris, deler ikke nedkøling med Judgement; skaden er den aktive seals judgement som ved Judgement |
+| Shieldsworn (31-point-talent 1328544) | – | Holy Strike −4 s nedkøling (spildata via passiv-parseren) og «strikes with your shield, triggering your active Holy Shield … without consuming their charges» |
+
+Rotation (fælles liste; nyt markeret med `+`):
+
+```
+precombat: variable,name=prot,…
++          righteous_fury,if=variable.prot
+           auto_attack, seal_of_command / seal_of_righteousness (som før)
++          holy_shield,if=variable.prot&mana.pct>50
+           judgement
++          swift_judgement
+           hammer_of_wrath,if=target.health.pct<20
++          divine_favor,if=cooldown.holy_shock.ready&mana.pct>50
++          holy_shock,if=mana.pct>50
+           holy_strike
+           consecration,if=active_enemies>1&mana.pct>50
++          consecration,if=variable.prot&mana.pct>80
+```
+
+Antagelser:
+
+- **Mana-grænserne** (Holy Shock og Holy Shield over 50 %, Consecration på ét mål over 80 %) er vores valg. Målt
+  (500 iterationer): uden grænse giver Holy 40 med Holy Shock 70,4 mod 72,5 uden Holy Shock, fordi den tager manaen
+  fra Seal of Righteousness og Judgement; over 50 % giver 74,4 (70 %: 73,9, 90 %: 73,2). Protection 40 med
+  Consecration på ét mål over 50 % mana: 65,3, over 80 %: 68,5, aldrig: 70,1. Den bruges alligevel over 80 %, fordi en
+  tank gør det (trussel); prisen er 2 % på level 40. Holy Shield over 50 % mana giver 51,1 mod altid 49,9 og aldrig
+  51,4 (profil med skjold).
+- **Holy Shields skade kommer kun via Shieldsworn**: Patchwerk-målet slår ikke, så der blokeres aldrig. Holy
+  Strikes egen skade er uændret (vi ved ikke, om «strikes with your shield» ændrer den).
+- **Swift Judgement** er et server-script i spildataen; vi antager samme skade som Judgement. Sanctified Judgement
+  gælder kun Judgement.
+- **Ikke med:** healing, Exorcism (kun Undead/Demon), Consecrated Ground, Reckoning og Redoubt (kræver at målet slår),
+  Light's Vigil (Holy Shock på allierede), Seal of Wisdom/Light og Blessings.
+
+#### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42)
+
+Auditens syntetiske profiler (§11 i auditten; level 40 bruger Mograine's Might, et tohåndsvåben, også for Prot) og en
+Prot-variant med enhåndssværd og skjold (Sword of Serenity 6829 + Aegis of the Scarlet Commander 7726), så Holy
+Shield kan bruges.
+
+| Profil | Stil | Før | Efter | Venter efter | Nyt i skadesfordelingen |
+|---|---|---|---|---|---|
+| Holy 20 | Patchwerk | 16,9 | **16,8** | 78 % | intet (Holy Shock kommer på level 30) |
+| Holy 40 | Patchwerk | 72,6 | **74,8** | 74 % | Holy Shock 3 % (4 kast; med Divine Favor crit for 273) |
+| Holy 40 | DungeonSlice | – | **65,0** | 76 % | Holy Shock 3 % |
+| Protection 20 | Patchwerk | 16,5 | **15,8** | 79 % | Consecration (1 kast) koster Judgements |
+| Protection 40 (2H) | Patchwerk | 68,9 | **68,5** | 68 % | Swift Judgement, Consecration; intet skjold, så ingen Holy Shield |
+| Protection 40 (2H) | DungeonSlice | – | **60,3** | 71 % | |
+| Protection 40 (skjold) | Patchwerk | 52,2 | **52,0** | 68 % | Holy Shield-skade 2 % (110 pr. ramt Holy Strike) |
+| Retribution 40 | Patchwerk | 83,6 | **83,6** | 76 % | uændret |
+
+Håndtjek: Holy Shock r2 rammer for 182 (effekt 1; profilen har ingen spell power) og crit'er for 273 (× 1,5); Holy
+Shield-skaden r2 er 110 (effekt 2). Holy og Protection er nu adskilt fra Ret i loggen, men DPS ændrer sig kun lidt:
+begge er mana-begrænsede (Prot-profilen får ca. 770 mana i regen på 300 s), og Holy Shock/Holy Shield er dyre i
+forhold til deres skade. Prot med skjold ligger under Prot med tohåndsvåben, fordi våbnet er svagere.
+
+Guildens Holy 39 (`test/fixtures/paladin-39-holy.simc`, Holy 22 / Protection 8): 73,3 → **75,9** (Holy Shock 6 kast).
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle syv rettelser, via `/run`, 1000 iterationer): Holy 40
+74,9 / DungeonSlice 65,1, Protection 40 68,5 / 60,3, Protection 20 15,9 / 14,1, Ret 40 83,6 / 77,5; resultatet har
+«Grov model …».
+
 ## rogue
 
 **Hvad:** Grov basismodel for Forever-rogue med en Assassination-rotation, efter samme skabelon som mage (warlock-
@@ -772,8 +853,11 @@ Talenternes passive effekter læses med `parse_all_passive_talents()`; et udvalg
 (testet i `test/patches.test.mjs`).
 
 **Upstream-tjek (`rogue.check`):** `sc_rogue.cpp` har flere end 150 linjer, `apl/rogue.cpp` indeholder `add_action`,
-og `sc_rogue.cpp` indeholder ikke `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 (og simc-forever `main` 1b8e01d,
-2026-11-12) er `sc_rogue.cpp` 42 linjer og APL'en tom; med rettelsen er modulet 906 linjer.
+upstream opretter selv `backstab`, `hemorrhage` og `ghostly_strike` (`has_action`), APL'en bruger `backstab` eller
+`hemorrhage`, og `sc_rogue.cpp` indeholder ikke `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 (og simc-forever `main`
+1b8e01d, 2026-11-12) er `sc_rogue.cpp` 42 linjer og APL'en tom; med rettelsen er modulet 1201 linjer. Kilde: forken
+`RasmusAaenDev/simc-forever`, branch `aula/rogue` (to commits oven på `SIMC_REF`); patchen er
+`git diff 3c1d319..aula/rogue`.
 
 ### Ressourcer
 
@@ -824,7 +908,8 @@ Udeladt med vilje:
 
 - **Envenom** (399968/399963) findes i spildataen, men kun som «Gain the Envenom ability»-override fra en
   rune-/sæsonvariant (samme slags som magens Fire Blast 400616); den er ikke et Forever-talent eller en trænerspell.
-- **Expose Armor, Kidney Shot, Riposte, Ghostly Strike, Hemorrhage, Backstab, Death Mark:** ikke modelleret.
+- **Expose Armor, Kidney Shot, Riposte, Death Mark:** ikke modelleret (Backstab, Hemorrhage og Ghostly Strike er
+  siden tilføjet, se «Combat og Subtlety» nedenfor).
 - **Ingen AP-skalering på finishers:** beskrivelserne siger «increased by Attack Power», men Eviscerate, Rupture og
   Garrote har ingen AP-koefficient i spildataen. Vi opfinder ingen; finishers kan derfor være undervurderet ved højt
   AP. (Spildataen har «SP Coefficient: 1» på flere fysiske effekter; det bruges som i warrior-modulet, men rogues
@@ -859,10 +944,10 @@ Reflexes, Composure m.fl.) parses også, men påvirker ikke DPS.
 - **Adrenaline Rush** (+100 % energi-regen 15 s) og **Blade Flurry** (+20 % attack speed 15 s; ekstra mål ignoreres):
   aktive talent-spells, brugt på nedkøling. Mutilate (se Spells).
 
-**Mangler:** Ruthlessness (CP fra finishers), Hack and Slash' økse/sværd- (ekstra slag) og stav-/kølle-del
-(rustningsgennembrud), Puncturing Wounds, Opportunity, Initiative, Premeditation, Boot Knife, Setup, Remorseless
-Attacks, Improved Kidney Shot, Death Mark, Riposte, Preparation, Hemorrhage og Ghostly Strike. Rotationen vælger ikke
-efter talenter, ud over at talent-handlinger kun er klar med talentet.
+**Mangler:** Setup, Remorseless Attacks, Improved Kidney Shot, Death Mark og Riposte. (Ruthlessness, Hack and Slash'
+økse/sværd- og kølle-del, Puncturing Wounds, Initiative, Premeditation, Preparation, Boot Knife, Hemorrhage og
+Ghostly Strike er siden tilføjet; Opportunity, Improved Ambush og Serrated Blades virker via spildata. Se «Combat og
+Subtlety».)
 
 ### Rotation (Assassination)
 
@@ -962,6 +1047,87 @@ og DungeonSlice. Rettelsen rører kun de tre rogue-filer.
 
 Docker: imaget bygget fra `../Dockerfile` (`aula-simc:roguetest`, PATCHES_APPLIED: `mage applied`, `rogue applied`) giver
 for `test/fixtures/rogue-33.simc` samme DPS som den native bygning (92,73 / 77,22).
+
+### Combat og Subtlety (tilføjet 2026-11-12)
+
+Auditten fandt Combat 85,9 og Subtlety 79,9 mod Assassination 103,2 (level 40, dolke): Combat havde ingen Backstab,
+Subtlety ingen af sine kerneevner. Alle tal fra spildata (`simc spell_query`; id: spell level):
+
+| Spell/talent | Spildata og model |
+|---|---|
+| Backstab (53: 4, 2589: 12, 2590: 20, 2591: 28, 8721: 36, 11279: 44, 11280: 52, 11281/25300: 60) | 60 energi, 150 % normaliseret våbenskade + fast bonus, 1 CP; kræver dolk i hovedhånden |
+| Puncturing Wounds (Combat, 1224716) | +10-30 % crit på Backstab (spildata via passiv-parseren); effekt 2: 15/30/45 % chance for 1 ekstra CP (Improved Backstab) |
+| Hemorrhage (Subtlety-talent 16511) | 35 energi, 100 % våbenskade (145 % med dolk, effekt 4/5), normaliseret, 1 CP; målet tager +15 % Rupture- og Garrote-skade i 15 s (effekt 3) |
+| Ghostly Strike (Subtlety-talent 14278) | 40 energi, 125 % våbenskade (180 % med dolk), normaliseret, 1 CP, 20 s; næste Ambush eller Garrote inden for 7 s kræver ikke Stealth (1329326). Dodge-delen påvirker ikke skaden |
+| Premeditation (Subtlety-talent 14183) | +2 CP, 120 s. I Forever kun «Allow While Stealthed», ikke «Only Stealthed»: bruges i kampen |
+| Preparation (Subtlety-talent 14185) | 600 s; nulstiller Premeditation, Ghostly Strike, Cold Blood, Adrenaline Rush, Blade Flurry og Shank |
+| Initiative (Subtlety-talent 13976) | Ambush/Garrote: 33/67/100 % chance for 1 ekstra CP (13977) |
+| Boot Knife (Subtlety-talent 1329286) | Shank: 20-100 % chance for 2 CP (1329285) |
+| Ruthlessness (Assassination-talent 14156) | finishers: 20/40/60 % chance for 1 CP, 0,5 s ICD |
+| Hack and Slash (Combat-talent 13960) | økse/sværd: 1-5 % chance pr. ramt våbenslag for et ekstra slag med samme våben (0,2 s ICD); kølle: angreb ignorerer 3-15 % af rustningen. Dolk/næve-delen var der i forvejen |
+| Opportunity, Improved Ambush, Serrated Blades | virker via spildata (passiv-parseren: skade, crit, rustningsgennembrud og Rupture-skade) |
+
+Rotation (fælles liste; nyt markeret med `+`):
+
+```
++ ambush,if=!buff.ghostly_strike.up|dot.garrote.ticking   # åbning, eller efter Ghostly Strike når Garrote tikker
++ garrote,if=!ticking                                      # åbning uden dolk, eller efter Ghostly Strike
+  auto_attack
+  slice_and_dice,if=buff.slice_and_dice.remains<1&combo_points>=2
+  adrenaline_rush, blade_flurry
++ premeditation,if=combo_points<=3
++ preparation,if=cooldown.premeditation.remains>30
+  rupture,if=!ticking&combo_points>=5
+  cold_blood / eviscerate,if=combo_points>=5&…
++ ghostly_strike,if=combo_points<=2
+  shank,if=energy<70
+  mutilate,if=combo_points<=3
++ hemorrhage,if=combo_points<5&!buff.ghostly_strike.up
++ backstab,if=combo_points<5&(talent.puncturing_wounds.enabled|talent.opportunity.enabled)
+  sinister_strike,if=combo_points<5&!(action.backstab.enabled&(talent.puncturing_wounds.enabled|talent.opportunity.enabled))
+```
+
+Antagelser og valg:
+
+- **Backstab og Ambush antager, at rogue'en står bag målet** (en gruppe med en tank). Simc har ingen position.
+- **Backstab i stedet for Sinister Strike** kun for Combat med Puncturing Wounds og Subtlety med Opportunity, og
+  så spares energien op til Backstab (60). Uden de talenter bruges Sinister Strike (40 med Efficient Strikes) som
+  før. Målt: når Sinister Strike fik lov at gå først, så snart energien nåede 40, blev der næsten ingen Backstabs
+  (Combat 40: 86,9 mod 95,2).
+- **Garrote før Ambush efter Ghostly Strike:** målt bedre (Subtlety 40: 101,2 mod 92,3 med Ambush): Garrote er en
+  bleed uden rustning, får Opportunity og Hemorrhage-debuffen og koster 30 med Dirty Deeds. Garrote har ingen
+  AP-skalering i spildataen (som før).
+- **Hack and Slash' ekstra slag** er et almindeligt hvidt slag med samme våben (kan crit'e, glance og udløse gift).
+- **Ruthlessness** er et Assassination-talent; det løfter Assassination 40 med 1 % (103,2 → 104,5).
+- **Ikke med:** Death Mark (lagrer skade pr. CP; for stort), Riposte og Setup (kræver at målet slår), Vanish med
+  ny åbning, Expose Armor og Kidney Shot.
+
+#### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42)
+
+Auditens syntetiske profiler (dolke i begge hænder: Bite of Serra'kis 6904 / Claw of the Shadowmancer 2912).
+
+| Profil | Stil | Før | Efter | Venter efter | Største kilder (efter) |
+|---|---|---|---|---|---|
+| Combat 20 | Patchwerk | 59,2 | **59,2** | 69 % | uændret: ingen Puncturing Wounds på level 20, og Riposte kan ikke bruges |
+| Combat 40 | Patchwerk | 85,9 | **95,2** | 62 % | hovedhånd 33 %, Backstab 27 % (53), off-hand 18 %, Deadly Poison 12 % |
+| Combat 40 | DungeonSlice | – | **78,2** | 65 % | Backstab 27 %, Ambush 3 % (genåbning mellem grupperne) |
+| Subtlety 20 | Patchwerk | 57,8 | **64,2** | 77 % | hovedhånd 44 %, Backstab 24 % (47) |
+| Subtlety 40 | Patchwerk | 79,9 | **101,2** | 51 % | hovedhånd 30 %, off-hand 16 %, Garrote 13 % (8), Hemorrhage 12 % (67), Rupture 6 % |
+| Subtlety 40 | DungeonSlice | – | **83,4** | 56 % | |
+| Assassination 40 | Patchwerk | 103,2 | **104,5** | 58 % | Ruthlessness |
+
+Håndtjek (Combat 40 og Subtlety 40, samme udstyr og AP): Sinister Strike r6 (flad 33) rammer for 59,05 og Backstab
+r5 (flad 60, 150 %) for 113,34. (W + 60) × 1,5 / (W + 33) = 113,34 / 59,05 giver normaliseret dolkeslag W = 63,6 og
+rustningsfaktor 0,6115. Subtlety ignorerer 6 % rustning (Serrated Blades 2): faktor 0,626; Hemorrhage 63,6 × 1,45 ×
+0,626 = 57,7 (log 57,71) og Ghostly Strike 63,6 × 1,8 × 0,626 = 71,6 (log 71,64). Garrote r4 tikker for 59 × 1,20
+(Opportunity 5) × 1,15 (Hemorrhage) = 81,42 (log 81,42). Med sværd (Cruel Barb 5191) og Hack and Slash 5 giver ca.
+5 % af ca. 200 ramte slag 8,7 ekstra slag pr. kamp (målt, 300 iterationer).
+
+Regression: mage, warlock, priest og paladin Ret giver bit-for-bit samme DPS før og efter. basil
+(`test/fixtures/rogue-33.simc`, Combat uden Puncturing Wounds) er uændret (92,7): Sinister Strike som før.
+
+Kontrolleret i et lokalt bygget worker-image (via `/run`, 1000 iterationer, Patchwerk / DungeonSlice): Combat 20
+59,4 / 50,9, Combat 40 95,1 / 78,2, Subtlety 20 64,2 / 55,4, Subtlety 40 101,2 / 83,5, Assassination 40 104,6 / 85,7.
 
 ## druid
 
@@ -1230,16 +1396,26 @@ står på afstand (ingen auto-attack); alle andre, også shamaner uden talenter,
   våbenhastigheden (wowsims/forever: målt 10, fordoblet i patch notes, «TODO»); hver stak −4 % pr. talentpoint på
   Lightning Bolts kastetid og pris; Lightning Bolt ved 5 stakke.
 - **Rage of the Farseer** (talent 425336, 180 s): +30 % angrebshastighed i 25 s.
+- **Mana Spring Totem** (5675: 26, 10495: 36, 10496: 46, 10497: 56; aura 5677/10491/10493/10494): totemet som
+  selv-aura (som Strength of Earth), Periodic Energize hvert 2. s med 4/6/8/10 mana (effekt 1) i 300 s; Restorative
+  Totems (16187, Restoration) +5-25 %. Bruges af alle specs (wowsims/forever's Elemental og Enhancement sætter det
+  før kampen). Tilføjet 2026-11-12.
+- **Mana Tide Totem** (Restoration-talent; 16190, 17354: 38, 17359: 48, 1325256: 58; aura 16191/17355/17360/1325257):
+  88/133/197/290 mana hvert 3. s i 12 s («${$d-1} sec»), 300 s nedkøling. Kun ét vandtotem ad gangen: Mana Tide
+  tager Mana Spring ned (som wowsims/forever), og Mana Spring sættes igen bagefter. Tilføjet 2026-11-12.
 
 **Rotation:**
 
 ```
-precombat: variable,name=caster,…; flametongue_weapon / strength_of_earth_totem / windfury_totem (kun nærkamp); water_shield
+precombat: variable,name=caster,…; flametongue_weapon / strength_of_earth_totem / windfury_totem (kun nærkamp); water_shield;
+           mana_spring_totem
 default:   run_action_list,name=caster,if=variable.caster
-           auto_attack, strength_of_earth_totem, windfury_totem, rage_of_the_farseer, searing_totem,if=!ticking,
+           auto_attack, strength_of_earth_totem, windfury_totem, mana_spring_totem,if=!buff.mana_spring.up,
+           rage_of_the_farseer, searing_totem,if=!ticking,
            flame_shock,if=!ticking|remains<1, stormstrike, lightning_bolt,if=buff.maelstrom_weapon.stack=5,
            earth_shock,if=dot.flame_shock.ticking|!action.flame_shock.enabled
-caster:    water_shield, mana-fase (variable mana_phase: 1 under 10 % mana, 0 over 40 %), searing_totem,if=!ticking,
+caster:    water_shield, mana_tide_totem,if=mana.pct<50, mana_spring_totem,if=!buff.mana_spring.up&!buff.mana_tide.up,
+           mana-fase (variable mana_phase: 1 under 10 % mana, 0 over 40 %), searing_totem,if=!ticking,
            lightning_mastery, flame_shock (ikke i mana-fasen), chain_lightning,if=mana.pct>80|buff.clearcasting.up,
            lightning_bolt,if=!variable.mana_phase|buff.clearcasting.up
 ```
@@ -1250,19 +1426,24 @@ caster:    water_shield, mana-fase (variable mana_phase: 1 under 10 % mana, 0 ov
   40): 5/30, 20/60 og 10/80 ligger inden for −7 % og +2 % af 10/40; uden mana-fase er det 6-8 % lavere. Chain
   Lightning kun over 80 % mana (eller gratis): ved 40 % (wowsims' level 60-grænse med mana-drikke) bruger den manaen
   dårligere (Elemental 40: 37,4 mod 40,0).
-- **Elemental og Restoration er mana-begrænsede:** 70-80 % venter er tid, hvor shamanen venter på mana (ingen wand,
-  drikke, Mana Spring eller Mana Tide). En Elemental med 2210 mana og ca. 12 mana/s i regen kan kaste ca. 5.700
-  mana på 300 s. Det er vores bedste bud på en shaman uden mana-hjælp, ikke målt mod spillet.
+- **Elemental og Restoration er mana-begrænsede:** 67-80 % venter er tid, hvor shamanen venter på mana (ingen wand
+  og ingen drikke i en kamp). En Elemental på level 40 med 2240 mana og ca. 11 mana/s i regen kan kaste ca. 5.600 mana
+  på 300 s; Mana Spring Totem lægger ca. 900 til (3 mana/s fra level 36), og Mana Tide (Restoration) ca. 530-700.
+  Under level 26 er der intet totem. Det er vores bedste bud på en shaman uden mana-drikke, ikke målt mod spillet.
+  En kortere kamp (som i en dungeon mellem drikkepauser) starter med fuld mana; Patchwerks 300 s er hård for casters.
 - Stormstrike-debuffen, Flurry og Maelstrom ligger på shamanen (ét mål).
-- Ikke med: Mana Spring-, Magma-, Fire Nova- og Flametongue Totem, Windfury Weapon, Lightning Shield (skader kun den,
-  der slår), Elemental Devastation, Call of Flame (rammer kun totemets egen spell), Improved Stormstrike og healing.
+- Ikke med: Magma-, Fire Nova-, Healing Stream- og Flametongue Totem, Totemic Recall, Windfury Weapon, Lightning
+  Shield (skader kun den, der slår), Elemental Devastation, Call of Flame (rammer kun totemets egen spell), Improved
+  Stormstrike, mana-drikke og healing. Nærkamp i mana-fasen (en shaman uden wand kunne slå med våbnet) er heller ikke
+  med: casters står på afstand.
 
 **Filer:** `engine/class_modules/sc_shaman.cpp`, `engine/class_modules/apl/shaman.cpp` (mellem `//shaman_apl_start`
-og `//shaman_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/shaman` (én commit oven på
+og `//shaman_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/shaman` (to commits oven på
 `SIMC_REF`); patchen er `git diff 3c1d319..aula/shaman`. Den passer også uændret på upstream `main` `1b8e01d`.
 
-**Upstream-tjek (`shaman.check`):** upstream opretter selv `lightning_bolt` og `stormstrike` (`has_action`), APL'en
-bruger `"lightning_bolt` og `"stormstrike"`, og `sc_shaman.cpp` har ikke vores markør.
+**Upstream-tjek (`shaman.check`):** upstream opretter selv `lightning_bolt`, `stormstrike` og `mana_spring_totem`
+(`has_action`), APL'en bruger `"lightning_bolt`, `"stormstrike"` og `"mana_spring_totem`, og `sc_shaman.cpp` har ikke
+vores markør.
 
 **Model i workeren:** shaman står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs` («Grov model: SimulationCraft's grundmodel
 med Aulas rettelser»). Appen viser en gul advarsel pr. spec (totems, mana, healing; `lib/sim-model-gaps.ts`).
@@ -1285,3 +1466,22 @@ kører uden fejl (Elemental 40: 27,5, Enhancement 40: 100,1).
 Elemental og Restoration falder, fordi «før» var en nærkæmper med en 2H-mace (en anden spillestil); «efter» er en
 caster på afstand uden mana-hjælp. Tallet kan ikke sammenlignes med før, kun med andre casters på samme udstyr (mage
 51, priest 64 på level 40). Enhancement 40 stiger 31 % (auditens skøn var 20-40 %).
+
+#### Mana Spring og Mana Tide (tilføjet 2026-11-12; samme indstillinger)
+
+| Profil | Før | Efter | Venter før → efter | Mana fra totems (efter) | Største kilder (efter) |
+|---|---|---|---|---|---|
+| Elemental 20 | 16,2 | **16,2** | 69 % → 69 % | ingen (Mana Spring fra level 26) | uændret |
+| Elemental 40 | 40,0 | **44,3** | 79 % → 76 % | Mana Spring 897 | Lightning Bolt 36 %, Searing Totem 31 %, Flame Shock 23 %, Chain Lightning 10 % |
+| Enhancement 20 | 26,0 | **26,0** | 81 % → 81 % | ingen | uændret |
+| Enhancement 40 | 113,8 | **118,1** | 76 % → 73 % | Mana Spring 895 | melee 39 %, Stormstrike 26 % (41 mod 37) |
+| Restoration 20 | 15,1 | **15,1** | 73 % → 73 % | ingen | uændret |
+| Restoration 40 | 36,1 | **41,9** | 74 % → 67 % | Mana Spring 845, Mana Tide 699 | Lightning Bolt 42 %, Searing Totem 33 %, Flame Shock 23 % |
+
+Kontrolleret i et lokalt bygget worker-image (via `/run`, 1000 iterationer, Patchwerk / DungeonSlice): Elemental 40
+44,3 / 31,4, Restoration 40 42,0 / 32,9, Enhancement 40 118,1 / 103,8, level 20 uændret.
+
+Elemental 40 ligger stadig langt under Enhancement 40 (44 mod 118). Det er manaen: Mana Spring giver ca. 3 mana/s,
+mens en Lightning Bolt koster 121 (level 40, Convection 5), og spirit-regen kører kun uden for femsekundsreglen.
+Uden mana-drikke og med 300 s Patchwerk er en caster-shaman uden wand mana-begrænset; i loggen er manaen brugt efter
+ca. 25 s, og resten af kampen veksler mellem venten og korte kast-perioder.

@@ -501,3 +501,82 @@ iterationer, seed 42, Patchwerk; kontrolleret i et lokalt bygget worker-image, s
 derefter warrior og hunter, når PR #59 og hunter-aktiviteten upstream har afklaret sig. For warlock og shaman er de
 oplagte udvidelser pets (Voidwalker/Succubus/Felhunter og en imp-tabel over level 10), Drain Life som alternativ til
 Life Tap uden healer, og Mana Spring/Magma Totem.
+
+## 14. Opfølgning: shaman-mana, rogue Combat/Subtlety og paladin Holy/Protection
+
+Brugeren bad om «resten» af rækkefølgen i §10 (efter warlock og shaman): mana til Elemental/Restoration-shamanen,
+derefter rogue Combat/Subtlety og paladin Holy/Protection i vores egne rettelser.
+
+1. **Shaman** (`shaman.patch`, fork-branch `aula/shaman`, ny commit): Mana Spring Totem for alle specs (level 26+;
+   wowsims/forever's Elemental og Enhancement sætter det før kampen) og Mana Tide Totem for Restoration, som
+   selv-auraer med aura-spellens mana pr. tick fra spildataen; Restorative Totems øger Mana Spring. Wand findes ikke,
+   og drikke mellem grupper er ikke en del af én kamp. Elemental Focus/Clearcasting, Convection og Water Shield var
+   der i forvejen.
+2. **Rogue** (`rogue.patch`, `aula/rogue`, ny commit): Backstab (dolk, bag målet) med Puncturing Wounds' ekstra combo
+   point, Hemorrhage (+15 % Rupture/Garrote), Ghostly Strike (Ambush/Garrote i kampen), Premeditation, Preparation,
+   Initiative, Boot Knife, Ruthlessness og Hack and Slash' økse/sværd- og kølle-del. Rotationen vælger Hemorrhage og
+   Backstab efter talenter; Sinister Strike som før uden dem.
+3. **Paladin** (`paladin.patch`, `aula/paladin`, ny commit): Holy Shock (skade) og Divine Favor for Holy; Righteous
+   Fury, Holy Shield (skade via Shieldsworn på Holy Strike), Swift Judgement og Consecration på ét mål for
+   Protection. Spec'en afgøres af talenterne, og Holy Shock/Holy Shield/Consecration har mana-grænser (målt).
+4. **`.check`:** shaman kræver nu også `mana_spring_totem`; rogue og paladin kræver de nye spec-handlinger, så en
+   upstream-grundmodel uden dem ikke får rettelsen droppet (testet). `check-upstream.sh` giver OK for alle syv
+   rettelser på både `3c1d319` og `main` `1b8e01d`.
+5. **Advarslen i appen** (`lib/sim-model-gaps.ts`): de tre klasser har allerede «Grov model»; de gule tekster siger
+   nu, hvad der stadig mangler (se nedenfor).
+
+**Før/efter** (samme profiler og indstillinger som §1, §12 og §13: native bygning, 1000 iterationer, seed 42,
+Patchwerk; kontrolleret i et lokalt bygget worker-image, se PATCHES.md):
+
+| Klasse | Spec | DPS L20 før → efter | DPS L40 før → efter | Venter L40 før → efter | DungeonSlice L40 (efter) |
+|---|---|---|---|---|---|
+| Shaman | Elemental Combat | 16,2 → **16,2** | 40,0 → **44,3** | 79 % → 76 % | 31,4 |
+| Shaman | Restoration | 15,1 → **15,1** | 36,1 → **41,9** | 74 % → 67 % | 32,9 |
+| Shaman | Enhancement | 26,0 → **26,0** | 113,8 → **118,1** | 76 % → 73 % | 103,8 |
+| Rogue | Combat | 59,2 → **59,2** | 85,9 → **95,2** | 53 % → 62 % | 78,2 |
+| Rogue | Subtlety | 57,8 → **64,2** | 79,9 → **101,2** | 58 % → 51 % | 83,5 |
+| Rogue | Assassination | 60,4 → **60,4** | 103,2 → **104,5** | 59 % → 58 % | 85,7 |
+| Paladin | Holy | 16,9 → **16,8** | 72,6 → **74,8** | 78 % → 74 % | 65,1 |
+| Paladin | Protection | 16,5 → **15,8** | 68,9 → **68,5** | 68 % → 68 % | 60,3 |
+
+- **Shaman:** Mana Spring giver ca. 900 mana på 300 s fra level 36 (3 mana/s), Mana Tide 530-700 (Restoration).
+  Elemental 40 +11 %, Restoration 40 +16 %, Enhancement 40 +4 %. Under level 26 er der intet totem, så level 20 er
+  uændret. **Elemental ligger stadig langt under Enhancement**, og det er ikke en fejl i modellen men manaen: en
+  Lightning Bolt koster 121 mana, regen og totem giver i snit ca. 14 mana/s, og der er ingen wand eller drikke i én kamp på
+  300 s. I en dungeon starter hver gruppe typisk med fuld mana, så Patchwerk er hårdere for casters end spillet.
+- **Rogue:** Subtlety 40 stiger 27 % og ligger nu på niveau med Assassination (101 mod 105); Combat 40 stiger 11 %
+  (Backstab er 27 % af skaden). Combat 20 er uændret: uden Puncturing Wounds bruges Sinister Strike som før, og
+  Riposte kræver, at målet slår. Guildens basil (Combat uden Puncturing Wounds) er uændret (92,7). «Venter» stiger
+  for Combat, fordi rogue'en nu sparer energi op til Backstab (60).
+- **Paladin:** Holy og Protection er nu adskilt fra Ret i loggen (Holy Shock; Righteous Fury, Swift Judgement, Holy
+  Shield og Consecration), men DPS ændrer sig kun lidt. Begge er mana-begrænsede, og de nye evner er dyre: uden
+  mana-grænse *sænkede* Holy Shock Holy 40 fra 72,5 til 70,4. Protection 20 falder 4 %, fordi Consecration på ét mål
+  (en tank-vane) koster Judgements. Holy Shield giver kun skade via Shieldsworn, fordi Patchwerk-målet ikke slår, og
+  kræver et skjold (auditens Prot-profil har et tohåndsvåben; en variant med skjold giver 52,2 → 52,0). Guildens
+  Holy 39 stiger fra 73,3 til 75,9.
+- Mage, warlock, priest, druid og paladin Ret er bit-for-bit uændrede.
+
+**Advarslen nu** (gul, «Aulas model dækker ikke … fuldt ud», sammen med «Grov model»):
+
+- Shaman Elemental: «Magma- og Fire Nova Totem, mana-drikke og Call of Flame. Under level 26 (før Mana Spring
+  Totem) og i lange kampe løber manaen tør, og shamanen venter på den (ingen wand).»
+- Shaman Restoration: «healing (kun skade simuleres), Healing Stream Totem og mana-drikke. Shamanen simuleres som
+  en Elemental-caster med Mana Spring og Mana Tide Totem.»
+- Shaman Enhancement: «Windfury Weapon, Lightning Shield og andre totems end Searing, Strength of Earth, Windfury og
+  Mana Spring. Maelstrom Weapons proc-rate er et skøn.»
+- Rogue Combat: «Riposte (målet slår ikke i simuleringen), Expose Armor og Kidney Shot. Backstab antager, at du står
+  bag målet.»
+- Rogue Subtlety: «Death Mark, Setup og Vanish med ny åbning. Backstab og Ambush antager, at du står bag målet.»
+- Paladin Holy: «healing (kun skade simuleres), Exorcism og Consecrated Ground. Holy Shock bruges kun over halv
+  mana, og under level 30 er rotationen Retributions med Seal of Righteousness.»
+- Paladin Protection: «Reckoning og Holy Shields skade ved blok: målet slår ikke i simuleringen, så Holy Shield giver
+  kun skade via Shieldsworn på Holy Strike. Holy Shield og Consecration på ét mål koster mana.»
+
+**Antagelser og forbehold** (detaljer i PATCHES.md): rogue står bag målet (Backstab/Ambush); Garrote før Ambush efter
+Ghostly Strike er valgt ud fra simuleringen; Swift Judgement er et server-script (antaget = Judgement); Shieldsworn
+ændrer ikke Holy Strikes egen skade; mana-grænserne for paladin er vores valg (målt); Righteous Fury koster ingen
+mana i simc. Ingen af tallene er sammenlignet med Forever-logs.
+
+**Tilbage fra §10:** warrior (vent på PR #59 eller byg oven på den) og hunter (pet-modellen; seriallos ejer hunter
+upstream). For de rettede klasser er de oplagte udvidelser: Death Mark (Subtlety), Seal of Wisdom og Blessings
+(paladin-mana), Magma/Fire Nova Totem (shaman) og pets ud over Imp (warlock).
