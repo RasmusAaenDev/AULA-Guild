@@ -23,6 +23,7 @@ export function ProfileMenu({
             <input type="hidden" name="characterId" value={c.id} />
             <button type="submit" className="btn secondary" style={{ width: '100%', margin: '6px 0' }} disabled={c.id === activeId}>
               {c.fullName} · {c.className} · {roleLabel(c.role)}
+              {c.verified ? '' : ' · ikke verificeret'}
               {c.id === activeId ? ' (aktiv)' : ''}
             </button>
           </form>

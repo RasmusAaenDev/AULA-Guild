@@ -15,6 +15,7 @@ import { syncRoster, type SyncResult } from '@/lib/sync';
 import { upsertUser } from '@/lib/users';
 import { deriveAccess } from '@/lib/access';
 import { syncAccountCharacters } from '@/lib/account-characters';
+import { fetchAccountCharacters } from '@/lib/blizzard/account';
 import type { AuthDeps } from '@/lib/auth-callbacks';
 
 const g = globalThis as unknown as { __aulaBlizzard?: BlizzardClient; __aulaChat?: ChatClient; __aulaSync?: Promise<SyncResult> };
@@ -64,8 +65,9 @@ export async function runScheduledJobs(): Promise<JobsResult> {
 export function authDeps(): AuthDeps {
   return {
     upsertUser: (u) => upsertUser(getDb(), u),
-    // TODO(opgave 5): hent kontoens karakterer med fetchAccountCharacters(accessToken) og send dem med.
-    syncAccountCharacters: async ({ userId }) => syncAccountCharacters(getDb(), getBlizzard(), userId, []),
+    // Brugerens token bruges kun til dette ene kald og gemmes ikke; fejl giver en tom liste (login fortsætter).
+    syncAccountCharacters: async ({ userId, accessToken }) =>
+      syncAccountCharacters(charactersDeps(), userId, await fetchAccountCharacters(accessToken)),
     deriveAccess: (userId) => deriveAccess(getDb(), userId, { officerMaxRank: env().OFFICER_MAX_RANK }),
   };
 }

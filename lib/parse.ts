@@ -10,3 +10,10 @@ export function parseWeekday(value: unknown): number | null {
   if (typeof value !== 'string' || !/^[0-6]$/.test(value)) return null;
   return Number(value);
 }
+
+/** En sti på siden selv (til redirectTo); alt der kunne pege ud af siden (`//host`, `/\host`, protokoller, styretegn) er ugyldigt. */
+export function parseLocalPath(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length > 200) return null;
+  if (!/^\/(?![/\\])[\x21-\x7e]*$/.test(value)) return null;
+  return value;
+}

@@ -22,6 +22,8 @@ describe('switcherLabel', () => {
   it('giver skiftetekst til ikke-primære og «(primær karakter)» til den primære', () => {
     expect(switcherLabel('Ezzek Svumpukkel', false)).toBe('Skift primær karakter til Ezzek Svumpukkel');
     expect(switcherLabel('Ezzek Svumpukkel', true)).toBe('Ezzek Svumpukkel (primær karakter)');
+    expect(switcherLabel('Ezzek Svumpukkel', true, false)).toBe('Ezzek Svumpukkel (primær karakter, ikke verificeret)');
+    expect(switcherLabel('Ezzek Svumpukkel', false, false)).toBe('Skift primær karakter til Ezzek Svumpukkel (ikke verificeret)');
   });
 });
 

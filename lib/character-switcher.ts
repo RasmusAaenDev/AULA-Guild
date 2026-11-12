@@ -12,8 +12,9 @@ export function classKey(className: string): ClassKey {
   return (classKeys as readonly string[]).includes(k) ? (k as ClassKey) : 'ukendt';
 }
 
-export function switcherLabel(fullName: string, isPrimary: boolean): string {
-  return isPrimary ? `${fullName} (primær karakter)` : `Skift primær karakter til ${fullName}`;
+export function switcherLabel(fullName: string, isPrimary: boolean, verified = true): string {
+  if (isPrimary) return `${fullName} (primær karakter${verified ? '' : ', ikke verificeret'})`;
+  return `Skift primær karakter til ${fullName}${verified ? '' : ' (ikke verificeret)'}`;
 }
 
 /** Fast alfabetisk rækkefølge på fuldt navn, så knapperne ikke hopper, når den primære skifter. */

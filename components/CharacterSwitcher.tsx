@@ -22,7 +22,7 @@ export function CharacterSwitcher({ characters, activeId }: { characters: MyChar
       <ul className="cs-list">
         {sortForSwitcher(characters).map((c) => {
           const primary = c.id === activeId;
-          const label = switcherLabel(c.fullName, primary);
+          const label = switcherLabel(c.fullName, primary, c.verified);
           const cls = `cs-avatar cs-cls-${classKey(c.className)}`;
           const inner = (
             <>

@@ -8,7 +8,7 @@ import { CharacterSwitcher } from '@/components/CharacterSwitcher';
 import type { MyCharacter } from '@/lib/characters';
 
 const c = (id: number, fullName: string, inGuild: boolean): MyCharacter => ({
-  id, name: fullName.split(' ')[0], fullName, className: 'Mage', spec: null, role: 'dps', inGuild,
+  id, name: fullName.split(' ')[0], fullName, className: 'Mage', spec: null, role: 'dps', inGuild, verified: true,
 });
 
 describe('GuildStar', () => {

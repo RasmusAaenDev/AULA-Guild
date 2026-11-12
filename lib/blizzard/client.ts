@@ -6,7 +6,7 @@ const TOKEN_URL = 'https://oauth.battle.net/token';
 const NAMESPACE = 'profile-forever-eu';
 const LOCALE = 'en_GB';
 // Intet Blizzard-kald må hænge for evigt (en formular ville så vise «henter …» uden slut).
-const REQUEST_TIMEOUT_MS = 15_000;
+export const REQUEST_TIMEOUT_MS = 15_000;
 
 type RawCharacter = {
   id: number;
@@ -144,7 +144,7 @@ function parseTalents(raw: unknown): { id: number; rank: number }[] {
   return out;
 }
 
-function slugFromHref(href: string | undefined): string | null {
+export function slugFromHref(href: string | undefined): string | null {
   if (!href) return null;
   try {
     const last = new URL(href).pathname.split('/').filter(Boolean).pop();

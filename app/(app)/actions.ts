@@ -2,12 +2,12 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { signOut } from '@/auth';
+import { signIn, signOut } from '@/auth';
 import { addCharacter, setActiveCharacter, setRole, unlinkCharacter } from '@/lib/characters';
 import { getDb } from '@/lib/db';
 import { roles, type Role } from '@/lib/db/schema';
 import { addCharacterMessage } from '@/lib/messages';
-import { parseId } from '@/lib/parse';
+import { parseId, parseLocalPath } from '@/lib/parse';
 import { charactersDeps } from '@/lib/services';
 import { requireUser, requireOfficer } from '@/lib/session';
 
@@ -49,6 +49,15 @@ export async function addCharacterAction(_prev: AddState, formData: FormData): P
   if (!result.ok) return { error: addCharacterMessage(result.reason), name, role };
   revalidatePath('/', 'layout');
   redirect('/kontakter');
+}
+
+/**
+ * «Opdatér mine karakterer»: Battle.net-tokenet gemmes ikke, så brugeren sendes gennem Battle.net-login igen; login henter
+ * kontoens karakterer og verificerer dem (se applySignIn). Bagefter tilbage til `back` (kun stier på siden selv).
+ */
+export async function refreshAccountCharactersAction(formData: FormData): Promise<void> {
+  await requireUser();
+  await signIn('battlenet', { redirectTo: parseLocalPath(formData.get('back')) ?? '/' });
 }
 
 export async function signOutAction(): Promise<void> {

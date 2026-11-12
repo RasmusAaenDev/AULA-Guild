@@ -1,4 +1,6 @@
 import { GuildStar } from '@/components/GuildStar';
+import { AccountRefreshForm } from '@/components/AccountRefreshForm';
+import { UNVERIFIED_HELP, VerifiedMark } from '@/components/VerifiedMark';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
@@ -75,7 +77,7 @@ export default async function OverviewPage({
   const pinned = pinnedEvent(upcoming, now);
   const [{ n: characterCount }] = await db.select({ n: count() }).from(characters).where(eq(characters.userId, member.userId));
   const [row] = await db
-    .select({ id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel, inGuild: characters.inGuild })
+    .select({ id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel, inGuild: characters.inGuild, verifiedAt: characters.verifiedAt })
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
@@ -248,7 +250,7 @@ export default async function OverviewPage({
             {row ? (
               <>
               <p>
-                <strong>{armoryUrl(row.slug) ? <a href={armoryUrl(row.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{fullName(row)}</a> : fullName(row)}</strong>{row.inGuild && <GuildStar />} · {row.className}
+                <strong>{armoryUrl(row.slug) ? <a href={armoryUrl(row.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{fullName(row)}</a> : fullName(row)}</strong>{row.inGuild && <GuildStar />}<VerifiedMark verified={row.verifiedAt !== null} /> · {row.className}
                 {row.spec ? ` (${row.spec})` : ''}
                 <br />
                 <span className="muted">
@@ -257,6 +259,7 @@ export default async function OverviewPage({
                   {row.itemLevel != null ? ` · item level ${row.itemLevel}` : ''}
                 </span>
               </p>
+              {row.verifiedAt === null && <p className="muted verify-help">{UNVERIFIED_HELP}</p>}
               {isSimConfigured() && <QuickSim characterId={row.id} />}
               </>
             ) : (
@@ -264,6 +267,7 @@ export default async function OverviewPage({
                 Du har ingen karakter endnu. <Link href="/karakter/ny">Tilføj din første karakter</Link>.
               </p>
             )}
+            <AccountRefreshForm back="/" />
           </section>
         </aside>
       </div>

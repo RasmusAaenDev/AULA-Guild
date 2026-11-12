@@ -29,7 +29,7 @@ describe('addCharacter', () => {
     expect(res.ok).toBe(true);
     if (!res.ok) return;
     const [row] = await db.select().from(characters);
-    expect(row).toMatchObject({ blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', spec: 'Frost', role: 'dps', itemLevel: 8, inGuild: true, userId });
+    expect(row).toMatchObject({ blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', spec: 'Frost', role: 'dps', itemLevel: 8, inGuild: true, userId, verifiedAt: null });
     expect(row.lastSynced).toBeInstanceOf(Date);
     expect(await activeOf(userId)).toBe(res.characterId);
   });
@@ -193,6 +193,22 @@ describe('unlinkCharacter', () => {
     expect(await listMyCharacters(db, a)).toEqual([]);
   });
 
+  it('fjerner også verificeringen, så en ny fritekst-ejer ikke arver den', async () => {
+    const a = await seedUser(db, 'a');
+    const b = await seedUser(db, 'b');
+    const [c] = await db
+      .insert(characters)
+      .values({ blizzardId: 1001, slug: 'magi-far', name: 'Magi', surname: 'Far', className: 'Mage', role: 'dps', userId: a, verifiedAt: new Date() })
+      .returning({ id: characters.id });
+    await unlinkCharacter(db, c.id);
+    expect((await db.select().from(characters))[0].verifiedAt).toBeNull();
+    const res = await addCharacter(deps(fakeBlizzard({ characters: { 'magi-far': armory() } })), { userId: b, name: 'Magi Far', role: 'dps' });
+    expect(res.ok).toBe(true);
+    const [row] = await db.select().from(characters);
+    expect(row.userId).toBe(b);
+    expect(row.verifiedAt).toBeNull();
+  });
+
   it('vælger deterministisk ved samme fornavn (efter efternavn)', async () => {
     const a = await seedUser(db, 'a');
     await db.insert(characters).values([
@@ -285,6 +301,10 @@ describe('listMyCharacters: fuldt navn og rækkefølge', () => {
     const mine = await listMyCharacters(db, a);
     expect(mine.map((c) => c.fullName)).toEqual(['Anna Berg', 'Anna Ølund', 'Bo Ek']);
     expect(mine.map((c) => c.name)).toEqual(['Anna', 'Anna', 'Bo']);
+    expect(mine.every((c) => c.verified === false)).toBe(true);
+    await db.update(characters).set({ verifiedAt: new Date() }).where(eq(characters.blizzardId, 2));
+    expect((await listMyCharacters(db, a)).map((c) => c.verified)).toEqual([true, false, false]);
+    expect((await listContacts(db)).find((c) => c.name === 'Anna' && c.fullName === 'Anna Berg')?.verified).toBe(true);
   });
 });
 
@@ -355,7 +375,7 @@ describe('listContacts', () => {
     expect(contacts.map((c) => c.name)).toEqual(['Abe', 'Bob', 'Zed']);
     // Bob har intet surname i databasen: fuldt navn udledes af sluggen.
     expect(contacts.map((c) => c.fullName)).toEqual(['Abe Aaen', 'Bob Bygger', 'Zed Zorn']);
-    expect(contacts[0]).toMatchObject({ ownerName: 'Bruger b', inGuild: true });
+    expect(contacts[0]).toMatchObject({ ownerName: 'Bruger b', inGuild: true, verified: false });
     expect(contacts[2].inGuild).toBe(false);
   });
 });

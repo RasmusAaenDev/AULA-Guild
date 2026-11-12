@@ -341,3 +341,22 @@ describe('syncRoster: highlights', () => {
     expect((await all()).map((h) => h.title)).toEqual(['ny']);
   });
 });
+
+describe('syncRoster: ejer og verificering', () => {
+  it('bevarer userId og verifiedAt, både i guilden og efter man har forladt den', async () => {
+    const u = await seedUser(db);
+    const verified = new Date('2026-11-09T08:00:00Z');
+    await seed(1, 'Alpha', u, { verifiedAt: verified });
+    await seed(2, 'Beta', u, { verifiedAt: verified });
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', rank: 1 })],
+      characters: {
+        alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha' }),
+        beta: armory({ blizzardId: 2, slug: 'beta', name: 'Beta', guildId: null }),
+      },
+    });
+    await run(blizzard);
+    expect(await row(1)).toMatchObject({ userId: u, verifiedAt: verified, inGuild: true, guildRank: 1 });
+    expect(await row(2)).toMatchObject({ userId: u, verifiedAt: verified, inGuild: false, guildRank: null });
+  });
+});

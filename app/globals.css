@@ -546,3 +546,10 @@ details.create .menu a:hover { background: var(--border); }
 .first-character p { max-width: 60ch; }
 .first-character-cta { min-height: 52px; padding: 12px 28px; font-size: 18px; font-weight: 800; display: inline-flex; align-items: center; }
 .btn[aria-disabled='true'] { cursor: progress; }
+
+/* Verificerede karakterer (står på Battle.net-kontoen): diskret flueben. Uverificerede: tydeligt mærke. */
+.verified-mark { display: inline-flex; vertical-align: middle; margin-left: 0.3em; color: var(--ok); }
+.badge.unverified { margin-left: 0.4em; background: transparent; border: 1px solid var(--maybe); color: var(--maybe); font-weight: 700; white-space: nowrap; vertical-align: middle; }
+.verify-help { font-size: 14px; }
+.account-refresh { margin: 8px 0 0; }
+.account-refresh .muted { font-size: 14px; margin: 6px 0 0; }

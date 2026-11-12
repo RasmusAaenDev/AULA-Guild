@@ -64,8 +64,34 @@ export async function addCharacter(
     if (e instanceof BlizzardError) return { ok: false, reason: e.kind === 'not_found' ? 'not_found' : 'unavailable' };
     throw e;
   }
-  const inGuild = found.guildId === deps.guildId;
+  const stored = await storeCharacter(deps.db, found, surname, {
+    userId: input.userId, role: input.role, inGuild: found.guildId === deps.guildId, verifiedAt: null,
+  });
+  if (stored === null) {
+    const [existing] = await deps.db
+      .select({ userId: characters.userId })
+      .from(characters)
+      .where(eq(characters.blizzardId, found.blizzardId));
+    return { ok: false, reason: existing?.userId === input.userId ? 'already_yours' : 'taken' };
+  }
 
+  await deps.db
+    .update(users)
+    .set({ activeCharacterId: stored })
+    .where(and(eq(users.id, input.userId), isNull(users.activeCharacterId)));
+  return { ok: true, characterId: stored };
+}
+
+/**
+ * Gemmer en armory-profil på brugeren: ny række, eller en eksisterende uden ejer. null = karakteren ejes allerede af nogen.
+ * Fælles vej for fritekst (verifiedAt null) og Battle.net-kontoen (verifiedAt = nu).
+ */
+async function storeCharacter(
+  db: Db,
+  found: ArmoryCharacter,
+  surname: string | null,
+  opts: { userId: number; role: Role; inGuild: boolean; verifiedAt: Date | null; guildRank?: number | null },
+): Promise<number | null> {
   const values = {
     blizzardId: found.blizzardId,
     slug: found.slug,
@@ -73,37 +99,56 @@ export async function addCharacter(
     surname,
     className: found.className,
     spec: found.spec ?? null,
-    role: input.role,
+    role: opts.role,
     level: found.level,
     itemLevel: found.itemLevel,
-    inGuild,
+    inGuild: opts.inGuild,
+    ...(opts.guildRank !== undefined ? { guildRank: opts.guildRank } : {}),
     lastLogin: found.lastLogin,
     lastSynced: new Date(),
-    userId: input.userId,
+    userId: opts.userId,
+    verifiedAt: opts.verifiedAt,
   };
-  const { blizzardId, surname: _s, ...rest } = values;
+  const { blizzardId: _b, surname: _s, ...rest } = values;
   // Aldrig overskriv et kendt efternavn med null.
   const update = surname !== null ? { ...rest, surname } : rest;
 
-  const rows = await deps.db
+  const rows = await db
     .insert(characters)
     .values(values)
     .onConflictDoUpdate({ target: characters.blizzardId, set: update, setWhere: isNull(characters.userId) })
     .returning({ id: characters.id });
+  return rows[0]?.id ?? null;
+}
 
-  if (rows.length === 0) {
-    const [existing] = await deps.db
-      .select({ userId: characters.userId })
-      .from(characters)
-      .where(eq(characters.blizzardId, blizzardId));
-    return { ok: false, reason: existing?.userId === input.userId ? 'already_yours' : 'taken' };
-  }
+/** Standardrolle ud fra spec (kan ændres i profilmenuen): healer-specs → healer, Protection → tank, ellers DPS. */
+export function defaultRole(spec: string | null | undefined): Role {
+  if (spec === 'Holy' || spec === 'Discipline' || spec === 'Restoration') return 'healer';
+  if (spec === 'Protection') return 'tank';
+  return 'dps';
+}
 
-  await deps.db
-    .update(users)
-    .set({ activeCharacterId: rows[0].id })
-    .where(and(eq(users.id, input.userId), isNull(users.activeCharacterId)));
-  return { ok: true, characterId: rows[0].id };
+/**
+ * Opretter en karakter fra brugerens Battle.net-konto som verificeret (profilopslag i armory som ved «tilføj karakter»).
+ * `roster` (hvis hentet) giver medlemskab og rang; ellers afgøres medlemskab af profilens guild. Fejl fra Blizzard kastes
+ * videre (kalderen springer karakteren over). null = karakteren findes allerede på en anden bruger.
+ */
+export async function addVerifiedCharacter(
+  deps: CharactersDeps,
+  input: { userId: number; slug: string; blizzardId: number; surname: string | null; roster: RosterMember[] | null; now: Date },
+): Promise<number | null> {
+  const found = await deps.blizzard.getCharacter(input.slug);
+  if (found.blizzardId !== input.blizzardId) throw new BlizzardError('not_found', `${input.slug}: anden karakter i armory`);
+  const inRoster = input.roster?.find((m) => m.blizzardId === found.blizzardId) ?? null;
+  // Profil, så kontoen, så rosteren (ingen ekstra kald).
+  const surname = found.surname ?? input.surname ?? inRoster?.surname ?? null;
+  return storeCharacter(deps.db, found, surname, {
+    userId: input.userId,
+    role: defaultRole(found.spec),
+    inGuild: input.roster ? inRoster !== null : found.guildId === deps.guildId,
+    guildRank: input.roster ? (inRoster?.rank ?? null) : null,
+    verifiedAt: input.now,
+  });
 }
 
 /**
@@ -140,7 +185,8 @@ export async function unlinkCharacter(db: Db, characterId: number, now: Date = n
       .from(characters)
       .where(eq(characters.id, characterId))
       .for('update');
-    await tx.update(characters).set({ userId: null }).where(eq(characters.id, characterId));
+    // Verificeringen hører til ejeren; en frakoblet karakter er uverificeret, til nogen beviser ejerskab igen.
+    await tx.update(characters).set({ userId: null, verifiedAt: null }).where(eq(characters.id, characterId));
     // Peg ejerens aktive pointer på en anden af hans egne karakterer (laveste navn), ellers NULL.
     await tx
       .update(users)
@@ -170,6 +216,8 @@ export type MyCharacter = {
   spec: string | null;
   role: Role;
   inGuild: boolean;
+  /** Står på brugerens egen Battle.net-konto. Uverificerede tæller ikke til medlemskab eller officer. */
+  verified: boolean;
 };
 
 export async function listMyCharacters(db: Db, userId: number): Promise<MyCharacter[]> {
@@ -177,11 +225,12 @@ export async function listMyCharacters(db: Db, userId: number): Promise<MyCharac
     .select({
       id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug,
       className: characters.className, spec: characters.spec, role: characters.role, inGuild: characters.inGuild,
+      verifiedAt: characters.verifiedAt,
     })
     .from(characters)
     .where(eq(characters.userId, userId));
   return rows
-    .map(({ surname, slug, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug }) }))
+    .map(({ surname, slug, verifiedAt, ...r }) => ({ ...r, verified: verifiedAt !== null, fullName: fullName({ name: r.name, surname, slug }) }))
     .sort(byFullName);
 }
 
@@ -197,6 +246,7 @@ export type Contact = {
   itemLevel: number | null;
   guildRank: number | null;
   inGuild: boolean;
+  verified: boolean;
   lastSynced: Date | null;
   ownerName: string;
   ownerId: number;
@@ -216,6 +266,7 @@ export async function listContacts(db: Db): Promise<Contact[]> {
       itemLevel: characters.itemLevel,
       guildRank: characters.guildRank,
       inGuild: characters.inGuild,
+      verifiedAt: characters.verifiedAt,
       lastSynced: characters.lastSynced,
       ownerName: users.name,
       ownerId: users.id,
@@ -223,6 +274,6 @@ export async function listContacts(db: Db): Promise<Contact[]> {
     .from(characters)
     .innerJoin(users, eq(characters.userId, users.id));
   return rows
-    .map(({ surname, ...r }) => ({ ...r, fullName: fullName({ name: r.name, surname, slug: r.slug }) }))
+    .map(({ surname, verifiedAt, ...r }) => ({ ...r, verified: verifiedAt !== null, fullName: fullName({ name: r.name, surname, slug: r.slug }) }))
     .sort((a, b) => Number(b.inGuild) - Number(a.inGuild) || byFullName(a, b));
 }
