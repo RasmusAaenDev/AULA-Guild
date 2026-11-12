@@ -1,0 +1,7 @@
+# Er upstream (simc-forever) færdig med rogue? Tjekkes på den RENE upstream-kilde, før rogue.patch anvendes.
+# Alle betingelser skal holde; så droppes rogue.patch. Syntaks: se PATCHES.md.
+# Ren upstream ved SIMC_REF 3c1d319: sc_rogue.cpp er en tom skal på 42 linjer, og apl/rogue.cpp har ingen add_action.
+min_lines engine/class_modules/sc_rogue.cpp 150
+contains engine/class_modules/apl/rogue.cpp add_action
+# Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor rogue.patch allerede er anvendt).
+not_contains engine/class_modules/sc_rogue.cpp AULA-RETTELSE

@@ -1,10 +1,10 @@
 // Tests af rettelses-mekanismen (patches/apply.sh og check-upstream.sh) mod en lille falsk simc-mappe,
 // uden at bygge simc. fixtures/simc-upstream/ er de rene upstream-filer ved SIMC_REF, som rettelserne (mage.patch,
-// paladin.patch) er lavet mod.
+// paladin.patch, rogue.patch) er lavet mod. Rettelserne rører forskellige filer og afhænger ikke af hinanden.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync, execFileSync } from 'node:child_process';
-import { mkdtempSync, cpSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, cpSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,10 +17,16 @@ const APPLY = path.join(patchDir, 'apply.sh');
 const CHECK_UPSTREAM = path.join(patchDir, 'check-upstream.sh');
 const MAGE = 'engine/class_modules/sc_mage.cpp';
 const MAGE_APL = 'engine/class_modules/apl/mage.cpp';
+const MAGE_HPP = 'engine/class_modules/apl/mage.hpp';
 const PALADIN = 'engine/class_modules/sc_paladin.cpp';
 const PALADIN_APL = 'engine/class_modules/apl/paladin.cpp';
 const PALADIN_HPP = 'engine/class_modules/apl/paladin.hpp';
-const BOTH_APPLIED = 'mage applied\npaladin applied\n';
+const ROGUE = 'engine/class_modules/sc_rogue.cpp';
+const ROGUE_APL = 'engine/class_modules/apl/rogue.cpp';
+const ROGUE_HPP = 'engine/class_modules/apl/rogue.hpp';
+// apply.sh går rettelserne igennem via globben *.patch, dvs. alfabetisk efter klasse.
+const CLASSES = ['mage', 'paladin', 'rogue'];
+const ALL_APPLIED = 'mage applied\npaladin applied\nrogue applied\n';
 
 const tmp = (p) => mkdtempSync(path.join(tmpdir(), p));
 function fakeSimc() {
@@ -34,24 +40,33 @@ function run(script, args, env = {}) {
 }
 const read = (dir, f) => readFileSync(path.join(dir, f), 'utf8');
 
-test('fixturen er præcis den upstream-version rettelserne er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
-  for (const cls of ['mage', 'paladin']) {
-    const patch = readFileSync(path.join(patchDir, `${cls}.patch`), 'utf8');
+test('fixturen er præcis den upstream-version hver rettelse er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
+  const patches = readdirSync(patchDir).filter((f) => f.endsWith('.patch'));
+  for (const cls of CLASSES) assert.ok(patches.includes(`${cls}.patch`), cls);
+  for (const name of patches) {
+    const patch = readFileSync(path.join(patchDir, name), 'utf8');
     const files = [...patch.matchAll(/^diff --git a\/(\S+) b\/\S+\nindex ([0-9a-f]+)\.\./gm)];
-    assert.ok(files.length >= 3, cls);
+    assert.ok(files.length >= 3, name);
     for (const [, file, blob] of files) {
       const actual = execFileSync('git', ['hash-object', path.join(upstream, file)], { encoding: 'utf8' }).trim();
-      assert.ok(actual.startsWith(blob), `${cls} ${file}: fixture ${actual.slice(0, 7)} ≠ patchens ${blob}`);
+      assert.ok(actual.startsWith(blob), `${name} ${file}: fixture ${actual.slice(0, 7)} ≠ patchens ${blob}`);
     }
   }
 });
 
-test('mage.patch og paladin.patch rører hver sine filer (ingen afhængighed mellem rettelserne)', () => {
-  const touched = (cls) => new Set([...readFileSync(path.join(patchDir, `${cls}.patch`), 'utf8').matchAll(/^\+\+\+ b\/(\S+)$/gm)].map((m) => m[1]));
-  const mage = touched('mage');
-  const paladin = touched('paladin');
-  assert.deepEqual([...paladin].sort(), [PALADIN_HPP, PALADIN_APL, PALADIN].sort());
-  for (const f of paladin) assert.equal(mage.has(f), false, f);
+test('alle rettelser rører hver sine filer (ingen afhængighed mellem rettelserne)', () => {
+  const touched = (name) => new Set([...readFileSync(path.join(patchDir, name), 'utf8').matchAll(/^\+\+\+ b\/(\S+)$/gm)].map((m) => m[1]));
+  const patches = readdirSync(patchDir).filter((f) => f.endsWith('.patch'));
+  const sets = patches.map((p) => [p, touched(p)]);
+  for (const [a, fa] of sets) {
+    for (const [b, fb] of sets) {
+      if (a >= b) continue;
+      for (const f of fa) assert.equal(fb.has(f), false, `${a} og ${b} rører begge ${f}`);
+    }
+  }
+  assert.deepEqual([...touched('mage.patch')].sort(), [MAGE_HPP, MAGE_APL, MAGE].sort());
+  assert.deepEqual([...touched('paladin.patch')].sort(), [PALADIN_HPP, PALADIN_APL, PALADIN].sort());
+  assert.deepEqual([...touched('rogue.patch')].sort(), [ROGUE_HPP, ROGUE_APL, ROGUE].sort());
 });
 
 test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () => {
@@ -71,13 +86,23 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(read(src, MAGE), /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
     assert.match(read(src, MAGE), /deregister_passive_spell\( talent\.wand_specialization \)/);
     assert.match(r.out, /paladin: rettelse anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), BOTH_APPLIED);
+    assert.match(read(src, PALADIN), /AULA-RETTELSE/);
+    // rogue: energi, combo points, builders/finishers, gifte og passive talenter
+    assert.match(r.out, /rogue: rettelse anvendt/);
+    assert.match(read(src, ROGUE), /AULA-RETTELSE/);
+    assert.match(read(src, ROGUE), /RESOURCE_ENERGY/);
+    assert.match(read(src, ROGUE), /RESOURCE_COMBO_POINT/);
+    assert.match(read(src, ROGUE), /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
+    assert.match(read(src, ROGUE_APL),
+      /add_action\( "slice_and_dice,[^"]*" \)[\s\S]*add_action\( "rupture,[^"]*" \)[\s\S]*add_action\( "eviscerate,[^"]*" \)[\s\S]*add_action\( "mutilate,[^"]*" \)[\s\S]*add_action\( "sinister_strike,[^"]*" \)/);
+    assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl.
     const again = run(APPLY, [src, out]);
     assert.equal(again.code, 0, again.err);
     assert.match(again.out, /mage: allerede anvendt/);
     assert.match(again.out, /paladin: allerede anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), BOTH_APPLIED);
+    assert.match(again.out, /rogue: allerede anvendt/);
+    assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
 
@@ -91,9 +116,10 @@ test('(b) upstream har selv implementeret mage: rettelsen droppes uden fejl', ()
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR mage — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'mage dropped-upstream\npaladin applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'mage dropped-upstream\npaladin applied\nrogue applied\n');
     assert.equal(read(src, MAGE), impl); // upstreams fil er urørt
     assert.match(read(src, PALADIN), /AULA-RETTELSE/); // paladin-rettelsen påvirkes ikke
+    assert.match(read(src, ROGUE), /AULA-RETTELSE/); // rogue anvendes uafhængigt af mage
     assert.match(run(APPLY, ['--dry-run', src]).out, /^mage: DROP \(upstream har den nu\)$/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
@@ -125,9 +151,54 @@ test('(c) konflikt: bygget fejler tydeligt, intet anvendes og ingen resultatfil 
     assert.equal(read(src, MAGE), changed);
     assert.doesNotMatch(read(src, MAGE_APL), /add_action/);
     assert.doesNotMatch(read(src, PALADIN), /AULA-RETTELSE/); // heller ikke paladin (alt eller intet)
+    assert.doesNotMatch(read(src, ROGUE), /AULA-RETTELSE/); // eller rogue
     const dry = run(APPLY, ['--dry-run', src]);
     assert.equal(dry.code, 1);
     assert.match(dry.out, /^mage: KONFLIKT \(skal flettes: .*sc_mage\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); }
+});
+
+test('(b-rogue) upstream har selv implementeret rogue: rogue.patch droppes, mage og paladin anvendes stadig', () => {
+  const src = fakeSimc();
+  const out = path.join(src, 'PATCHES_APPLIED');
+  try {
+    const impl = `// upstream rogue\n${'// linje\n'.repeat(200)}`;
+    writeFileSync(path.join(src, ROGUE), impl);
+    writeFileSync(path.join(src, ROGUE_APL), 'void rogue( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "sinister_strike" ); }\n');
+    const r = run(APPLY, [src, out]);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /UPSTREAM HAR rogue — vores rettelse droppes/);
+    assert.equal(readFileSync(out, 'utf8'), 'mage applied\npaladin applied\nrogue dropped-upstream\n');
+    assert.equal(read(src, ROGUE), impl);
+    assert.match(read(src, MAGE), /AULA-RETTELSE/);
+    assert.match(read(src, PALADIN), /AULA-RETTELSE/);
+    assert.match(run(APPLY, ['--dry-run', src]).out, /^rogue: DROP \(upstream har den nu\)$/m);
+  } finally { rmSync(src, { recursive: true, force: true }); }
+});
+
+test('(c-rogue) konflikt i rogue: bygget fejler, og hverken rogue, mage eller paladin anvendes', () => {
+  const src = fakeSimc();
+  const out = path.join(src, 'PATCHES_APPLIED');
+  try {
+    const orig = read(src, ROGUE);
+    const changed = orig.replace('struct rogue_t final : public player_t', 'struct rogue_t final : public player_t // upstream-ændring');
+    assert.notEqual(changed, orig);
+    writeFileSync(path.join(src, ROGUE), changed);
+    const r = run(APPLY, [src, out]);
+    assert.equal(r.code, 1);
+    assert.match(r.err, /FEJL: Aulas rettelse for klassen 'rogue' passer ikke/);
+    assert.doesNotMatch(r.err, /klassen 'mage'/);
+    assert.doesNotMatch(r.err, /klassen 'paladin'/);
+    assert.equal(existsSync(out), false);
+    assert.equal(read(src, ROGUE), changed);
+    assert.doesNotMatch(read(src, ROGUE_APL), /add_action/);
+    assert.doesNotMatch(read(src, MAGE), /AULA-RETTELSE/);
+    assert.doesNotMatch(read(src, PALADIN), /AULA-RETTELSE/);
+    const dry = run(APPLY, ['--dry-run', src]);
+    assert.equal(dry.code, 1);
+    assert.match(dry.out, /^mage: OK \(kan anvendes\)$/m);
+    assert.match(dry.out, /^paladin: OK \(kan anvendes\)$/m);
+    assert.match(dry.out, /^rogue: KONFLIKT \(skal flettes: .*sc_rogue\.cpp/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
 
@@ -181,6 +252,7 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^mage: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), read(repo, MAGE).replace('namespace {', 'namespace { // ændret'));
     git('commit', '-q', '-am', 'konflikt');
@@ -188,6 +260,7 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.equal(r.code, 1);
     assert.match(r.out, /^mage: KONFLIKT \(skal flettes: /m);
     assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), `${'// upstream\n'.repeat(300)}`);
     writeFileSync(path.join(repo, MAGE_APL), 'x->add_action( "frostbolt" );\n');
@@ -196,12 +269,14 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^mage: DROP \(upstream har den nu\)$/m);
     assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, PALADIN), read(repo, PALADIN).replace('namespace paladin', 'namespace paladin // ændret'));
     git('commit', '-q', '-am', 'paladin-konflikt');
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 1);
     assert.match(r.out, /^paladin: KONFLIKT \(skal flettes: /m);
+    assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, PALADIN), `${'// upstream\n'.repeat(300)}`);
     writeFileSync(path.join(repo, PALADIN_APL), 'x->add_action( "judgement" );\n');
@@ -209,13 +284,29 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^paladin: DROP \(upstream har den nu\)$/m);
+    assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
+
+    writeFileSync(path.join(repo, ROGUE), read(repo, ROGUE).replace('struct rogue_t final : public player_t', 'struct rogue_t final : public player_t // ændret'));
+    git('commit', '-q', '-am', 'rogue-konflikt');
+    r = run(CHECK_UPSTREAM, ['main'], env);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^rogue: KONFLIKT \(skal flettes: /m);
+
+    writeFileSync(path.join(repo, ROGUE), `${'// upstream\n'.repeat(300)}`);
+    writeFileSync(path.join(repo, ROGUE_APL), 'x->add_action( "sinister_strike" );\n');
+    git('commit', '-q', '-am', 'upstream har rogue');
+    r = run(CHECK_UPSTREAM, ['main'], env);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /^mage: DROP \(upstream har den nu\)$/m);
+    assert.match(r.out, /^paladin: DROP \(upstream har den nu\)$/m);
+    assert.match(r.out, /^rogue: DROP \(upstream har den nu\)$/m);
 
     assert.equal(run(CHECK_UPSTREAM, ['findes-ikke'], env).code, 2);
   } finally { rmSync(repo, { recursive: true, force: true }); }
 });
 
-test('mage- og paladin-profilerne i fixtures (fiktive navne) godkendes af saneringen', () => {
-  for (const [f, cls] of [['mage-35.simc', 'mage'], ['mage-20.simc', 'mage'], ['paladin-39-holy.simc', 'paladin'], ['paladin-39-ret.simc', 'paladin']]) {
+test('mage-, paladin- og rogue-profilerne i fixtures (fiktive navne) godkendes af saneringen', () => {
+  for (const [f, cls] of [['mage-35.simc', 'mage'], ['mage-20.simc', 'mage'], ['paladin-39-holy.simc', 'paladin'], ['paladin-39-ret.simc', 'paladin'], ['rogue-33.simc', 'rogue']]) {
     const r = sanitizeProfile(readFileSync(path.join(here, 'fixtures', f), 'utf8'));
     assert.equal(r.ok, true, r.error);
     assert.equal(r.className, cls);
@@ -253,13 +344,17 @@ test('(a) paladin.patch anvendes på ren upstream: Ret-model med seals, Judgemen
     assert.match(apl, /add_action\( "consecration,if=active_enemies>1&mana\.pct>50" \)/);
     assert.match(read(src, PALADIN_HPP), /void paladin\( player_t\* \);/);
     assert.doesNotMatch(read(src, MAGE), /AULA-RETTELSE/); // mage-filerne er urørte
+    assert.doesNotMatch(read(src, ROGUE), /AULA-RETTELSE/); // rogue-filerne er urørte
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });
 
-test('mage.patch og paladin.patch kan anvendes i vilkårlig rækkefølge med samme resultat', () => {
-  const files = [MAGE, MAGE_APL, 'engine/class_modules/apl/mage.hpp', PALADIN, PALADIN_APL, PALADIN_HPP];
+test('alle rettelser kan anvendes i vilkårlig rækkefølge med samme resultat (alle permutationer)', () => {
+  const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP];
+  const perms = (xs) => (xs.length <= 1 ? [xs] : xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map((p) => [x, ...p])));
+  const orders = perms(CLASSES);
+  assert.equal(orders.length, 6);
   const results = [];
-  for (const order of [['mage', 'paladin'], ['paladin', 'mage']]) {
+  for (const order of orders) {
     const src = fakeSimc();
     try {
       for (const cls of order) {
@@ -273,12 +368,13 @@ test('mage.patch og paladin.patch kan anvendes i vilkårlig rækkefølge med sam
       results.push(files.map((f) => read(src, f)));
     } finally { rmSync(src, { recursive: true, force: true }); }
   }
-  assert.deepEqual(results[0], results[1]);
+  for (let k = 1; k < results.length; k++) assert.deepEqual(results[k], results[0], orders[k].join(','));
   assert.match(results[0][0], /AULA-RETTELSE/);
   assert.match(results[0][3], /AULA-RETTELSE/);
+  assert.match(results[0][6], /AULA-RETTELSE/);
 });
 
-test('(b) upstream har selv implementeret paladin: paladin droppes, mage anvendes stadig', () => {
+test('(b) upstream har selv implementeret paladin: paladin droppes, mage og rogue anvendes stadig', () => {
   const src = fakeSimc();
   const out = path.join(src, 'PATCHES_APPLIED');
   try {
@@ -289,13 +385,15 @@ test('(b) upstream har selv implementeret paladin: paladin droppes, mage anvende
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
     assert.match(r.out, /mage: rettelse anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), 'mage applied\npaladin dropped-upstream\n');
+    assert.match(r.out, /rogue: rettelse anvendt/);
+    assert.equal(readFileSync(out, 'utf8'), 'mage applied\npaladin dropped-upstream\nrogue applied\n');
     assert.equal(read(src, PALADIN), impl);
+    assert.match(read(src, ROGUE), /AULA-RETTELSE/);
     assert.match(run(APPLY, ['--dry-run', src]).out, /^paladin: DROP \(upstream har den nu\)$/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
 
-test('(c) konflikt i paladin.patch: bygget fejler, og heller ikke mage anvendes', () => {
+test('(c) konflikt i paladin.patch: bygget fejler, og heller ikke mage eller rogue anvendes', () => {
   const src = fakeSimc();
   const out = path.join(src, 'PATCHES_APPLIED');
   try {
@@ -307,12 +405,15 @@ test('(c) konflikt i paladin.patch: bygget fejler, og heller ikke mage anvendes'
     assert.equal(r.code, 1);
     assert.match(r.err, /FEJL: Aulas rettelse for klassen 'paladin' passer ikke/);
     assert.doesNotMatch(r.err, /klassen 'mage'/);
+    assert.doesNotMatch(r.err, /klassen 'rogue'/);
     assert.equal(existsSync(out), false);
     assert.equal(read(src, PALADIN), changed);
     assert.doesNotMatch(read(src, MAGE), /AULA-RETTELSE/);
+    assert.doesNotMatch(read(src, ROGUE), /AULA-RETTELSE/);
     const dry = run(APPLY, ['--dry-run', src]);
     assert.equal(dry.code, 1);
     assert.match(dry.out, /^mage: OK \(kan anvendes\)$/m);
+    assert.match(dry.out, /^rogue: OK \(kan anvendes\)$/m);
     assert.match(dry.out, /^paladin: KONFLIKT \(skal flettes: .*sc_paladin\.cpp/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
