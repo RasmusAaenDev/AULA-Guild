@@ -8,6 +8,12 @@ const optionalHttpUrl = z.preprocess(
   z.string().url().refine((u) => /^https?:\/\//i.test(u), 'Kun http/https').optional(),
 );
 
+// Højeste guild-rang (0 = guildmester), der giver officer-adgang. Tom eller ikke sat = 1.
+export const officerMaxRank = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z.coerce.number().int().min(0).max(9).default(1),
+);
+
 const schema = z.object({
   DATABASE_URL: z.string().min(1),
   DISCORD_GUILD_ID: z.string().min(1),
@@ -16,6 +22,7 @@ const schema = z.object({
   BLIZZARD_CLIENT_SECRET: z.string().min(1),
   BLIZZARD_GUILD_SLUG: z.string().min(1).default('aula'),
   BLIZZARD_GUILD_ID: z.coerce.number().int().positive().default(304114),
+  OFFICER_MAX_RANK: officerMaxRank,
   CRON_SECRET: z.string().min(16),
   SYNC_ENABLED: bool,
   AUTO_MIGRATE: bool,
