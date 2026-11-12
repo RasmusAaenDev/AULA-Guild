@@ -14,6 +14,8 @@ import { armoryUrl } from '@/lib/armory';
 import { FirstCharacterCard } from '@/components/FirstCharacterCard';
 import { QuickSim } from '@/components/QuickSim';
 import { CreateMenu } from '@/components/CreateMenu';
+import { GuildOnlyHint } from '@/components/GuildOnlyHint';
+import { permissions } from '@/lib/guild-access-ui';
 import { Icon } from '@/components/icons';
 import { RsvpButtons } from '@/components/RsvpButtons';
 import { UnansweredBanner } from '@/components/UnansweredBanner';
@@ -52,6 +54,7 @@ export default async function OverviewPage({
   searchParams: Promise<{ fane?: string | string[]; side?: string | string[] }>;
 }) {
   const member = await requireUser();
+  const perms = permissions(member);
   const sp = await searchParams;
   const satireOn = parseSatirePreference((await cookies()).get(SATIRE_COOKIE)?.value);
   const tab = effectiveTab(parseTab(sp.fane), satireOn);
@@ -115,7 +118,7 @@ export default async function OverviewPage({
       <UnansweredBanner count={unanswered} />
       <div className="section-head">
         <h1>Overblik</h1>
-        <CreateMenu />
+        {perms.canCreate ? <CreateMenu /> : <GuildOnlyHint what="Opret" />}
       </div>
       <div className="overview-grid">
         <div className="overview-main">
@@ -260,7 +263,7 @@ export default async function OverviewPage({
                 </span>
               </p>
               {row.verifiedAt === null && <p className="muted verify-help">{UNVERIFIED_HELP}</p>}
-              {isSimConfigured() && <QuickSim characterId={row.id} />}
+              {isSimConfigured() && perms.canUseGuildAreas && <QuickSim characterId={row.id} />}
               </>
             ) : (
               <p>

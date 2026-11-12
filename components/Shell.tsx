@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { MyCharacter } from '@/lib/characters';
 import type { Member } from '@/lib/session';
-import { menuItems } from '@/lib/menu';
+import { menuHref, menuItems } from '@/lib/menu';
 import { unreadLabel } from '@/lib/posts-ui';
 import { CharacterSwitcher } from './CharacterSwitcher';
 import { NavLink } from './NavLink';
@@ -36,13 +36,14 @@ export function Shell({
       </header>
       <div className="layout">
         <nav className="sidenav" aria-label="Hovedmenu">
-          {menuItems({ simEnabled }).map((item) => {
+          {menuItems({ simEnabled, viewer: member }).map((item) => {
             const b = item.badge ? badges[item.badge] : null;
             return (
               <NavLink
                 key={item.href}
-                href={item.href}
+                href={menuHref(item)}
                 icon={item.icon}
+                locked={item.locked}
                 badge={
                   b?.label && (
                     <span className="unread-count nav-badge">

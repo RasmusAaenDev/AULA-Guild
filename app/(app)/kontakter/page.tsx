@@ -7,6 +7,7 @@ import { armoryUrl } from '@/lib/armory';
 import { QuickSim } from '@/components/QuickSim';
 import { isSimConfigured } from '@/lib/services';
 import { requireUser } from '@/lib/session';
+import { permissions } from '@/lib/guild-access-ui';
 import { GuildStar } from '@/components/GuildStar';
 import { VerifiedMark } from '@/components/VerifiedMark';
 import { RefreshButton } from './RefreshButton';
@@ -16,7 +17,8 @@ export const dynamic = 'force-dynamic';
 export default async function ContactsPage() {
   const member = await requireUser();
   const contacts = await listContacts(getDb());
-  const simEnabled = isSimConfigured();
+  // Skolehjem kræver guild-medlemskab; gæster ser ikke simulér-kolonnen.
+  const simEnabled = isSimConfigured() && permissions(member).canUseGuildAreas;
   return (
     <>
       <div className="section-head">

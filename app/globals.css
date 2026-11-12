@@ -553,3 +553,18 @@ details.create .menu a:hover { background: var(--border); }
 .verify-help { font-size: 14px; }
 .account-refresh { margin: 8px 0 0; }
 .account-refresh .muted { font-size: 14px; margin: 6px 0 0; }
+/* Låste menupunkter for gæster: samme hvide tekst (kontrast som de øvrige), plus et lille låsemærke på ikonet. */
+.nav-lock { position: absolute; right: -7px; bottom: -5px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--nav-active); color: #fff; border: 1px solid #fff; }
+/* «Kun for guildmedlemmer»: kort hint i stedet for opret-/skrive-knapper, gæster ikke kan bruge. */
+.guild-only-hint { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 0; color: var(--muted); font-size: 14px; }
+.guild-only-hint a { color: var(--heading); font-weight: 700; }
+.guest-status { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 6px; }
+.guest-status li { display: flex; align-items: center; gap: 8px; }
+.guest-status .st-ok { color: var(--ok); }
+.guest-status .st-no { color: var(--no); }
+.guest-steps { padding-left: 1.4em; margin: 0 0 12px; }
+.guest-steps li { margin-bottom: 6px; }
+.guest-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.guest-actions .account-refresh { margin: 0; flex: 1 1 220px; }
+.guest-chars { padding-left: 1.2em; margin: 0; }
+.guest-chars li { margin-bottom: 4px; overflow-wrap: anywhere; }

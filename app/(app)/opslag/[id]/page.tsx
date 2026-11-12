@@ -6,6 +6,8 @@ import { parseId } from '@/lib/parse';
 import { getPost } from '@/lib/posts';
 import { authorLabel, formatAbsolute } from '@/lib/posts-ui';
 import { requireUser } from '@/lib/session';
+import { GuildOnlyHint } from '@/components/GuildOnlyHint';
+import { permissions } from '@/lib/guild-access-ui';
 import { deleteCommentAction, deletePostAction } from '../actions';
 import { BookmarkButton } from '../BookmarkButton';
 import { CommentForm } from '../CommentForm';
@@ -70,7 +72,7 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
       </section>
 
       <section className="card">
-        <CommentForm postId={post.id} />
+        {permissions(member).canComment ? <CommentForm postId={post.id} /> : <GuildOnlyHint what="Kommentarer" />}
       </section>
       <p><Link href="/">Tilbage til overblikket</Link></p>
     </>

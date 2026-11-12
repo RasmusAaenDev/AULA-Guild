@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { menuItems } from '@/lib/menu';
+import { LOCKED_LABEL, menuHref, menuItems } from '@/lib/menu';
 
 describe('menuItems', () => {
   it('viser altid Beskeder efter Kalender, også uden Discord', () => {
@@ -16,5 +16,35 @@ describe('menuItems', () => {
   it('har unikke links', () => {
     const hrefs = menuItems().map((m) => m.href);
     expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+});
+
+describe('menuItems for gæst, medlem og officer', () => {
+  const guest = { isGuildMember: false, isOfficer: false };
+  const memberV = { isGuildMember: true, isOfficer: false };
+  const officer = { isGuildMember: true, isOfficer: true };
+
+  it('gæst: Skolehjem, Galleri og Filer vises låst og linker til /ingen-adgang; resten er åbne', () => {
+    const items = menuItems({ simEnabled: true, viewer: guest });
+    expect(items.map((m) => m.label)).toEqual(['Overblik', 'Kalender', 'Beskeder', 'Skolehjem', 'Galleri', 'Kontakter', 'Filer']);
+    expect(items.filter((m) => m.locked).map((m) => m.label)).toEqual(['Skolehjem', 'Galleri', 'Filer']);
+    expect(items.filter((m) => m.locked).map(menuHref)).toEqual(['/ingen-adgang', '/ingen-adgang', '/ingen-adgang']);
+    expect(items.filter((m) => !m.locked).map(menuHref)).toEqual(['/', '/kalender', '/chat', '/kontakter']);
+  });
+
+  it('medlem og officer: intet er låst', () => {
+    for (const viewer of [memberV, officer]) {
+      const items = menuItems({ simEnabled: true, viewer });
+      expect(items.some((m) => m.locked)).toBe(false);
+      expect(items.map(menuHref)).toEqual(items.map((m) => m.href));
+    }
+  });
+
+  it('gæst uden simulator: Skolehjem vises slet ikke, Galleri og Filer er låst', () => {
+    expect(menuItems({ viewer: guest }).filter((m) => m.locked).map((m) => m.label)).toEqual(['Galleri', 'Filer']);
+  });
+
+  it('har en tilgængelig låsetekst', () => {
+    expect(LOCKED_LABEL).toBe('kræver guild-medlemskab');
   });
 });

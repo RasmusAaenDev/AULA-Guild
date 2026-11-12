@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { CreateMenu } from '@/components/CreateMenu';
+import { GuildOnlyHint } from '@/components/GuildOnlyHint';
+import { permissions } from '@/lib/guild-access-ui';
 import { UnansweredBanner } from '@/components/UnansweredBanner';
 import { countsLabel, eventTypeLabel, formatTimeRange, groupByDay, rsvpLabel } from '@/lib/calendar-ui';
 import { getDb } from '@/lib/db';
@@ -23,8 +25,8 @@ export default async function CalendarPage() {
       <div className="section-head">
         <h1>Kalender</h1>
         <div className="actions">
-          {member.isOfficer && <Link href="/kalender/serier" className="btn secondary">Gentagne events</Link>}
-          <CreateMenu />
+          {permissions(member).canModerate && <Link href="/kalender/serier" className="btn secondary">Gentagne events</Link>}
+          {permissions(member).canCreate ? <CreateMenu /> : <GuildOnlyHint what="Ny begivenhed" />}
         </div>
       </div>
       {days.length === 0 && (
