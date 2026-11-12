@@ -187,6 +187,10 @@ export type SimView = {
   /** Seneste del af simc-loggen (ren tekst), kun for ejeren. */
   log: string | null;
   source: SimSource;
+  /** Karakteren fra armory-indgangen (null for indsat SimC-tekst), så visningen kan navngive jobbet før resultatet findes. */
+  characterId: number | null;
+  /** De valgte kampstile (til fremdrift, mens jobbet kører). */
+  fightStyles: FightStyle[];
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
   bags: { requested: boolean; found: number; ignored: number; truncated: number };
   /** Beskeder fra da jobbet blev lagt i kø (vises sammen med jobbet). */
@@ -250,7 +254,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
   const rows = await db
     .select({
       id: simJobs.id, status: simJobs.status, createdAt: simJobs.createdAt, finishedAt: simJobs.finishedAt,
-      error: simJobs.error, result: simJobs.result, options: simJobs.options, log: simJobs.log,
+      error: simJobs.error, result: simJobs.result, options: simJobs.options, log: simJobs.log, characterId: simJobs.characterId,
     })
     .from(simJobs)
     .where(eq(simJobs.userId, userId))
@@ -267,6 +271,8 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     result: r.status === 'done' ? parseSimResult(r.result) : null,
     log: r.log,
     source: o.source,
+    characterId: r.characterId,
+    fightStyles: o.fightStyles,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
     notices: o.notices,
   };

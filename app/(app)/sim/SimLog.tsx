@@ -22,7 +22,10 @@ export function SimLog({ text, active }: { text: string | null; active: boolean 
   if (!active && !text) return null;
   return (
     <details className="sim-log" open={active} onToggle={(e) => { if (e.currentTarget.open && active && stick.current) toBottom(); }}>
-      <summary>Log fra SimulationCraft</summary>
+      <summary>
+        <span className="sim-log-caret" aria-hidden="true">▸</span>
+        Log fra SimulationCraft
+      </summary>
       <pre
         ref={pre}
         className="sim-log-text"

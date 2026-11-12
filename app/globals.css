@@ -17,6 +17,7 @@
   --sat-bg: #fff4d6; --sat-border: #7a4f00; --sat-badge: #4a1d7a; --sat-badge-fg: #ffffff; --sat-ink: #5b3a00;
   --star: #8a5a00;
   --on-cls: #ffffff; --check-bg: #ffffff; --check-fg: #005b6b;
+  --bar: #00788c;
   --cls-death-knight: #a8123a; --cls-demon-hunter: #7a1fa2; --cls-druid: #a14a00; --cls-evoker: #1b6e5c;
   --cls-hunter: #3d7a1c; --cls-mage: #1a6aa6; --cls-monk: #00755a; --cls-paladin: #b0306f;
   --cls-priest: #5b6770; --cls-rogue: #826600; --cls-shaman: #1f4fb0; --cls-warlock: #6b3fa0;
@@ -29,6 +30,7 @@
     --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
     --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
     --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
+    --bar: #7fd0e0;
   }
 }
 :root[data-theme='dark'] {
@@ -37,6 +39,7 @@
   --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
   --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
   --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
+  --bar: #7fd0e0;
 }
 
 html { scroll-padding-top: 4rem; }
@@ -279,29 +282,150 @@ details.create .menu a:hover { background: var(--border); }
 .chat-new-channel summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 700; }
 .chat-new-channel .field { margin: 8px 0; }
 
+/* ---------- Skolehjem (simulationer) ---------- */
+.sim-page-head { margin-bottom: 4px; }
+.sim-lead { margin: 0 0 16px; max-width: 70ch; }
+
+/* «Ny simulation»: segmenteret valg (radioknapper uden formular) viser én af to formularer via :has – uden JavaScript. */
+.new-sim-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.new-sim-head h2 { margin: 0; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 4px; border: 0; background: var(--bg); border-radius: 12px; }
+.seg-option { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border-radius: 9px; color: var(--heading); font-weight: 700; cursor: pointer; }
+.seg-option input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg-option:has(input:checked) { background: var(--card); box-shadow: 0 0 0 1px var(--border), 0 1px 4px rgba(0, 0, 0, 0.18); }
+.seg-option:focus-within { outline: 3px solid var(--focus); outline-offset: -3px; }
+@media (max-width: 560px) { .seg { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .seg-option { justify-content: center; padding: 8px 10px; } }
+.new-sim:has(.seg input[value='armory']:checked) .sim-form[data-source='simc'] { display: none; }
+.new-sim:has(.seg input[value='simc']:checked) .sim-form[data-source='armory'] { display: none; }
+.sim-form { margin: 0; }
+.sim-form .field { margin-bottom: 12px; }
+.sim-form .field select { min-height: 44px; }
 .sim-form .field textarea { width: 100%; box-sizing: border-box; font-family: ui-monospace, monospace; font-size: 13px; }
 .sim-form code { background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+.sim-form-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 24px; align-items: start; }
+@media (min-width: 700px) { .sim-form-row { grid-template-columns: minmax(0, 1fr) auto; } }
+.sim-check label { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 700; cursor: pointer; }
+.sim-check input { width: 22px; height: 22px; margin: 0; accent-color: var(--topbar); }
+.sim-help { margin: 0 0 12px; }
+.sim-submit { min-height: 48px; padding: 12px 24px; font-size: 16px; }
+.sim-notice { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; background: var(--bg); color: var(--text); }
+.sim-notice .icon { flex: none; color: var(--ok); margin-top: 2px; }
+
+/* Liste og kort */
+.sim-list-section { margin-top: 24px; }
+.sim-live { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 14px; font-weight: 700; }
+.sim-filter { margin-bottom: 12px; }
 .sim-list { list-style: none; margin: 0; padding: 0; }
-.sim-item { padding: 12px 0; border-top: 1px solid var(--border); }
-.sim-item:first-child { border-top: 0; }
-.sim-item p { margin: 4px 0; }
-.sim-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.sim-dps { font-size: 20px; font-weight: 800; color: var(--heading); }
-.sim-warnings { margin: 4px 0; padding-left: 20px; color: var(--maybe); }
-.sim-style { margin: 10px 0; padding: 8px 0 0; border-top: 1px dashed var(--border); }
-.sim-style h3 { margin: 0 0 4px; font-size: 16px; }
-.sim-gear { list-style: none; margin: 6px 0; padding: 0; }
-.sim-gear li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 6px 0; border-top: 1px solid var(--border); }
-.sim-gear li:first-child { border-top: 0; }
-.sim-gear .sim-gear-name { flex: 1 1 12em; font-weight: 600; }
-.sim-gear .sim-gear-slot { color: var(--muted, inherit); }
-.sim-gear .up { color: var(--ok); font-weight: 700; }
-.sim-gear .down { color: var(--no); font-weight: 700; }
-.sim-gear .flat { font-weight: 700; }
-.sim-log { margin: 8px 0; }
-.sim-log summary { cursor: pointer; padding: 6px 0; font-weight: 700; }
-.sim-log-text { margin: 4px 0; padding: 8px 10px; max-height: 16em; overflow: auto; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
-.sim-all summary { cursor: pointer; padding: 6px 0; font-weight: 700; }
+.sim-card { padding: 16px 20px; }
+.sim-card-head { display: flex; align-items: center; gap: 12px; }
+.sim-avatar { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--on-cls); font-size: 18px; font-weight: 800; }
+.sim-card-title { flex: 1; min-width: 0; }
+.sim-card-title h3 { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
+.sim-card-meta { display: flex; flex-wrap: wrap; gap: 2px 8px; margin: 2px 0 0; font-size: 14px; }
+.sim-card-meta > :not(:last-child)::after { content: '·'; margin-left: 8px; }
+.sim-status { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 12px; border-radius: 999px; border: 1px solid currentColor; font-size: 14px; font-weight: 700; color: var(--muted); }
+.sim-status-running { color: var(--maybe); }
+.sim-status-done { color: var(--ok); }
+.sim-status-failed { color: var(--no); }
+.sim-spinner { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: sim-spin 0.9s linear infinite; }
+@keyframes sim-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .sim-spinner { animation: none; border-right-color: currentColor; opacity: 0.6; } }
+.sim-card-done { border-left: 6px solid var(--ok); }
+.sim-card-failed { border-left: 6px solid var(--no); }
+.sim-card-running, .sim-card-queued { border-left: 6px solid var(--maybe); }
+
+/* Kø → Kører → Færdig + fremdrift */
+.sim-running { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.sim-steps { display: flex; flex-wrap: wrap; gap: 6px 20px; list-style: none; margin: 0 0 10px; padding: 0; font-size: 14px; }
+.sim-step { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+.sim-step-dot { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid currentColor; font-size: 12px; font-weight: 800; }
+.sim-step-current { color: var(--heading); font-weight: 800; }
+.sim-step-current .sim-step-dot { background: var(--heading); color: var(--card); border-color: var(--heading); }
+.sim-step-done { color: var(--ok); }
+.sim-progress { display: flex; flex-direction: column; gap: 6px; }
+.sim-bar { height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.sim-bar-fill { height: 100%; min-width: 4px; background: var(--bar); border-radius: 999px; transition: width 0.6s ease; }
+.sim-progress-text { margin: 0; font-size: 14px; }
+
+/* Fejl og bemærkninger */
+.sim-failed { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 12px 14px; border-radius: 10px; background: var(--bg); color: var(--text); border-left: 4px solid var(--no); }
+.sim-failed .icon { flex: none; color: var(--no); }
+.sim-notes { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sim-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--bg); color: var(--text); border-left: 4px solid var(--maybe); font-size: 14px; }
+.sim-notes .sim-note { margin: 0; }
+.sim-note .icon { flex: none; color: var(--maybe); margin-top: 1px; }
+
+/* DPS pr. kampstil */
+.dps-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; }
+@media (min-width: 560px) { .dps-grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dps-tile { padding: 14px 16px; border-radius: 10px; background: var(--bg); }
+.dps-style { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 6px; font-size: 14px; font-weight: 800; color: var(--heading); text-transform: uppercase; letter-spacing: 0.04em; }
+.dps-style .muted { font-weight: 600; text-transform: none; letter-spacing: 0; }
+.dps-value { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; margin: 0; }
+.dps-number { font-size: 40px; line-height: 1; font-weight: 800; color: var(--heading); font-variant-numeric: tabular-nums; }
+.dps-unit { font-size: 16px; font-weight: 800; color: var(--heading); }
+.dps-err { font-size: 14px; font-variant-numeric: tabular-nums; }
+.dps-none { margin: 0; font-size: 14px; }
+.dps-prev { display: flex; align-items: flex-start; gap: 6px; margin: 8px 0 0; font-size: 14px; font-weight: 700; }
+.dps-prev .icon { flex: none; margin-top: 2px; }
+.dps-prev time { font-weight: 400; }
+.dps-tile .error { display: flex; gap: 6px; align-items: center; margin: 0; }
+
+/* Gear fra taskerne */
+.sim-gear { margin-top: 16px; }
+.sim-gear-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+.sim-gear-head h3 { margin: 0; }
+.sim-gear-head .muted { font-size: 14px; }
+.gear-list { list-style: none; margin: 0; padding: 0; }
+.gear-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 16px; align-items: center; padding: 8px 10px; border-top: 1px solid var(--border); }
+@media (min-width: 700px) { .gear-row { grid-template-columns: minmax(0, 1fr) auto; } .gear-list[data-cols='2'] .gear-row { grid-template-columns: minmax(0, 1fr) auto auto; } }
+.gear-row:first-child { border-top: 0; }
+.gear-name { min-width: 0; overflow-wrap: anywhere; }
+.gear-best { background: var(--bg); border-radius: 8px; border-top: 0; }
+.gear-best + .gear-row { border-top: 0; }
+.gear-best-tag { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ok); }
+.gear-cell { display: inline-flex; align-items: center; gap: 5px; font-size: 14px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.gear-cell strong { font-size: 15px; }
+.gear-cell-style { color: var(--muted); font-weight: 600; margin-right: 2px; }
+.gear-cell-style::after { content: ':'; }
+.gear-upgrade { color: var(--ok); }
+.gear-downgrade { color: var(--no); }
+.gear-neutral { color: var(--text); }
+.gear-word { font-weight: 600; }
+.sim-gear-none { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+.sim-gear-none .icon { flex: none; color: var(--ok); }
+.sim-all { margin-top: 6px; }
+.sim-all summary { cursor: pointer; display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; font-weight: 700; color: var(--heading); }
+.sim-gear-foot { margin: 8px 0 0; font-size: 13px; }
+
+/* Log og slet */
+.sim-card-foot { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+.sim-log { flex: 1 1 240px; min-width: 0; margin: 0; }
+.sim-log summary { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; font-weight: 700; color: var(--heading); list-style: none; }
+.sim-log summary::-webkit-details-marker { display: none; }
+.sim-log-caret { display: inline-block; transition: transform 0.15s; }
+.sim-log[open] .sim-log-caret { transform: rotate(90deg); }
+.sim-log-text { margin: 0 0 6px; padding: 10px 12px; max-height: 16em; overflow: auto; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sim-card-foot form { margin: 0; display: flex; align-items: center; min-height: 44px; }
+.sim-card-foot .btn.danger { min-height: 36px; padding: 6px 14px; }
+
+.sim-empty { text-align: center; padding: 32px 20px; }
+.sim-empty .icon { color: var(--heading); }
+.sim-empty h3 { margin: 8px 0 6px; font-size: 20px; }
+.sim-empty p { max-width: 52ch; margin: 6px auto; }
+
+@media (max-width: 480px) {
+  .sim-card { padding: 14px; }
+  .sim-card-head { flex-wrap: wrap; }
+  .sim-card-meta { flex-direction: column; gap: 0; }
+  .sim-card-meta > :not(:last-child)::after { content: none; }
+  .sim-status { order: 3; width: 100%; justify-content: center; }
+  .dps-number { font-size: 34px; }
+}
+@media (max-width: 560px) {
+  .style-toggle .toggle-group { display: flex; width: 100%; }
+  .style-toggle .toggle-option { flex: 1 1 50%; justify-content: center; text-align: center; padding: 8px 10px; }
+}
 .style-toggle { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
 .style-toggle legend { padding: 0; margin-bottom: 6px; font-weight: 700; }
 .toggle-group { display: inline-flex; flex-wrap: wrap; border: 2px solid var(--nav-active); border-radius: 10px; overflow: hidden; }

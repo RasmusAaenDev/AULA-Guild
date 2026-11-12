@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'sim' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake' | 'person' | 'gruppe';
+export type IconName = 'overblik' | 'kalender' | 'filer' | 'galleri' | 'chat' | 'sim' | 'kontakter' | 'deltager' | 'maaske' | 'afbud' | 'opret' | 'opslag' | 'bogmaerke' | 'udraab' | 'luk' | 'pil-ned' | 'klovn' | 'fake' | 'person' | 'gruppe' | 'op' | 'ned' | 'streg' | 'ur';
 
 const paths: Record<IconName, ReactNode> = {
   overblik: <path d="M3 11l9-7 9 7M5 10v10h5v-6h4v6h5V10" />,
@@ -56,6 +56,16 @@ const paths: Record<IconName, ReactNode> = {
   ),
   luk: <path d="M6 6l12 12M18 6L6 18" />,
   'pil-ned': <path d="M6 9l6 6 6-6" />,
+  /** Pil op/ned (opgradering/nedgradering) og streg (ingen forskel) til Skolehjem. */
+  op: <path d="M12 19V5M5 12l7-7 7 7" />,
+  ned: <path d="M12 5v14M5 12l7 7 7-7" />,
+  streg: <path d="M5 12h14" />,
+  ur: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
   /** Klovn/narr: narrehue med tre spidser og bjælder, simpelt ansigt. */
   klovn: (
     <>

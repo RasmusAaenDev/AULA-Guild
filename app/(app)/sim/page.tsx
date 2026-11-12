@@ -1,53 +1,18 @@
-import { ConfirmForm } from '@/components/ConfirmForm';
+import Link from 'next/link';
+import { Icon } from '@/components/icons';
 import { listMyCharacters } from '@/lib/characters';
 import { getDb } from '@/lib/db';
-import { formatDateTime } from '@/lib/format';
 import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
-import { listMySims, type SimView } from '@/lib/sims';
-import { SOURCE_LABELS, simStatusLabel, visibleWarnings } from '@/lib/sims-ui';
-import { deleteSimAction } from './actions';
+import { FIGHT_STYLES, listMySims } from '@/lib/sims';
+import { isActiveStatus, parseSubjectFilter, previousDps, simSubject, subjectFilterNames, type PreviousDps } from '@/lib/sims-ui';
 import { AutoRefresh } from './AutoRefresh';
-import { ArmorySimForm } from './ArmorySimForm';
-import { SimLog } from './SimLog';
-import { SimForm } from './SimForm';
-import { SimStyles } from './SimStyles';
+import { NewSimPanel } from './NewSimPanel';
+import { SimCard } from './SimCard';
 
 export const dynamic = 'force-dynamic';
 
-function SimItem({ sim }: { sim: SimView }) {
-  const p = sim.result?.player;
-  const detail = p ? [p.className, p.spec, p.level !== null ? `level ${p.level}` : null].filter(Boolean).join(' · ') : '';
-  return (
-    <li className="sim-item">
-      <div className="sim-head">
-        <strong>{p?.name ?? 'Simulation'}</strong>
-        <span className="badge">{simStatusLabel(sim.status)}</span>
-        <span className="muted">Kilde: {SOURCE_LABELS[sim.source]}</span>
-        <span className="muted">{formatDateTime(new Date(sim.createdAt))}</span>
-      </div>
-      {detail && <p className="muted">{detail}</p>}
-      {sim.notices.length > 0 && (
-        <ul className="sim-warnings">{sim.notices.map((n, i) => <li key={i}>{n}</li>)}</ul>
-      )}
-      {sim.status === 'done' && sim.result && (
-        <>
-          <SimStyles sim={sim} />
-          {sim.result.iterations !== null && <p className="muted">{sim.result.iterations.toLocaleString('da-DK')} gennemløb</p>}
-          {visibleWarnings(sim.result.warnings).length > 0 && (
-            <ul className="sim-warnings">{visibleWarnings(sim.result.warnings).map((w, i) => <li key={i}>{w}</li>)}</ul>
-          )}
-          <p className="muted">Vejledende: simulatoren til WoW Forever er ny, og rotationerne er simple. Sammenlign ikke tallene med retail.</p>
-        </>
-      )}
-      {sim.status === 'failed' && <p className="error">{sim.error ?? 'Simulationen fejlede.'}</p>}
-      <SimLog text={sim.log} active={sim.status === 'queued' || sim.status === 'running'} />
-      <ConfirmForm action={deleteSimAction} fields={{ simId: sim.id }} label="Slet" confirmText="Slet denne simulation?" />
-    </li>
-  );
-}
-
-export default async function SimPage() {
+export default async function SimPage({ searchParams }: { searchParams: Promise<{ karakter?: string | string[] }> }) {
   const member = await requireMember();
   if (!isSimConfigured()) {
     return (
@@ -57,23 +22,61 @@ export default async function SimPage() {
       </>
     );
   }
-  const [sims, mine] = await Promise.all([listMySims(getDb(), member.userId, 10), listMyCharacters(getDb(), member.userId)]);
-  const active = sims.some((s) => s.status === 'queued' || s.status === 'running');
+  const [sims, mine, sp] = await Promise.all([listMySims(getDb(), member.userId, 10), listMyCharacters(getDb(), member.userId), searchParams]);
+  const now = new Date();
+  const active = sims.some((s) => isActiveStatus(s.status));
+  const subjects = sims.map((s) => simSubject(s, mine));
+  const names = subjectFilterNames(subjects);
+  const filter = parseSubjectFilter(sp.karakter, names);
+  const shown = sims.map((sim, i) => ({ sim, subject: subjects[i], index: i })).filter((x) => filter === null || x.subject.name === filter);
   return (
     <>
-      <h1>Skolehjem</h1>
-      <section className="card">
-        <h2>Sim din karakter fra armory</h2>
-        <ArmorySimForm characters={mine.map((c) => ({ id: c.id, fullName: c.fullName, className: c.className }))} />
-      </section>
-      <section className="card">
-        <h2>Eller indsæt SimC-tekst</h2>
-        <SimForm />
-      </section>
-      <section className="card">
-        <h2>Dine seneste simulationer</h2>
+      <div className="section-head sim-page-head">
+        <h1>Skolehjem</h1>
+      </div>
+      <p className="muted sim-lead">
+        Simulér din karakters skade med SimulationCraft. Tallene er vejledende: simulatoren til WoW Forever er ny, og rotationerne er simple, så sammenlign ikke med retail.
+      </p>
+
+      <NewSimPanel characters={mine.map((c) => ({ id: c.id, fullName: c.fullName, className: c.className }))} />
+
+      <section className="sim-list-section" aria-labelledby="sims-h">
+        <div className="section-head">
+          <h2 id="sims-h">Dine seneste simulationer</h2>
+          {active && <p className="sim-live muted" role="status"><span className="sim-spinner" aria-hidden="true" /> Opdaterer automatisk</p>}
+        </div>
         <AutoRefresh active={active} />
-        {sims.length === 0 ? <p className="muted">Ingen simulationer endnu.</p> : <ul className="sim-list">{sims.map((s) => <SimItem key={s.id} sim={s} />)}</ul>}
+        {names.length > 0 && (
+          <nav className="tabs sim-filter" aria-label="Vis simulationer for">
+            <Link href="/sim" className="tab" aria-current={filter === null ? 'page' : undefined}>Alle</Link>
+            {names.map((n) => (
+              <Link key={n} href={`/sim?karakter=${encodeURIComponent(n)}`} className="tab" aria-current={filter === n ? 'page' : undefined}>{n}</Link>
+            ))}
+          </nav>
+        )}
+        {sims.length === 0 ? (
+          <section className="card sim-empty">
+            <Icon name="sim" size={40} />
+            <h3>Ingen simulationer endnu</h3>
+            <p>
+              {mine.length > 0
+                ? 'Vælg en karakter ovenfor og tryk «Kør simulation». Resultatet kommer her, typisk inden for et minut, og du kan følge loggen imens.'
+                : 'Indsæt din SimC-tekst ovenfor og tryk «Kør simulation». Eller '}
+              {mine.length === 0 && <><Link href="/karakter/ny">tilføj en karakter</Link> for at simulere direkte fra armory.</>}
+            </p>
+            <p className="muted">Du finder også sim-knapperne ved dine karakterer under <Link href="/kontakter">Kontakter</Link> og på <Link href="/">Overblik</Link>.</p>
+          </section>
+        ) : shown.length === 0 ? (
+          <section className="card"><p className="muted">Ingen simulationer for det valg.</p></section>
+        ) : (
+          <ul className="sim-list">
+            {shown.map(({ sim, subject, index }) => {
+              const previous: Partial<Record<string, PreviousDps | null>> = {};
+              for (const fs of FIGHT_STYLES) previous[fs] = previousDps(sims, index, fs);
+              return <SimCard key={sim.id} sim={sim} subject={subject} previous={previous} now={now} />;
+            })}
+          </ul>
+        )}
       </section>
     </>
   );

@@ -90,6 +90,11 @@ for (const [name, t] of Object.entries(themes)) {
       ['notifikationsbånd: --heading på --card (link)', t.heading, t.card, 4.5],
       ['notifikationsbånd: --danger på --card (ikon)', t.danger, t.card, 3],
       ['notifikationsbånd: --badge som kant mod --card', t.badge, t.card, 3],
+      ['Skolehjem: fremdriftsbjælke --bar mod --border (sporet)', t.bar, t.border, 3],
+      ['Skolehjem: fremdriftsbjælke --bar mod --card', t.bar, t.card, 3],
+      ['Skolehjem: trin-cirkel --card på --heading', t.card, t.heading, 4.5],
+      ['Skolehjem: --ok på --bg (bedste opgradering)', t.ok, t.bg, 4.5],
+      ['Skolehjem: --no på --bg (nedgradering i fremhævet række)', t.no, t.bg, 4.5],
       ['fokusring (hvid) mod --nav', t['focus-inverse'], t.nav, 3],
       ['fokusring (hvid) mod topbjælken', t['focus-inverse'], t.topbar, 3],
     ];
