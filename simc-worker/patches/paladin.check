@@ -3,5 +3,10 @@
 # Ren upstream ved SIMC_REF 3c1d319: sc_paladin.cpp er en tom skal på 52 linjer, og apl/paladin.cpp har ingen add_action.
 min_lines engine/class_modules/sc_paladin.cpp 150
 contains engine/class_modules/apl/paladin.cpp add_action
+# Rettelsen dækker også Holy og Protection (Holy Shock, Holy Shield, Righteous Fury). Har upstream kun en Ret-model
+# uden dem, holder tjekket ikke: rettelsen passer da typisk ikke (konflikt), og et menneske må flette.
+has_action engine/class_modules/sc_paladin.cpp holy_shock
+has_action engine/class_modules/sc_paladin.cpp holy_shield
+contains_re engine/class_modules/apl/paladin.cpp "(holy_shock|holy_shield|righteous_fury)
 # Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor paladin.patch allerede er anvendt).
 not_contains engine/class_modules/sc_paladin.cpp AULA-RETTELSE

@@ -51,6 +51,7 @@ const read = (dir, f) => readFileSync(path.join(dir, f), 'utf8');
 // Navne, rettelserne tilføjer for Combat/Subtlety (rogue) og Holy/Protection (paladin): upstream regnes kun for
 // færdig med klassen, når den også selv opretter dem (se rogue.check / paladin.check).
 const ROGUE_UPSTREAM_ACTIONS = '  if ( name == "backstab" ) return a;\n  if ( name == "hemorrhage" ) return b;\n  if ( name == "ghostly_strike" ) return c;\n';
+const PALADIN_UPSTREAM_ACTIONS = '  if ( name == "holy_shock" ) return a;\n  if ( name == "holy_shield" ) return b;\n';
 
 test('fixturen er præcis den upstream-version hver rettelse er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
   const patches = readdirSync(patchDir).filter((f) => f.endsWith('.patch'));
@@ -143,6 +144,11 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     // shaman: mana fra Mana Spring Totem (alle) og Mana Tide Totem (Restoration)
     for (const a of ['mana_spring_totem', 'mana_tide_totem']) assert.match(read(src, SHAMAN), new RegExp(`if \\( name == "${a}" \\)`), a);
     assert.match(read(src, SHAMAN_APL), /precombat->add_action\( "mana_spring_totem" \)[\s\S]*caster->add_action\( "mana_tide_totem,if=mana\.pct<50" \)/);
+    // paladin Holy/Protection
+    for (const a of ['holy_shock', 'holy_shield', 'righteous_fury', 'swift_judgement', 'divine_favor']) {
+      assert.match(read(src, PALADIN), new RegExp(`if \\( name == "${a}" \\)`), a);
+    }
+    assert.match(read(src, PALADIN_APL), /righteous_fury,if=variable\.prot[\s\S]*holy_shield,if=variable\.prot[\s\S]*holy_shock,if=mana\.pct>50/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl. Druid-rettelsen er i upstream-stil uden
     // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md).
@@ -335,8 +341,8 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.match(r.out, /^paladin: KONFLIKT \(skal flettes: /m);
     assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
 
-    writeFileSync(path.join(repo, PALADIN), `${'// upstream\n'.repeat(300)}`);
-    writeFileSync(path.join(repo, PALADIN_APL), 'x->add_action( "judgement" );\n');
+    writeFileSync(path.join(repo, PALADIN), `${'// upstream\n'.repeat(300)}${PALADIN_UPSTREAM_ACTIONS}`);
+    writeFileSync(path.join(repo, PALADIN_APL), 'x->add_action( "holy_shield" );\n');
     git('commit', '-q', '-am', 'upstream har paladin');
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 0, r.err);
@@ -452,9 +458,9 @@ test('(b) upstream har selv implementeret paladin: paladin droppes, mage og rogu
   const src = fakeSimc();
   const out = path.join(src, 'PATCHES_APPLIED');
   try {
-    const impl = `// upstream paladin\n${'// linje\n'.repeat(200)}`;
+    const impl = `// upstream paladin\n${'// linje\n'.repeat(200)}${PALADIN_UPSTREAM_ACTIONS}`;
     writeFileSync(path.join(src, PALADIN), impl);
-    writeFileSync(path.join(src, PALADIN_APL), 'void paladin( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "judgement" ); }\n');
+    writeFileSync(path.join(src, PALADIN_APL), 'void paladin( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "holy_shock" ); }\n');
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
@@ -670,4 +676,20 @@ test('warlock og shaman droppes, når upstream selv har alle dele (uden vores ma
     assert.match(r.out, /UPSTREAM HAR warlock/);
     assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'shaman dropped-upstream\nwarlock dropped-upstream\n');
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('rogue og paladin: en upstream-grundmodel uden Combat/Subtlety- hhv. Holy/Protection-delene droppes ikke', () => {
+  const src = fakeSimc();
+  try {
+    // Som før denne rettelse ville have regnet for «upstream færdig»: mange linjer og en APL, men ingen Backstab/Holy Shock.
+    writeFileSync(path.join(src, ROGUE), `${'// upstream rogue\n'.repeat(300)}`);
+    writeFileSync(path.join(src, ROGUE_APL), 'x->add_action( "sinister_strike" );\n');
+    writeFileSync(path.join(src, PALADIN), `${'// upstream paladin\n'.repeat(300)}`);
+    writeFileSync(path.join(src, PALADIN_APL), 'x->add_action( "judgement" );\n');
+    const dry = run(APPLY, ['--dry-run', src]);
+    assert.equal(dry.code, 1);
+    assert.match(dry.out, /^rogue: KONFLIKT \(skal flettes: /m);
+    assert.match(dry.out, /^paladin: KONFLIKT \(skal flettes: /m);
+    assert.doesNotMatch(dry.out, /DROP/);
+  } finally { rmSync(src, { recursive: true, force: true }); }
 });
