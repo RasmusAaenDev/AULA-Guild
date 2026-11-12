@@ -4,9 +4,9 @@
 // To slags huller:
 // - `upstream`: klassen kører på SimulationCraft's egen grundmodel (ingen Aula-rettelse). Teksten vises kun, når
 //   resultatet IKKE er markeret «Grov model» (workerens advarsel for vores rettelser). Får klassen en rettelse
-//   (druid, priest, warlock, shaman), falder advarslen væk af sig selv, så snart workeren melder «Grov model».
+//   (druid, priest, warlock, shaman, hunter), falder advarslen væk af sig selv, så snart workeren melder «Grov model».
 // - `withFix`: vores egen rettelse dækker ikke denne spec (fx paladin Holy, rogue Subtlety, warlock-dæmonvalget,
-//   shaman-totems). Vises kun sammen med «Grov model», fordi det er vores model, der mangler noget.
+//   shaman-totems, hunter-petten). Vises kun sammen med «Grov model», fordi det er vores model, der mangler noget.
 // Uden kendt spec bruges klassens fælles tekst (`*`), hvis der er en.
 
 export type ModelGapKind = 'upstream' | 'partial';
@@ -24,9 +24,18 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
   },
   hunter: {
     '*': { upstream: 'pet, nærkamp (Raptor Strike), Multi-Shot, Aimed Shot og Hunter\'s Mark. Kun Auto Shot, Serpent Sting og Arcane Shot er med' },
-    'beast mastery': { upstream: 'pet (og dermed Bestial Wrath og Frenzy), Raptor Strike, Multi-Shot og Hunter\'s Mark. Kun Auto Shot, Serpent Sting og Arcane Shot er med' },
-    marksmanship: { upstream: 'pet, Aimed Shot, Rapid Fire og Trueshot Aura. Kun Auto Shot, Serpent Sting og Arcane Shot er med' },
-    survival: { upstream: 'al nærkamp (Raptor Strike, Mongoose Bite) og pet. Kun Auto Shot, Serpent Sting og Arcane Shot er med' },
+    'beast mastery': {
+      upstream: 'pet (og dermed Bestial Wrath og Frenzy), Raptor Strike, Multi-Shot og Hunter\'s Mark. Kun Auto Shot, Serpent Sting og Arcane Shot er med',
+      withFix: 'Intimidation, Summon Hawk, fælder og melee-weaving (Raptor Strike mellem skuddene). Petten er en kat med Bite og Claw, altid glad og dør aldrig, og dens skade bygger på wowsims\' målinger. Aimed Shot bruges ikke: med jægerens mana giver Arcane Shot mere',
+    },
+    marksmanship: {
+      upstream: 'pet, Aimed Shot, Rapid Fire og Trueshot Aura. Kun Auto Shot, Serpent Sting og Arcane Shot er med',
+      withFix: 'Scatter Shot, Volley, fælder og melee-weaving. Med Lone Wolf simuleres ingen pet; uden Lone Wolf er petten en kat. Aimed Shot og Sniper Shot bruges ikke: med jægerens mana giver Arcane Shot mere',
+    },
+    survival: {
+      upstream: 'al nærkamp (Raptor Strike, Mongoose Bite) og pet. Kun Auto Shot, Serpent Sting og Arcane Shot er med',
+      withFix: 'Counterattack, Wing Clip, fælder og Mongoose Bite efter en dodge (målet slår ikke i simuleringen, så kun via Expose Prey). Med nærkamp-talenter står jægeren i nærkamp hele kampen uden at skyde; uden dem skyder den som Beast Mastery. Petten er en kat med Bite og Claw, altid glad og dør aldrig, og dens skade bygger på wowsims\' målinger',
+    },
   },
   shaman: {
     '*': { upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock' },

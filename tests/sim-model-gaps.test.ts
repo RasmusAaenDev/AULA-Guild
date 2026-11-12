@@ -60,6 +60,24 @@ describe('modelGap (ren logik)', () => {
     // Uden rettelsen er det stadig den røde upstream-advarsel.
     expect(modelGap({ className: 'warlock', spec: 'Demonology' }, [])?.kind).toBe('upstream');
   });
+  it('hunter med vores rettelse: gul advarsel (pet, nærkamp og skud er med), ikke længere den røde', () => {
+    const bm = modelGap({ className: 'hunter', spec: 'Beast Mastery' }, [GROV_FIX]);
+    expect(bm).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Hunter (Beast Mastery) fuldt ud' });
+    expect(bm?.missing).toMatch(/^Intimidation, Summon Hawk, fælder og melee-weaving/);
+    expect(bm?.missing).toMatch(/Petten er en kat med Bite og Claw, altid glad og dør aldrig/);
+    expect(bm?.missing).not.toMatch(/^pet|Hunter's Mark|Multi-Shot/);
+    const mm = modelGap({ className: 'hunter', spec: 'Marksmanship' }, [GROV_FIX]);
+    expect(mm?.missing).toMatch(/Med Lone Wolf simuleres ingen pet/);
+    expect(mm?.missing).toMatch(/Aimed Shot og Sniper Shot bruges ikke/);
+    const sv = modelGap({ className: 'hunter', spec: 'Survival' }, [GROV_FIX]);
+    expect(sv).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Hunter (Survival) fuldt ud' });
+    expect(sv?.missing).toMatch(/^Counterattack, Wing Clip, fælder og Mongoose Bite efter en dodge/);
+    expect(sv?.missing).toMatch(/står jægeren i nærkamp hele kampen/);
+    expect(modelGap({ className: 'hunter', spec: null }, [GROV_FIX])).toBeNull();
+    // Uden rettelsen (upstream) er det stadig den røde advarsel om den manglende pet.
+    expect(modelGap({ className: 'hunter', spec: 'Survival' }, [])).toMatchObject({ kind: 'upstream' });
+    expect(modelGap({ className: 'hunter', spec: 'Beast Mastery' }, [])?.missing).toMatch(/^pet/);
+  });
   it('specs vores rettelse ikke dækker: delvis advarsel kun sammen med «Grov model»', () => {
     const holy = modelGap({ className: 'paladin', spec: 'Holy' }, [GROV]);
     expect(holy).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Paladin (Holy) fuldt ud' });
@@ -140,6 +158,14 @@ describe('SimCard: advarsel om modellens huller', () => {
     const html = render(sim({ className: 'paladin', warnings: [GROV] }), 'Holy');
     expect(html).toContain('sim-gap sim-gap-partial');
     expect(html).toContain('Holy Shock bruges kun over halv mana');
+    expect(html).toContain('Grov model');
+  });
+  it('hunter med vores rettelse: «Grov model» og den gule advarsel i stedet for den røde', () => {
+    const html = render(sim({ className: 'hunter', warnings: [GROV_FIX] }), 'Beast Mastery');
+    expect(html).toContain('sim-gap sim-gap-partial');
+    expect(html).not.toContain('sim-gap-upstream');
+    expect(html).toContain('Aulas model dækker ikke Hunter (Beast Mastery) fuldt ud');
+    expect(html).toContain('Petten er en kat med Bite og Claw');
     expect(html).toContain('Grov model');
   });
   it('ingen advarsel før resultatet er færdigt', () => {
