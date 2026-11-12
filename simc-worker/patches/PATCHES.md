@@ -57,7 +57,7 @@ Filerne ligger allerede i simcs byggelister, så intet andet skal røres.
 
 **Upstream-tjek (`mage.check`):** `sc_mage.cpp` har flere end 150 linjer, `apl/mage.cpp` indeholder `add_action`,
 og `sc_mage.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er `sc_mage.cpp` 47 linjer og
-APL'en tom; med rettelsen er modulet 549 linjer.
+APL'en tom; med rettelsen er modulet 826 linjer.
 
 ### Spells (alle tal fra spildata, intet opfundet)
 
@@ -74,6 +74,9 @@ Kun spells en mage lærer hos træneren; id'er og levels er slået op i `engine/
 | Evocation | 12051:20 | kanaliseret 8 s på magen selv, 480 s nedkøling, 1,5 s GCD; se nedenfor |
 | Ice Lance (talent) | 1312002:20, 400640:28, 1240044:34, 1240045:42, 1240046:48, 1240047:56 | kun med talentet; se «Frost-pakken» |
 | Ice Barrier (talent) | 11426:40, 13031:46, 13032:52, 13033:58 | kun med talentet; se «Frost-pakken» |
+| Scorch | 2948:22, 8444:28, 8445:34, 8446:40, 10205:46, 10206:52, 10207:58 | 1,5 s cast; se «Fire-pakken» |
+| Pyroblast (talent) | 11366:20, 12505:24, 12522:30, 12523:36, 12524:42, 12525:48, 12526:54, 18809:60 | 6 s cast, direkte + DoT (4 ticks à 3 s); kun med talentet |
+| Combustion (talent) | 11129:40 | ingen GCD, 180 s nedkøling; se «Fire-pakken» |
 
 **Shoot (5019)** ifølge spildataen: «Requires weapon: Wand», «Uses Ranged Slot», «Auto Repeat», Spell Type Magic,
 effekt *Weapon Damage NoSchool* (17), 30 yards, 20 yards/s. Skaden er altså wandens våbenskade, som simc allerede
@@ -136,10 +139,12 @@ derfor (`deregister_passive_spell`, samme mønster som priest-modulet) og lægge
 **Med via håndskrevet kode:** Frost-pakken (Ice Lance, Frostbite/frossent mål, Fingers of Frost, Shatter, Ice
 Barrier); se næste afsnit.
 
-**Mangler stadig (kræver håndskrevet kode):** talent-spells **Arcane Blast**, **Arcane Wrath**, **Pyroblast** og
-Blast Wave (ingen handlinger); procs og tilstande Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage,
-Heating Up, Ignite, Improved Scorch, Master of Elements, Fire Power; aktive buffs Arcane Power, Presence of Mind,
-Combustion og Cold Snap; Arcane Subtlety (aura 123, uden for simcs passivliste).
+**Med via håndskrevet kode (Fire):** Fire-pakken (Scorch, Pyroblast, Ignite, Improved Scorch, Heating Up,
+Combustion, Master of Elements, Fire Power); se «Fire-pakken».
+
+**Mangler stadig (kræver håndskrevet kode):** talent-spells **Arcane Blast**, **Arcane Wrath** og Blast Wave (ingen
+handlinger); procs og tilstande Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage; aktive buffs
+Arcane Power, Presence of Mind og Cold Snap; Arcane Subtlety (aura 123, uden for simcs passivliste).
 
 **Målt før Frost-pakken** (ezzek, level 35 Frost: Wand Spec 2, Improved Frostbolt 5, Precision 2, Ice Shards 5, Frostbite 3, Frost
 Channeling 1, Ice Lance, Ice Block, Shatter 3, Cold Snap, Fingers of Frost 2; samme indstillinger og seed 42 som
@@ -198,6 +203,7 @@ Fingers of Frost virker uanset.
 
 ```
 evocation,if=mana.pct<10   # lav mana og Evocation klar (480 s nedkøling: højst én gang i en kamp på 5 min.)
+call_action_list,name=fire,if=<Fire-nøgle>&!<Frost-nøgle>   # se «Rotation (Fire)»; ellers videre herfra
 ice_barrier,if=!buff.ice_barrier.up                     # kun med talentet
 ice_lance,if=buff.fingers_of_frost.up|debuff.frozen.up  # kun med talentet
 fire_blast                 # på nedkøling, når manaen rækker
@@ -228,6 +234,107 @@ Fire- og Arcane Mage-guides, Skycoach' Mage-guide):
 - Kilderne kunne ikke hentes maskinelt herfra (Icy Veins og Mobalytics svarer 403); rækkefølgen bygger derfor på
   søgeresuméer og almindelig classic-praksis. Arcane Missiles er implementeret som handling, men er ikke i
   standardrotationen (den kan ikke vælges via workeren, som ikke tillader `actions=`).
+
+### Valg af rotation (talenter)
+
+Rotationen vælges i APL'en med `talent.<navn>.enabled` (konstanter, så valget koster intet under simulationen):
+
+- **Frost-nøgle:** Ice Lance, Fingers of Frost eller Ice Barrier → Frost-listen ovenfor (uændret). Frost vinder,
+  hvis en hybrid har nøgletalenter fra flere træer, så en Frost-mage aldrig får en anden rotation.
+- **Fire-nøgle:** Ignite, Pyroblast, Improved Scorch, Heating Up eller Combustion (og ingen Frost-nøgle) → `fire`.
+- **Ingen nøgle:** grundrotationen (`fire_blast`, `frostbolt`, `fireball`, `shoot`), præcis som før. Rene passive
+  talenter (fx Accelerant, Incineration, Critical Mass) skifter ikke rotation.
+
+### Fire-pakken (håndskrevet; alle tal fra spildata, antagelser markeret)
+
+- **Scorch** (trænerens, fra level 22): direkte skade efter rank, 1,5 s cast.
+- **Pyroblast** (talent; højere ranks kræver det): direkte skade + DoT fra spildata.
+- **Ignite** (11119; 8/16/24/32/40 %): hvert ikke-periodisk **Fire-crit** lægger rankens procent af crittets skade
+  på målet som rullende DoT 412538 (4 s, tick hver 2 s; rest + ny skade fordeles på de nye ticks, simcs
+  `residual_action`). **Antagelse:** Ignite-tickene får ingen multiplikatorer igen (heller ikke Fire Vulnerability/Fire
+  Power), da de allerede er med i crittets skade.
+- **Improved Scorch** (11095; 33/67/100 %): hvert landet Scorch giver med rankens chance en stak **Fire
+  Vulnerability** (22959) på målet: +3 % Fire-skade fra magen pr. stak, op til 5, 30 s (fornyes ved ny stak).
+- **Heating Up** (400624): ikke-periodiske crits med Fireball, Fire Blast og Scorch giver en stak 400625 (20 s,
+  op til 3, −25 % cast-tid på Pyroblast pr. stak; via `parse_effects`). «Fire Blast grants an additional stack
+  every time it deals damage»: Fire Blast giver derfor en stak pr. hit og en ekstra ved crit. Pyroblast bruger
+  alle stakkene.
+- **Combustion** (11129): aktiv, ingen GCD. Hvert landet direkte Fire-hit giver en stak 28682 (+10 % crit på
+  Fire-spells, op til 10; via `parse_effects`); efter 3 ikke-periodiske Fire-crits forsvinder begge. Spildataen har
+  «Cooldown On Event», så de 180 s nedkøling starter først, når effekten er brugt op.
+- **Master of Elements** (29074; 10/20/30 %): Fire- og Frost-crits giver den procentdel af spellens basis-mana
+  tilbage.
+- **Fire Power** (11124; 1/2/3 %): +% pr. af magens Fire-effekter på målet (højst 4). Talt med: Fireball-DoT,
+  Pyroblast-DoT, Ignite og Fire Vulnerability. Gælder direkte og periodisk Fire-skade (ikke Ignite, se ovenfor).
+
+**Udeladt:** Flamestrike, Blast Wave og Improved Flamestrike (AoE), Impact (stun), Flame Throwing, Burning Soul,
+Improved Fire Ward (utility). **Frostfire Bolt**, som wowtbc.gg bruger som filler, er ikke en trænerspell i
+modellen og er ikke med; Fireball er filler.
+
+### Rotation (Fire)
+
+```
+pyroblast,if=time=0                     # åbner (kun med talentet)
+scorch,if=talent.improved_scorch.enabled&(debuff.fire_vulnerability.stack<5|debuff.fire_vulnerability.remains<5)
+combustion                              # på nedkøling (ingen GCD)
+pyroblast,if=buff.heating_up.stack>=3   # 1,5 s cast med 3 stak
+fire_blast                              # på nedkøling
+fireball                                # filler
+shoot                                   # wand, når der ikke er mana til Fireball
+```
+
+Kilder (læst 12.11.2026): **Warcraft Tavern** «Fire Mage Guide» (Forever): «Pre-cast Pyroblast for any boss fight»,
+«spam Scorch until you get 5 x Improved Scorch stacks», «Use Combustion to burst down your target», «Use Fire Blast
+on cooldown», «Cast Fireball once you have the 5 x Improved Scorch stacks and reuse Scorch if the debuff is about
+to expire», «Cast Pyroblast whenever Heating Up reaches 3x stacks». **wowtbc.gg** (Warcraft Forever Fire Mage):
+«Maintain 5 stacks of Improved Scorch», «Cast Pyroblast with 3 stacks of Heating Up», «Cast Fire Blast», «Cast
+Frostfire Bolt». **Icy Veins** og **Mobalytics** (Forever Fire) gav HTTP 403; kun søgeuddrag (Icy Veins: Fire Blast
+giver altid en Heating Up-stak og to ved crit; åbn med Pyroblast og Scorch til 5 stak).
+
+Forenklinger: den forhåndskastede Pyroblast er ikke gratis i simc (den koster 6 s kamptid fra t = 0 i stedet for at
+blive kastet før kampen). Guidernes leveling-trick «Fireball i luften, så Scorch + Fire Blast» til at gøre mobben
+færdig kan ikke modelleres (én lang kamp; simc kaster én spell ad gangen); Fire Blast på nedkøling dækker det.
+Scorch-tærsklen 5 s før udløb er vores valg (guiderne siger kun «about to expire»). I DungeonSlice stables
+Scorch op på hvert nyt mål, som guiderne beskriver for bosser; på trash ville en spiller nok springe det over.
+
+### Fire-pakken: målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
+
+Ingen guild-mage har Fire-talenter (ezzek, magi-far, flareon-dk og apzel er alle Frost, armory 12.11.2026). Profilen
+er derfor konstrueret: level 45, ezzeks udstyr (fiktivt navn), 36 point lavet med appens talentkoder
+(`buildSimProfile`): Accelerant 5, Ignite 5, Incineration 5, Flame Throwing 2, Pyroblast, Improved Fire Blast 2,
+Improved Scorch 3, Heating Up, Master of Elements 3, Critical Mass 3, Fire Power 3, Combustion, Blast Wave,
+Improved Flamestrike 1. Før = forrige mage.patch (grundrotation + passiver), efter = denne.
+
+| Profil | Patchwerk før → efter | DungeonSlice før → efter |
+|---|---|---|
+| Fire 45 | 47,29 → **58,51** (+24 %) | 40,70 → **48,25** (+19 %) |
+| Fire 45, kun passive Fire-talenter | 47,29 → 47,29 | 40,70 → 40,70 |
+
+Håndregning (simc-log, Patchwerk, seed 42):
+
+- **Scorch** rank 4 (8446, level 40): 93 + 1,2 × (45 − 40) = 99 (simc 98: kommatal-afrunding nedad af 98,999…)
+  + 0,429 × 11 fire-spellpower = **102,72**; første Scorch med Fire Power × 1 (Pyroblast-DoT) = **105,80** (log
+  105,8006), crit × 1,5 = **158,70** (log). Med 2 stak Fire Vulnerability og 3 Fire-effekter: × 1,06 × 1,09 =
+  **118,68** (log 118,6815).
+- **Pyroblast** rank 5 (12524, level 42): 311 + 2,7 × 3 = 319 + 1,0 × 11 = **330** (log); DoT-tick 31 + 0,15 × 11 =
+  32,65 × 1,1554 = **37,72** (log). Cast-tid 6 s uden Heating Up, **1,5 s** med 3 stak (6 × (1 − 0,75)).
+- **Ignite** rank 5: 40 % af Scorch-crittet 158,70 = **63,48** (log 63,4803) → 2 ticks à 31,74 (log).
+- **Master of Elements** rank 3: Scorch 100 mana × 30 % = **30** pr. crit (log).
+- **Proc-tal** (pr. kamp, 1000 iterationer): Ignite udløst 11,30 gange = alle Fire-crits (Fire Blast 3,52 + Fireball
+  1,82 + Pyroblast 0,77 + Scorch 5,19 = 11,30). Heating Up-stakke 21,19 (start 8,20 + fornyelser 12,98) = forventet
+  crits fra Fireball/Fire Blast/Scorch 10,53 + Fire Blast-hits 10,65 = **21,18**. Fire Vulnerability 18,05 stakke =
+  landede Scorch 18,06 (rank 3 = 100 %); oppetid 93,8 %, gennemsnit 4,0 stak. Master of Elements 595 mana =
+  0,3 × (3,52 × 220 + 1,82 × 260 + 0,77 × 285 + 5,19 × 100) = **596**.
+- **Combustion:** 2 gange pr. kamp (nedkølingen starter, når de 3 crits er brugt, ca. 40 s inde); log: stakkene
+  stiger ved hvert hit og forsvinder ved 3. crit, hvorefter nedkølingen på 180 s starter.
+
+Rimelighed: Fire 45 (58,5) ligger under Frost 45 (68,2), fordi Fire-spells er dyre: manaen er brugt efter ca. 33 s,
+og wanden står for 29 % af skaden (Frost har Frost Channeling og billigere Frostbolts). Ingen drik/manasten.
+
+Regression (binær med forrige mod ny mage.patch, samme indstillinger): hunter-11, warrior-11, shaman-20, warlock-10,
+warlock-25, paladin-39 (holy og ret), rogue-33, mage-20, mage-35, ezzek (Frost, med og uden talenter), Frost 45,
+level 45 med kun passive Frost-, Fire- eller Arcane-talenter giver bit-for-bit samme DPS i Patchwerk og DungeonSlice.
+`check-upstream.sh` giver OK mod 3c1d319 og main (1b8e01d); de tre rettelser kan anvendes i alle seks rækkefølger.
 
 ### Frost-pakken: målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
 
