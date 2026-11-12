@@ -22,13 +22,12 @@ describe('GuildStar', () => {
 });
 
 describe('CharacterSwitcher', () => {
-  it('viser kun stjerne ved guild-karakterer og annoncerer det én gang via knappens aria-label', () => {
+  it('viser ingen stjerne i topbaren, og knappens label nævner ikke guilden', () => {
     const html = renderToStaticMarkup(
       createElement(CharacterSwitcher, { characters: [c(1, 'Abe Aaen', true), c(2, 'Bob Bygger', false)], activeId: 1 }),
     );
-    expect(html.match(/★/g)).toHaveLength(1);
-    expect(html).not.toContain('role="img"');
-    expect(html).toContain('aria-label="Abe Aaen (primær karakter), i guilden"');
+    expect(html).not.toContain('★');
+    expect(html).toContain('aria-label="Abe Aaen (primær karakter)"');
     expect(html).toContain('aria-label="Skift primær karakter til Bob Bygger"');
   });
 });

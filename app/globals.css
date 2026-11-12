@@ -100,8 +100,6 @@ details.profile summary > span:last-child { max-width: 160px; overflow: hidden; 
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
 th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
-.cs-star { position: absolute; top: -4px; right: -4px; font-size: 12px; line-height: 1; background: var(--card); border-radius: 50%; width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; }
-.cs-star .guild-star { margin: 0; }
 .guild-star { color: var(--star); margin-left: 0.25em; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--border); color: var(--text); font-size: 12px; }
 
