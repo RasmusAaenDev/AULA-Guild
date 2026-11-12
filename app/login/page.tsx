@@ -1,10 +1,23 @@
 import { redirect } from 'next/navigation';
 import { auth, signIn } from '@/auth';
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string | string[] }> }) {
-  const { error } = await searchParams;
+// Fra Battle.net kan to kald til /api/auth/callback komme næsten samtidig; det ene uden login-cookies fejler og sender brugeren hertil,
+// mens det andet stadig er ved at oprette sessionen. Derfor venter vi et øjeblik og tjekker igen, før fejlen vises.
+const RECHECK_SECONDS = 4;
+
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string | string[]; checked?: string | string[] }> }) {
+  const { error, checked } = await searchParams;
   const session = await auth();
   if (session?.user?.id) redirect('/');
+  if (error && !checked) {
+    return (
+      <main className="center-card">
+        <meta httpEquiv="refresh" content={`${RECHECK_SECONDS};url=/login?error=${encodeURIComponent(String(error))}&checked=1`} />
+        <h1>AULA</h1>
+        <p role="status">Tjekker dit login …</p>
+      </main>
+    );
+  }
   return (
     <main className="center-card">
       <h1>AULA</h1>
