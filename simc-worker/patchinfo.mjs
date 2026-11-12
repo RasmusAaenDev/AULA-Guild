@@ -6,7 +6,7 @@ export const PATCH_STATUSES = new Set(['applied', 'dropped-upstream']);
 export const MODEL_AULA = 'aula-rettelse';
 export const MODEL_WARNING = 'Grov model: klassen er implementeret af Aula, ikke af SimulationCraft. Tallene er vejledende.';
 /** Klasser hvor rettelsen er en rettelse oven på SimulationCraft's egen grundmodel (ikke en hel model fra Aula). */
-export const FIX_ON_UPSTREAM = new Set(['druid', 'priest']);
+export const FIX_ON_UPSTREAM = new Set(['druid', 'priest', 'warlock']);
 export const MODEL_WARNING_FIX = 'Grov model: SimulationCraft\'s grundmodel med Aulas rettelser. Tallene er vejledende.';
 
 /** «<klasse> <status>» pr. linje (skrevet af patches/apply.sh) -> [{ class, status }]. Ukendte linjer ignoreres. */

@@ -28,9 +28,11 @@ const DRUID = 'engine/class_modules/sc_druid.cpp';
 const ENUMS = 'engine/dbc/data_enums.hh';
 const PRIEST = 'engine/class_modules/sc_priest.cpp';
 const PRIEST_APL = 'engine/class_modules/apl/priest.cpp';
+const WARLOCK = 'engine/class_modules/sc_warlock.cpp';
+const WARLOCK_APL = 'engine/class_modules/apl/warlock.cpp';
 // apply.sh går rettelserne igennem via globben *.patch, dvs. alfabetisk efter klasse.
-const CLASSES = ['druid', 'mage', 'paladin', 'priest', 'rogue'];
-const ALL_APPLIED = 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue applied\n';
+const CLASSES = ['druid', 'mage', 'paladin', 'priest', 'rogue', 'warlock'];
+const ALL_APPLIED = 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue applied\nwarlock applied\n';
 
 const tmp = (p) => mkdtempSync(path.join(tmpdir(), p));
 function fakeSimc() {
@@ -73,6 +75,7 @@ test('alle rettelser rører hver sine filer (ingen afhængighed mellem rettelser
   assert.deepEqual([...touched('rogue.patch')].sort(), [ROGUE_HPP, ROGUE_APL, ROGUE].sort());
   assert.deepEqual([...touched('druid.patch')].sort(), [DRUID, ENUMS].sort());
   assert.deepEqual([...touched('priest.patch')].sort(), [PRIEST_APL, PRIEST].sort());
+  assert.deepEqual([...touched('warlock.patch')].sort(), [WARLOCK_APL, WARLOCK].sort());
 });
 
 test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () => {
@@ -111,6 +114,13 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(read(src, PRIEST), /if \( name == "shoot" \)\s*\n\s*return new shoot_t/);
     assert.match(read(src, PRIEST), /player->find_spell\( 5019 \)/);
     assert.match(read(src, PRIEST_APL), /wand_phase,op=set,value=1,if=mana\.pct<10[\s\S]*wand_phase,op=set,value=0,if=mana\.pct>40[\s\S]*add_action\( "shoot,if=variable\.wand_phase" \)[\s\S]*add_action\( "holy_fire,if=!ticking&!talent\.mind_flay\.enabled" \)[\s\S]*add_action\( "smite" \)\s*;\s*\n\s*default_->add_action\( "shoot" \);/);
+    // warlock: Life Tap, wand, Bane of Agony og spec-talenter efter talenter
+    assert.match(r.out, /warlock: rettelse anvendt/);
+    assert.match(read(src, WARLOCK), /AULA-RETTELSE/);
+    for (const a of ['shoot', 'life_tap', 'bane_of_agony', 'siphon_life', 'shadowburn', 'conflagrate', 'incinerate', 'wrack']) {
+      assert.match(read(src, WARLOCK), new RegExp(`if \\( name == "${a}" \\)`), a);
+    }
+    assert.match(read(src, WARLOCK_APL), /add_action\( "life_tap,if=mana\.pct<20" \)[\s\S]*add_action\( "bane_of_agony,if=!ticking" \)[\s\S]*add_action\( "shadow_bolt" \);\s*\n\s*default_->add_action\( "shoot" \);/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl. Druid-rettelsen er i upstream-stil uden
     // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md).
@@ -121,6 +131,7 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(again.out, /paladin: allerede anvendt/);
     assert.match(again.out, /rogue: allerede anvendt/);
     assert.match(again.out, /priest: allerede anvendt/);
+    assert.match(again.out, /warlock: allerede anvendt/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED.replace('druid applied', 'druid dropped-upstream'));
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
@@ -135,7 +146,7 @@ test('(b) upstream har selv implementeret mage: rettelsen droppes uden fejl', ()
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR mage — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage dropped-upstream\npaladin applied\npriest applied\nrogue applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage dropped-upstream\npaladin applied\npriest applied\nrogue applied\nwarlock applied\n');
     assert.equal(read(src, MAGE), impl); // upstreams fil er urørt
     assert.match(read(src, PALADIN), /AULA-RETTELSE/); // paladin-rettelsen påvirkes ikke
     assert.match(read(src, ROGUE), /AULA-RETTELSE/); // rogue anvendes uafhængigt af mage
@@ -187,7 +198,7 @@ test('(b-rogue) upstream har selv implementeret rogue: rogue.patch droppes, mage
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR rogue — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue dropped-upstream\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue dropped-upstream\nwarlock applied\n');
     assert.equal(read(src, ROGUE), impl);
     assert.match(read(src, MAGE), /AULA-RETTELSE/);
     assert.match(read(src, PALADIN), /AULA-RETTELSE/);
@@ -274,6 +285,7 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.match(r.out, /^mage: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^warlock: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), read(repo, MAGE).replace('namespace {', 'namespace { // ændret'));
     git('commit', '-q', '-am', 'konflikt');
@@ -385,11 +397,12 @@ test('(a) paladin.patch anvendes på ren upstream: Ret-model med seals, Judgemen
 });
 
 test('alle rettelser kan anvendes i vilkårlig rækkefølge med samme resultat (rotationer frem og tilbage)', () => {
-  const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP, DRUID, ENUMS, PRIEST, PRIEST_APL];
-  // Alle rotationer frem og tilbage (hver klasse først og sidst mindst én gang); alle 5! = 120 tager for lang tid.
+  const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP, DRUID, ENUMS, PRIEST, PRIEST_APL,
+    WARLOCK, WARLOCK_APL];
+  // Alle rotationer frem og tilbage (hver klasse først og sidst mindst én gang); alle 6! = 720 tager for lang tid.
   const rot = CLASSES.map((_, i) => [...CLASSES.slice(i), ...CLASSES.slice(0, i)]);
   const orders = [...rot, ...rot.map((o) => [...o].reverse())];
-  assert.equal(orders.length, 10);
+  assert.equal(orders.length, 12);
   const results = [];
   for (const order of orders) {
     const src = fakeSimc();
@@ -423,7 +436,7 @@ test('(b) upstream har selv implementeret paladin: paladin droppes, mage og rogu
     assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
     assert.match(r.out, /mage: rettelse anvendt/);
     assert.match(r.out, /rogue: rettelse anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin dropped-upstream\npriest applied\nrogue applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin dropped-upstream\npriest applied\nrogue applied\nwarlock applied\n');
     assert.equal(read(src, PALADIN), impl);
     assert.match(read(src, ROGUE), /AULA-RETTELSE/);
     assert.match(run(APPLY, ['--dry-run', src]).out, /^paladin: DROP \(upstream har den nu\)$/m);
@@ -582,5 +595,47 @@ test('priest: upstream med Shoot, men uden Holy Fire i APL\'en, er ikke «færdi
     const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
     assert.equal(r.code, 1);
     assert.match(r.out, /^priest: KONFLIKT \(skal flettes: .*sc_priest\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+// --- warlock -------------------------------------------------------------------------------------------
+
+test('warlock.check holder IKKE på ren upstream (grundmodel med APL): rettelsen anvendes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('warlock');
+  try {
+    assert.match(read(src, WARLOCK_APL), /add_action\( "shadow_bolt" \)/); // upstream har en APL
+    assert.doesNotMatch(read(src, WARLOCK), /name == "life_tap"/);
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /warlock: rettelse anvendt/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'warlock applied\n');
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('warlock: upstream med Life Tap, men uden wand og Bane of Agony, er ikke «færdig» -> rettelsen skal flettes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('warlock');
+  try {
+    // Upstream lægger Life Tap efter Summon Imp i create_action (hvor vores rettelse også tilføjer handlinger).
+    writeFileSync(path.join(src, WARLOCK), read(src, WARLOCK).replace('    return new summon_imp_t( this, options_str );\n', '    return new summon_imp_t( this, options_str );\n  if ( name == "life_tap" )\n    return new life_tap_t( this, options_str );\n'));
+    const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^warlock: KONFLIKT \(skal flettes: .*sc_warlock\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('warlock droppes, når upstream selv har alle dele (uden vores markør)', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('warlock');
+  try {
+    writeFileSync(path.join(src, WARLOCK), read(src, WARLOCK).replace('  if ( name == "summon_imp" )',
+      '  if ( name == "life_tap" ) return new a_t();\n  if ( name == "shoot" ) return new b_t();\n  if ( name == "bane_of_agony" ) return new c_t();\n  if ( name == "summon_imp" )'));
+    writeFileSync(path.join(src, WARLOCK_APL), read(src, WARLOCK_APL).replace('  default_->add_action( "shadow_bolt" );',
+      '  default_->add_action( "life_tap,if=mana.pct<10" );\n  default_->add_action( "bane_of_agony" );\n  default_->add_action( "shadow_bolt" );'));
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /UPSTREAM HAR warlock/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'warlock dropped-upstream\n');
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });

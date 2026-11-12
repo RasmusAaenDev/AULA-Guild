@@ -1,0 +1,11 @@
+# Har upstream (simc-forever) selv det, warlock.patch tilføjer? Tjekkes på den RENE upstream-kilde, før rettelsen anvendes.
+# Alle betingelser skal holde; så droppes warlock.patch. Syntaks: se PATCHES.md.
+# Warlock har en upstream-grundmodel (354 linjer og en APL ved SIMC_REF 3c1d319), så linjeantal siger intet her.
+# Rettelsen tilføjer bl.a. Life Tap, wand (Shoot) og Bane of Agony som handlinger og bruger dem i rotationen.
+has_action engine/class_modules/sc_warlock.cpp life_tap
+has_action engine/class_modules/sc_warlock.cpp shoot
+has_action engine/class_modules/sc_warlock.cpp bane_of_agony
+contains engine/class_modules/apl/warlock.cpp "life_tap
+contains engine/class_modules/apl/warlock.cpp "bane_of_agony
+# Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor warlock.patch allerede er anvendt).
+not_contains engine/class_modules/sc_warlock.cpp AULA-RETTELSE

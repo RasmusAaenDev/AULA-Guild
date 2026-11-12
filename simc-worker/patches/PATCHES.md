@@ -2,7 +2,7 @@
 
 simc-forever (SimulationCraft til WoW Forever) mangler endnu nogle klasser: modulet findes, men er en tom skal uden
 spells og uden rotation, så simulationen giver 0 DPS (mage, paladin, rogue). For andre klasser har upstream en
-grundmodel med fejl eller store huller (druid, priest; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
+grundmodel med fejl eller store huller (druid, priest, warlock; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
 Indtil upstream selv retter dem, lægger vi en rettelse (patch) pr. klasse oven på den fastlåste `SIMC_REF` i
 `../Dockerfile`.
 
@@ -51,7 +51,7 @@ Et ugyldigt regulært udtryk eller handlingsnavn giver exit 2 (aldrig «findes i
 rotation), holder betingelserne ikke, rettelsen passer heller ikke, og bygget stopper som en konflikt. Det er
 meningen: så skal et menneske se på, om vores eller upstreams version skal bruges.
 
-**Klasser upstream allerede har en grundmodel af (druid, priest, og senere warlock, shaman …):** her holder
+**Klasser upstream allerede har en grundmodel af (druid, priest, warlock; senere shaman …):** her holder
 linjeantal og `add_action` fra dag ét, så den heuristik ville droppe rettelsen med det samme. `.check` skal i stedet
 liste præcis det, rettelsen tilføjer, som konkrete spells/handlinger eller kodestumper, fx
 `has_action engine/class_modules/sc_priest.cpp shoot`. Rettelsen droppes kun, når upstream har **alle** dele. Har
@@ -1095,4 +1095,97 @@ Håndtjek af Shoot: Shadow 40 og mage Frost 40 (samme wand 7001, ingen Wand Spec
 Discipline 40 med Wand Specialization 2 (+25 % i spildataen) rammer for 54 (44 × 1,25 = 55 før afrunding af
 gennemsnittet). Discipline 40 er nu på niveau med Frost-magen (47 mod 48); Shadow 40 ligger over (64), fordi Shadowform
 og DoTs bærer, og wanden fylder hullerne.
+
+
+## warlock
+
+**Hvad:** Tilføjelser til upstreams warlock-grundmodel (Shadow Bolt, Immolate, Corruption og Imp). Auditten fandt
+9-17 DPS og 75-78 % venter på alle tre specs: warlocken var tom for mana efter ca. 30 s (ingen Life Tap, ingen wand),
+og specs kunne ikke skelnes (samme tre spells for alle).
+
+**Rettelsen** (alle tal fra spildata via `simc spell_query`; kilde-id: spell level):
+
+- **Life Tap** (1454: 6, 1455: 16, 1456: 26, 11687: 36, 11688: 46, 11689: 56): mana = effekt 1 (med «points per
+  level» op til rankens max-level) + Spirit, × (1 + Improved Life Tap 10/20 %). Samme formel som
+  wowsims/forever `lifetap.go`. Ingen mana-pris, så femsekundsreglen nulstilles ikke (simc nulstiller den kun ved
+  mana-forbrug).
+- **Shoot** (wand, 5019): samme model som mage- og priest-rettelsen (wandens våbenskade, spell-tabellen, ingen
+  rustning, wandens hastighed). Står sidst i rotationen og bruges kun, når intet andet kan kastes (typisk under level
+  6 uden Life Tap).
+- **Bane of Agony** (980: 8, 1014: 18, 6217: 28, 11711: 38, 11712: 48, 11713: 58; Forevers navn for Curse of Agony,
+  instant, 24 s): et tick i første tredjedel af varigheden giver halvdelen af grundværdien, i anden hele, i sidste
+  halvanden gang; spell power-andelen stiger ikke (wowsims/forever `agony.go`, efter Forevers patch notes).
+- **Siphon Life** (talent; 18265: 30, 18879: 38, 18880: 48, 18881: 58): Periodic Health Leech; kun skaden
+  simuleres.
+- **Shadowburn** (talent; 17877: 20 … 18871: 56): instant, 15 s nedkøling; kun effekt 2 (skaden).
+- **Conflagrate** (talent; 1293817: 25, 1293818: 32, 17962: 40 … 18932: 60): kun klar, når warlockens Immolate
+  tikker på målet, og fjerner den.
+- **Incinerate** (talent; 412758: 40, 1293812: 50, 1293813: 60): +25 % (effekt 2), hvis målet har warlockens
+  Immolate.
+- **Wrack** (talent; 1316697: 40): kanaliseret i 6 s; mens den tikker, får warlockens andre Shadow-DoTs +10 %
+  (effekt 2).
+- **Improved Shadow Bolt** (talent 17793): et Shadow Bolt-crit giver Shadow Vulnerability (17794, 4-20 % efter rank,
+  12 s) på warlockens Shadow-skade.
+- Talenternes passive effekter (Improved Corruption, Bane, Ruin, Cataclysm, Suppression …) læses som hidtil af
+  upstreams `parse_all_passive_talents()`.
+
+**Rotation** (fælles; spec-delen styres af, hvilke talenter warlocken har):
+
+```
+precombat: summon_imp
+life_tap,if=mana.pct<20
+shadowburn                                   # Destruction
+conflagrate,if=dot.immolate.ticking          # Destruction
+bane_of_agony,if=!ticking
+corruption,if=!ticking|remains<2
+siphon_life,if=!ticking                      # Affliction
+immolate,if=!ticking|remains<2
+wrack,if=dot.corruption.ticking&dot.bane_of_agony.ticking   # Affliction 40
+incinerate,if=dot.immolate.ticking           # Destruction 40
+shadow_bolt
+shoot
+```
+
+**Antagelser:**
+
+- **Life Tap koster ikke liv.** Spillerens liv er uendeligt i simc (ingen indgående skade i en DPS-simulering; samme
+  for alle klasser). Det svarer til en gruppe med en healer. Solo uden healer ville warlocken skulle bruge Drain
+  Life, bandager eller pauser, og tallet er da for højt. Med 34-66 Life Taps på 300 s er det den største enkelte
+  antagelse; den står i appens gule advarsel.
+- Shadow Vulnerability og Wrack-forstærkningen ligger på warlocken (kun dens egen skade påvirkes); med flere mål
+  gælder de for alle mål.
+- Demonology har intet ud over Imp (upstreams, med stats tilpasset level 3-10) og passive talenter. Voidwalker,
+  Felhunter, Succubus og Demonic Sacrifice er for store til denne rettelse.
+- Ikke med: Drain Life/Soul, Searing Pain, Soul Fire, Curses (Elements, Recklessness), Nightfall, Amplify Curse,
+  Bane of Doom og Demonic Pact.
+
+**Filer:** `engine/class_modules/sc_warlock.cpp`, `engine/class_modules/apl/warlock.cpp` (mellem
+`//warlock_apl_start` og `//warlock_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/warlock` (én
+commit oven på `SIMC_REF`); patchen er `git diff 3c1d319..aula/warlock`. Den passer også uændret på upstream `main`
+`1b8e01d`.
+
+**Upstream-tjek (`warlock.check`):** upstream opretter selv `life_tap`, `shoot` og `bane_of_agony` (`has_action`),
+APL'en bruger `"life_tap` og `"bane_of_agony`, og `sc_warlock.cpp` har ikke vores markør. Har upstream kun en del
+(fx Life Tap uden wand), holder tjekket ikke, rettelsen giver en konflikt (testet), og et menneske må flette.
+
+**Model i workeren:** warlock står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs`: «Grov model: SimulationCraft's
+grundmodel med Aulas rettelser». Appen viser en gul advarsel pr. spec med det, rettelsen ikke dækker (pets, Life
+Tap uden livsomkostning; `lib/sim-model-gaps.ts`).
+
+### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42, Patchwerk)
+
+Auditens syntetiske profiler (udstyr fra fixtures, ikke level-tilpasset; se auditten §11). Til sammenligning på samme
+udstyr: Frost-mage 51, Shadow-priest 64, Ret-paladin 84 på level 40.
+
+| Profil | Før: DPS | Før: venter | Efter: DPS | Efter: venter | Life Tap | Største kilder (efter) |
+|---|---|---|---|---|---|---|
+| Affliction 20 | 9,9 | 77 % | **25,1** | 0 % | 52 | Shadow Bolt 34 %, Immolate 23 %, Agony 21 % |
+| Affliction 40 | 16,8 | 78 % | **62,5** | 0 % | 34 | Wrack 33 %, Agony 20 %, Corruption 18 %, Siphon Life 10 % |
+| Demonology 20 | 9,4 | 74 % | **22,7** | 0 % | 57 | Shadow Bolt 31 %, Agony 24 %, Immolate 22 % |
+| Demonology 40 | 14,8 | 75 % | **47,3** | 0 % | 51 | Shadow Bolt 32 %, Agony 23 %, Immolate 23 % |
+| Destruction 20 | 9,2 | 76 % | **24,7** | 0 % | 66 | Shadow Bolt 22 %, Immolate 21 %, Shadowburn 15 % |
+| Destruction 40 | 15,3 | 77 % | **60,4** | 0 % | 64 | Immolate 21 %, Conflagrate 17 %, Incinerate 14 %, Shadowburn 14 % |
+
+Imp'ens andel er 2-5 % (upstreams model). Bane of Agony tikker 14-41 på Affliction 40 (opbygningen virker); Shadow
+Vulnerability har ca. 6 % oppetid på Destruction 20 (5 % crit).
 

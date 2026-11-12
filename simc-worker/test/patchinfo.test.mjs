@@ -41,9 +41,9 @@ test('modelInfo: paladin med anvendt rettelse markeres som «Grov model» (flere
   assert.equal(modelInfo(p, 'mage').model, 'aula-rettelse');
   assert.equal(modelInfo(parsePatchesApplied('mage applied\npaladin dropped-upstream\n'), 'paladin'), null);
 });
-test('modelInfo: druid og priest er rettelser oven på upstream og får sin egen «Grov model»-tekst', () => {
-  const p = parsePatchesApplied('druid applied\nmage applied\npriest applied\n');
-  for (const cls of ['druid', 'priest']) {
+test('modelInfo: druid, priest og warlock er rettelser oven på upstream og får sin egen «Grov model»-tekst', () => {
+  const p = parsePatchesApplied('druid applied\nmage applied\npriest applied\nwarlock applied\n');
+  for (const cls of ['druid', 'priest', 'warlock']) {
     assert.equal(modelInfo(p, cls).model, 'aula-rettelse');
     assert.match(modelInfo(p, cls).warning, /^Grov model: SimulationCraft's grundmodel med Aulas rettelser/);
   }
