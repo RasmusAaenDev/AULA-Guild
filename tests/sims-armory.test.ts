@@ -3,7 +3,9 @@ import { eq } from 'drizzle-orm';
 import { createSendLimiter } from '@/lib/chat-send';
 import { characters, simJobs, users } from '@/lib/db/schema';
 import { BlizzardError, type SimProfile } from '@/lib/blizzard/types';
-import { ARMORY_NOT_FOUND, ARMORY_UNAVAILABLE, enqueueArmorySim } from '@/lib/sims-armory';
+import { ARMORY_NOT_FOUND, ARMORY_UNAVAILABLE, UNSUPPORTED_CLASS, enqueueArmorySim, enqueueArmorySimByName } from '@/lib/sims-armory';
+import { addCharacterMessage } from '@/lib/messages';
+import { sanitizeSubjectName } from '@/lib/sims';
 import { buildSimInput, buildSimProfile, cleanPlayerName, raceToken } from '@/lib/simc-armory';
 import { encodeTalents } from '@/lib/simc-talents';
 import { SIMC_TALENTS } from '@/lib/simc-talents.generated';
@@ -111,7 +113,25 @@ describe('enqueueArmorySim', () => {
     expect(view.source).toBe('armory');
     expect(SOURCE_LABELS[view.source]).toBe('Armory');
     expect(view.notices).toEqual(['1 talent kunne ikke oversættes; simuleringen kører uden det.']);
+    expect(view.characterId).toBe(c.id);
+    expect(view.characterName).toBe('Krigeren Far');
+    expect(view.fightStyles).toEqual(['Patchwerk', 'DungeonSlice']);
     expect(row.input).toMatch(/^talents=[A-Za-z0-9+/]+$/m);
+  });
+  it('listMySims giver det fulde karakternavn (efternavn fra feltet eller sluggen) og null når karakteren er væk', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'krigeren-far');
+    await db.update(characters).set({ surname: 'Fjeld' }).where(eq(characters.id, c.id));
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior } });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: true });
+    // Indsat tekst uden karakter.
+    await db.insert(simJobs).values({ userId: u.id, input: 'warrior="Krigeren"', status: 'done', result: { dps: { mean: 1, stdDev: 1, meanStdDev: 1 }, player: { name: 'Krigeren' } } });
+    let views = await listMySims(db, u.id);
+    expect(views.map((v) => [v.characterId, v.characterName])).toEqual([[null, null], [c.id, 'Krigeren Fjeld']]);
+    // Karakteren slettes → character_id bliver null (on delete set null), og navnet falder bort.
+    await db.delete(characters).where(eq(characters.id, c.id));
+    views = await listMySims(db, u.id);
+    expect(views[1]).toMatchObject({ characterId: null, characterName: null, source: 'armory' });
   });
   it('afviser en andens karakter, ukendt id og karakter uden ejer — uden at kalde Blizzard', async () => {
     const a = await mkUser();
@@ -161,7 +181,83 @@ describe('enqueueArmorySim', () => {
     const u = await mkUser();
     const c = await mkChar(u.id, 'x-y');
     const blizzard = fakeBlizzard({ simProfiles: { 'x-y': { ...warrior, className: 'Death Knight' } } });
-    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: 'Klassen støttes ikke i WoW Forever-simulatoren.' });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: UNSUPPORTED_CLASS });
+  });
+  it('gemmer karakterens fulde navn (subjectName) på jobbet, så det overlever en frakobling', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'krigeren-far');
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior } });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: true });
+    const [row] = await db.select().from(simJobs);
+    expect(row.options).toMatchObject({ subjectName: 'Krigeren Far' });
+    await db.delete(characters).where(eq(characters.id, c.id));
+    const [view] = await listMySims(db, u.id);
+    expect(view).toMatchObject({ characterId: null, characterName: null, subjectName: 'Krigeren Far' });
+  });
+});
+
+describe('enqueueArmorySimByName (fritekst: enhver karakter på WoW Forever)', () => {
+  const shaman: SimProfile = { ...warrior, name: 'Rød', className: 'Shaman', level: 41 };
+  it('en fremmed karakter: ingen characterId, fuldt navn gemmes som subjectName og vises i listen', async () => {
+    const u = await mkUser();
+    const blizzard = fakeBlizzard({ simProfiles: { 'rød-cecil': shaman } });
+    const r = await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), '  rød   CECIL ', { fightStyles: ['DungeonSlice'] });
+    expect(r).toMatchObject({ ok: true });
+    expect(blizzard.calls).toEqual(['simprofile:rød-cecil']);
+    const [row] = await db.select().from(simJobs);
+    expect(row.characterId).toBeNull();
+    expect(row.options).toMatchObject({ source: 'armory', fightStyles: ['DungeonSlice'], optimizeBags: false, subjectName: 'Rød Cecil' });
+    const [view] = await listMySims(db, u.id);
+    expect(view).toMatchObject({ source: 'armory', characterId: null, characterName: null, subjectName: 'Rød Cecil', fightStyles: ['DungeonSlice'] });
+  });
+  it('brugerens egen registrerede karakter (match på slug) får characterId; en andens gør ikke', async () => {
+    const a = await mkUser();
+    const b = await mkUser();
+    const mine = await mkChar(a.id, 'krigeren-far');
+    await mkChar(b.id, 'krigeren-fjeld');
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior, 'krigeren-fjeld': warrior } });
+    expect(await enqueueArmorySimByName(db, mkDeps(a.id, blizzard), 'Krigeren Far', { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: true });
+    expect(await enqueueArmorySimByName(db, mkDeps(a.id, blizzard), 'Krigeren Fjeld', { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: true });
+    const rows = await db.select().from(simJobs).orderBy(simJobs.id);
+    expect(rows.map((r) => r.characterId)).toEqual([mine.id, null]);
+    expect(rows.map((r) => (r.options as { subjectName: string }).subjectName)).toEqual(['Krigeren Far', 'Krigeren Fjeld']);
+  });
+  it('afviser navne uden efternavn og med ugyldige tegn med samme beskeder som «Tilføj karakter» – uden Blizzard-kald', async () => {
+    const u = await mkUser();
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': warrior } });
+    for (const name of ['Krigeren', '  ', '', null, undefined, 42]) {
+      expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), name, { fightStyles: ['Patchwerk'] }), String(name)).toMatchObject({ ok: false, reason: 'invalid', error: addCharacterMessage('invalid_name') });
+    }
+    for (const name of ['Krigeren F@r', 'Krig3ren Far', 'Krigeren Far!', `${'a'.repeat(60)} b`]) {
+      expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), name, { fightStyles: ['Patchwerk'] }), name).toMatchObject({ ok: false, reason: 'invalid', error: addCharacterMessage('invalid_characters') });
+    }
+    expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), 'Krigeren Far', { fightStyles: [] })).toMatchObject({ ok: false, error: 'Vælg mindst én kampstil.' });
+    expect(blizzard.calls).toEqual([]);
+    expect(await db.select().from(simJobs)).toHaveLength(0);
+  });
+  it('ukendt karakter, armory nede og ikke-understøttet klasse giver de kendte beskeder', async () => {
+    const u = await mkUser();
+    const blizzard = fakeBlizzard({ simProfiles: { nede: new BlizzardError('unavailable', 'x'), 'død-ridder': { ...warrior, className: 'Death Knight' } } });
+    expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), 'Ukendt Person', { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: ARMORY_NOT_FOUND });
+    expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), 'Død Ridder', { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: UNSUPPORTED_CLASS });
+    const down = fakeBlizzard({ simProfiles: { 'krigeren-far': new BlizzardError('unavailable', 'x') } });
+    expect(await enqueueArmorySimByName(db, mkDeps(u.id, down), 'Krigeren Far', { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: false, error: ARMORY_UNAVAILABLE });
+    expect(await db.select().from(simJobs)).toHaveLength(0);
+  });
+  it('samme grænser som indsat tekst (2 samtidige) og køens kampstile valideres', async () => {
+    const u = await mkUser();
+    const blizzard = fakeBlizzard({ simProfiles: { 'rød-cecil': shaman } });
+    const rs = [];
+    for (let i = 0; i < 3; i++) rs.push(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), 'Rød Cecil', { fightStyles: ['Patchwerk'] }));
+    expect(rs.map((r) => r.ok)).toEqual([true, true, false]);
+    expect(rs[2]).toMatchObject({ reason: 'limit' });
+    expect(await enqueueArmorySimByName(db, mkDeps(u.id, blizzard), 'Rød Cecil', { fightStyles: ['Raid'] })).toMatchObject({ ok: false, error: 'Ugyldig kampstil.' });
+  });
+  it('sanitizeSubjectName renser og afkorter; gamle jobs uden feltet giver null', () => {
+    expect(sanitizeSubjectName('  Rød \u0000 Cecil  ')).toBe('Rød Cecil');
+    expect(sanitizeSubjectName('x'.repeat(100))).toHaveLength(60);
+    expect(sanitizeSubjectName('')).toBeNull();
+    expect(sanitizeSubjectName(5)).toBeNull();
   });
 });
 

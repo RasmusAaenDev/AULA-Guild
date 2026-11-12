@@ -286,9 +286,35 @@ details.create .menu a:hover { background: var(--border); }
 .sim-page-head { margin-bottom: 4px; }
 .sim-lead { margin: 0 0 16px; max-width: 70ch; }
 
-/* «Ny simulation»: segmenteret valg (radioknapper uden formular) viser én af to formularer via :has – uden JavaScript. */
-.new-sim-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; margin-bottom: 12px; }
-.new-sim-head h2 { margin: 0; }
+/* «+ Ny simulation»: sammenfoldeligt panel (native <details>); streameren ligger uden for <summary>, så knappens navn forbliver kort. */
+.new-sim-wrap { position: relative; padding: 0; margin-bottom: 20px; }
+.new-sim { margin: 0; }
+.new-sim-summary { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 6px 16px; cursor: pointer; list-style: none; color: var(--heading); font-size: 18px; font-weight: 800; border-radius: 12px; }
+.new-sim-summary::-webkit-details-marker { display: none; }
+.new-sim-summary:hover { background: var(--bg); }
+.new-sim-summary:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.new-sim-plus { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--topbar); color: #fff; flex: none; }
+.new-sim-chevron { display: inline-flex; margin-left: auto; transition: transform 0.15s; }
+.new-sim[open] .new-sim-chevron { transform: rotate(180deg); }
+.new-sim[open] .new-sim-summary { border-radius: 12px 12px 0 0; border-bottom: 1px solid var(--border); }
+.new-sim-body { padding: 16px; }
+.new-sim-body .seg { margin-bottom: 14px; }
+/* Streameren: en kompakt stribe i panelet under «+ Ny simulation», synlig også når panelet er lukket. */
+.sim-streamer { display: flex; flex-direction: column; gap: 5px; padding: 8px 16px 10px; border-top: 1px solid var(--border); background: var(--bg); border-radius: 0 0 12px 12px; }
+.has-streamer .new-sim[open] .new-sim-body { border-bottom: 1px solid var(--border); }
+.sim-streamer-status { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; font-size: 14px; }
+.sim-streamer-running .sim-streamer-status { color: var(--maybe); }
+.sim-streamer-queued .sim-streamer-status { color: var(--muted); }
+.sim-streamer-status strong { font-weight: 800; }
+.sim-streamer-who { color: var(--text); font-weight: 700; overflow-wrap: anywhere; }
+.sim-streamer-link { margin-left: auto; color: var(--heading); font-weight: 700; white-space: nowrap; min-height: 32px; display: inline-flex; align-items: center; }
+.sim-streamer-bar { height: 6px; }
+.sim-streamer-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0; font-size: 13px; min-width: 0; }
+.sim-streamer-line code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--text); background: var(--card); padding: 1px 6px; border-radius: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.new-sim-wrap > .sim-notice { margin: 12px 16px; }
+.new-sim-wrap > .sim-streamer + .sim-notice { margin-top: 12px; }
+.new-sim-wrap > .sim-streamer:last-child { border-radius: 0 0 12px 12px; }
+.new-sim-wrap > .sim-streamer:not(:last-child) { border-radius: 0; }
 .seg { display: inline-flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 4px; border: 0; background: var(--bg); border-radius: 12px; }
 .seg-option { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border-radius: 9px; color: var(--heading); font-weight: 700; cursor: pointer; }
 .seg-option input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
@@ -333,6 +359,11 @@ details.create .menu a:hover { background: var(--border); }
 .sim-card-done { border-left: 6px solid var(--ok); }
 .sim-card-failed { border-left: 6px solid var(--no); }
 .sim-card-running, .sim-card-queued { border-left: 6px solid var(--maybe); }
+.sim-card-latest { box-shadow: 0 0 0 2px var(--nav-active), 0 4px 14px rgba(0, 0, 0, 0.2); }
+.sim-latest-badge { margin-left: 8px; vertical-align: middle; }
+.sim-list-item { scroll-margin-top: 72px; }
+.sim-card-tech { margin: 0; font-size: 13px; }
+.sim-card-foot-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; }
 
 /* Kø → Kører → Færdig + fremdrift */
 .sim-running { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
@@ -362,7 +393,7 @@ details.create .menu a:hover { background: var(--border); }
 .dps-style { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0 0 6px; font-size: 14px; font-weight: 800; color: var(--heading); text-transform: uppercase; letter-spacing: 0.04em; }
 .dps-style .muted { font-weight: 600; text-transform: none; letter-spacing: 0; }
 .dps-value { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 8px; margin: 0; }
-.dps-number { font-size: 40px; line-height: 1; font-weight: 800; color: var(--heading); font-variant-numeric: tabular-nums; }
+.dps-number { font-size: 48px; line-height: 1; font-weight: 800; color: var(--heading); font-variant-numeric: tabular-nums; }
 .dps-unit { font-size: 16px; font-weight: 800; color: var(--heading); }
 .dps-err { font-size: 14px; font-variant-numeric: tabular-nums; }
 .dps-none { margin: 0; font-size: 14px; }
@@ -399,7 +430,7 @@ details.create .menu a:hover { background: var(--border); }
 .sim-gear-foot { margin: 8px 0 0; font-size: 13px; }
 
 /* Log og slet */
-.sim-card-foot { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 16px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+.sim-card-foot { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border); }
 .sim-log { flex: 1 1 240px; min-width: 0; margin: 0; }
 .sim-log summary { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 4px; font-weight: 700; color: var(--heading); list-style: none; }
 .sim-log summary::-webkit-details-marker { display: none; }
@@ -420,7 +451,8 @@ details.create .menu a:hover { background: var(--border); }
   .sim-card-meta { flex-direction: column; gap: 0; }
   .sim-card-meta > :not(:last-child)::after { content: none; }
   .sim-status { order: 3; width: 100%; justify-content: center; }
-  .dps-number { font-size: 34px; }
+  .dps-number { font-size: 40px; }
+  .new-sim-body { padding: 12px; }
 }
 @media (max-width: 560px) {
   .style-toggle .toggle-group { display: flex; width: 100%; }

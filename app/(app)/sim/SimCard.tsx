@@ -97,7 +97,7 @@ function PreviousLine({ previous }: { previous: PreviousDps }) {
   );
 }
 
-export function SimCard({ sim, subject, previous, now }: { sim: SimView; subject: SimSubject; previous: Partial<Record<string, PreviousDps | null>>; now: Date }) {
+export function SimCard({ sim, subject, previous, now, latest = false }: { sim: SimView; subject: SimSubject; previous: Partial<Record<string, PreviousDps | null>>; now: Date; latest?: boolean }) {
   const active = isActiveStatus(sim.status);
   const detail = playerDetail(subject);
   const title = subject.name ?? (sim.source === 'simc' ? 'Simulation fra SimC-tekst' : 'Simulation');
@@ -105,21 +105,24 @@ export function SimCard({ sim, subject, previous, now }: { sim: SimView; subject
   const created = new Date(sim.createdAt);
   const result = sim.result;
   const notes = [...sim.notices, ...(result ? visibleWarnings(result.warnings) : [])];
-  const meta = [
-    SOURCE_LABELS[sim.source],
+  // Teknisk detalje (kilde, gennemløb, varighed) hører til i en diskret linje nederst, ikke i hovedet.
+  const tech = [
+    `Kilde: ${SOURCE_LABELS[sim.source]}`,
     result?.iterations !== null && result?.iterations !== undefined ? `${formatInt(result.iterations)} gennemløb` : null,
     result ? durationText(result.elapsedMs) : null,
   ].filter((x): x is string => x !== null);
   return (
-    <li>
-      <article className={`card sim-card sim-card-${sim.status}`} aria-labelledby={`sim-${sim.id}-h`}>
+    <li id={`sim-${sim.id}`} className="sim-list-item">
+      <article className={`card sim-card sim-card-${sim.status}${latest ? ' sim-card-latest' : ''}`} aria-labelledby={`sim-${sim.id}-h`}>
         <header className="sim-card-head">
           <span className={`sim-avatar cs-cls-${cls}`} aria-hidden="true">{subjectInitial(subject.name)}</span>
           <div className="sim-card-title">
-            <h3 id={`sim-${sim.id}-h`}>{title}</h3>
+            <h3 id={`sim-${sim.id}-h`}>
+              {title}
+              {latest && <span className="badge new sim-latest-badge">Nyeste</span>}
+            </h3>
             <p className="muted sim-card-meta">
               {detail && <span>{detail}</span>}
-              <span>{meta.join(' · ')}</span>
               <time dateTime={sim.createdAt} title={formatAbsolute(created)}>{formatRelativeDay(created, now)}</time>
             </p>
           </div>
@@ -155,8 +158,11 @@ export function SimCard({ sim, subject, previous, now }: { sim: SimView; subject
         )}
 
         <footer className="sim-card-foot">
-          <SimLog text={sim.log} active={active} />
-          <ConfirmForm action={deleteSimAction} fields={{ simId: sim.id }} label="Slet" confirmText="Slet denne simulation?" />
+          <p className="muted sim-card-tech">{tech.join(' · ')}</p>
+          <div className="sim-card-foot-row">
+            <SimLog text={sim.log} active={active} />
+            <ConfirmForm action={deleteSimAction} fields={{ simId: sim.id }} label="Slet" confirmText="Slet denne simulation?" />
+          </div>
         </footer>
       </article>
     </li>

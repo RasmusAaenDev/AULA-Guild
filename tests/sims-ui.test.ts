@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { SimItemResult } from '@/lib/sims';
 import {
-  capitalize, comparableRows, durationText, isActiveStatus, logProgress, mergeGearRows, parseSubjectFilter, playerDetail, previousDps,
-  simSubject, statusStep, subjectFilterNames, subjectInitial, upgradeRows,
+  capitalize, comparableRows, durationText, isActiveStatus, lastLogLine, logProgress, matchOwnCharacter, mergeGearRows, nextFieldValue, parseSubjectFilter, pickStreamerJob,
+  playerDetail, previousDps, simSubject, statusStep, subjectFilterNames, subjectInitial, upgradeRows,
 } from '@/lib/sims-ui';
 
 const item = (over: Partial<SimItemResult> = {}): SimItemResult => ({ index: 0, slot: 'head', id: 1, label: 'Hjelm', dpsMean: 100, delta: 5, deltaPercent: 5, ...over });
@@ -16,6 +16,23 @@ describe('status og forløb', () => {
     expect(statusStep('failed')).toBe(3);
     expect(isActiveStatus('queued')).toBe(true);
     expect(isActiveStatus('done')).toBe(false);
+  });
+});
+
+describe('streameren i panelet', () => {
+  it('vælger kørende før ventende, ældste først, og tæller resten i køen', () => {
+    const s = (id: number, status: 'queued' | 'running' | 'done' | 'failed') => ({ id, status });
+    expect(pickStreamerJob([s(5, 'queued'), s(4, 'running'), s(3, 'done'), s(2, 'running'), s(1, 'failed')])).toEqual({ job: s(2, 'running'), queued: 1 });
+    expect(pickStreamerJob([s(9, 'queued'), s(7, 'queued'), s(8, 'queued')])).toEqual({ job: s(7, 'queued'), queued: 2 });
+    expect(pickStreamerJob([s(1, 'done'), s(2, 'failed')])).toBeNull();
+    expect(pickStreamerJob([])).toBeNull();
+  });
+  it('lastLogLine giver seneste ikke-tomme linje, afkortet', () => {
+    expect(lastLogLine(null)).toBeNull();
+    expect(lastLogLine('\n  \n')).toBeNull();
+    expect(lastLogLine('a\nb\n\n  c  \n\n')).toBe('c');
+    expect(lastLogLine('x'.repeat(100), 10)).toBe('x'.repeat(9) + '…');
+    expect(lastLogLine('æøå'.repeat(10), 7)).toBe('æøåæøå…');
   });
 });
 
@@ -83,15 +100,59 @@ describe('karakter og tekster', () => {
     expect(playerDetail({ className: null, spec: null, level: null })).toBe('');
     expect(capitalize('')).toBe('');
   });
-  it('simSubject: resultatets spiller, ellers karakteren, ellers ukendt', () => {
-    const chars = [{ id: 7, name: 'Magi', className: 'Mage', spec: 'Frost' }];
-    expect(simSubject({ result: null, characterId: 7 }, chars)).toEqual({ name: 'Magi', className: 'Mage', spec: 'Frost', level: null });
-    expect(simSubject({ result: null, characterId: 8 }, chars).name).toBeNull();
-    expect(simSubject({ result: null, characterId: null }, chars).name).toBeNull();
-    const player = { name: 'Rød', className: 'shaman', spec: 'shaman', level: 41 };
-    expect(simSubject({ result: { player }, characterId: 7 }, chars)).toEqual(player);
+  const chars = [
+    { id: 7, name: 'Magi', fullName: 'Magi Far', className: 'Mage', spec: 'Frost' },
+    { id: 8, name: 'Rød', fullName: 'Rød Hætte', className: 'Shaman', spec: null },
+    { id: 9, name: 'Rød', fullName: 'Rød Grød', className: 'Warrior', spec: null },
+    { id: 10, name: 'Dobbelt', fullName: 'Dobbelt Op', className: 'Mage', spec: null },
+    { id: 11, name: 'dobbelt', fullName: 'Dobbelt Ned', className: 'Mage', spec: null },
+  ];
+  it('matchOwnCharacter: fornavn uanset store/små bogstaver, klasse når den kendes, kun ved præcis ét match', () => {
+    expect(matchOwnCharacter({ name: 'magi', className: 'mage' }, chars)?.fullName).toBe('Magi Far');
+    expect(matchOwnCharacter({ name: 'Magi', className: null }, chars)?.fullName).toBe('Magi Far');
+    expect(matchOwnCharacter({ name: 'Magi', className: 'warrior' }, chars)).toBeNull();
+    expect(matchOwnCharacter({ name: 'Rød', className: null }, chars)).toBeNull();
+    expect(matchOwnCharacter({ name: 'Rød', className: 'shaman' }, chars)?.fullName).toBe('Rød Hætte');
+    expect(matchOwnCharacter({ name: 'Dobbelt', className: 'mage' }, chars)).toBeNull();
+    expect(matchOwnCharacter({ name: null, className: 'mage' }, chars)).toBeNull();
+  });
+  const player = { name: 'Magi', className: 'mage', spec: 'mage', level: 20 };
+  type Player = typeof player | { name: string; className: string | null; spec: string; level: number };
+  const sub = (o: { result?: Player | null; characterId?: number | null; characterName?: string | null; subjectName?: string | null }) =>
+    simSubject({ result: o.result ? { player: o.result } : null, characterId: o.characterId ?? null, characterName: o.characterName ?? null, subjectName: o.subjectName ?? null }, chars);
+  it('simSubject: registreret karakter går forud, så navnet gemt på jobbet, så match på fornavn, ellers fornavnet', () => {
+    // Armory-job uden resultat endnu: det registrerede fulde navn (fra databasen) og karakterens klasse/spec.
+    expect(sub({ characterId: 7, characterName: 'Magi Far' })).toEqual({ name: 'Magi Far', className: 'Mage', spec: 'Frost', level: null });
+    // Navnet fra databasen vinder, selv hvis karakteren ikke er i listen (fx frakoblet fra en anden bruger).
+    expect(sub({ characterId: 99, characterName: 'Gammel Ven' }).name).toBe('Gammel Ven');
+    expect(sub({ characterId: 7 }).name).toBe('Magi Far');
+    expect(sub({ characterId: 42 }).name).toBeNull();
+    expect(sub({}).name).toBeNull();
+    // Fremmed karakter fra armory: navnet gemt på jobbet, både før og efter resultatet.
+    expect(sub({ subjectName: 'Rød Cecil' })).toEqual({ name: 'Rød Cecil', className: null, spec: null, level: null });
+    expect(sub({ result: { ...player, name: 'Rød', className: 'shaman' }, subjectName: 'Rød Cecil' })).toEqual({ name: 'Rød Cecil', className: 'shaman', spec: 'mage', level: 20 });
+    // Registreret navn slår navnet på jobbet.
+    expect(sub({ characterId: 7, characterName: 'Magi Far', subjectName: 'Magi Gammel' }).name).toBe('Magi Far');
+    // Færdigt armory-job: fuldt navn fra databasen, klasse/spec/level fra resultatet.
+    expect(sub({ result: player, characterId: 7, characterName: 'Magi Far' })).toEqual({ name: 'Magi Far', className: 'mage', spec: 'mage', level: 20 });
+    // Paste-sim: fornavn + klasse matcher præcis én egen karakter → fuldt navn; tvetydigt eller ukendt → fornavnet.
+    expect(sub({ result: player }).name).toBe('Magi Far');
+    expect(sub({ result: { ...player, name: 'Rød', className: 'shaman' } }).name).toBe('Rød Hætte');
+    expect(sub({ result: { ...player, name: 'Rød', className: null } }).name).toBe('Rød');
+    expect(sub({ result: { ...player, name: 'Fiktivnavn', className: 'warrior' } }).name).toBe('Fiktivnavn');
     expect(subjectInitial('rød')).toBe('R');
     expect(subjectInitial(null)).toBe('?');
+  });
+  it('nextFieldValue: feltet følger den primære karakter kun når det er uændret eller tomt', () => {
+    expect(nextFieldValue('Magi Far', 'Magi Far', 'Rød Hætte')).toBe('Rød Hætte');
+    expect(nextFieldValue('', 'Magi Far', 'Rød Hætte')).toBe('Rød Hætte');
+    expect(nextFieldValue('  Magi Far ', 'Magi Far', 'Rød Hætte')).toBe('Rød Hætte');
+    expect(nextFieldValue('Rød Cecil', 'Magi Far', 'Rød Hætte')).toBe('Rød Cecil');
+    expect(nextFieldValue('Rød Cecil', '', 'Rød Hætte')).toBe('Rød Cecil');
+    expect(nextFieldValue('', '', 'Rød Hætte')).toBe('Rød Hætte');
+    // Primær fjernet (ingen primær): et uændret felt tømmes; egen tekst bevares.
+    expect(nextFieldValue('Magi Far', 'Magi Far', '')).toBe('');
+    expect(nextFieldValue('Rød Cecil', 'Magi Far', '')).toBe('Rød Cecil');
   });
   it('durationText', () => {
     expect(durationText(null)).toBeNull();
@@ -104,17 +165,18 @@ describe('karakter og tekster', () => {
 
 describe('sammenligning med forrige sim', () => {
   const sim = (name: string | null, mean: number | null, status: 'done' | 'failed' = 'done', createdAt = '2026-11-12T10:00:00.000Z') => ({
-    status, createdAt,
-    result: status === 'done' ? { player: { name }, styles: [{ fightStyle: 'Patchwerk' as const, dps: mean === null ? null : dps(mean) }] } : null,
+    name, status, createdAt,
+    result: status === 'done' ? { styles: [{ fightStyle: 'Patchwerk' as const, dps: mean === null ? null : dps(mean) }] } : null,
   });
-  it('finder den nærmeste ældre færdige sim af samme karakter i samme kampstil', () => {
-    const sims = [sim('Rød', 103), sim('Magi', 50), sim('Rød', null), sim('Rød', 100, 'failed'), sim('Rød', 100, 'done', '2026-11-11T10:00:00.000Z'), sim('Rød', 90)];
-    expect(previousDps(sims, 0, 'Patchwerk')).toEqual({ mean: 100, createdAt: '2026-11-11T10:00:00.000Z', deltaPercent: 3 });
-    expect(previousDps(sims, 0, 'DungeonSlice')).toBeNull();
-    expect(previousDps(sims, 1, 'Patchwerk')).toBeNull();
-    expect(previousDps(sims, 2, 'Patchwerk')).toBeNull();
-    expect(previousDps(sims, 5, 'Patchwerk')).toBeNull();
-    expect(previousDps([sim(null, 5), sim(null, 4)], 0, 'Patchwerk')).toBeNull();
+  const prev = (sims: ReturnType<typeof sim>[], index: number, fs: 'Patchwerk' | 'DungeonSlice') => previousDps(sims, sims.map((s) => s.name), index, fs);
+  it('finder den nærmeste ældre færdige sim af samme karakter (samme navn) i samme kampstil', () => {
+    const sims = [sim('Rød Hætte', 103), sim('Magi Far', 50), sim('Rød Hætte', null), sim('Rød Hætte', 100, 'failed'), sim('Rød Hætte', 100, 'done', '2026-11-11T10:00:00.000Z'), sim('Rød Hætte', 90)];
+    expect(prev(sims, 0, 'Patchwerk')).toEqual({ mean: 100, createdAt: '2026-11-11T10:00:00.000Z', deltaPercent: 3 });
+    expect(prev(sims, 0, 'DungeonSlice')).toBeNull();
+    expect(prev(sims, 1, 'Patchwerk')).toBeNull();
+    expect(prev(sims, 2, 'Patchwerk')).toBeNull();
+    expect(prev(sims, 5, 'Patchwerk')).toBeNull();
+    expect(prev([sim(null, 5), sim(null, 4)], 0, 'Patchwerk')).toBeNull();
   });
 });
 

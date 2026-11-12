@@ -6,13 +6,13 @@ import { getDb } from '@/lib/db';
 import { charactersDeps, isSimConfigured, kickSimQueue } from '@/lib/services';
 import { requireMember } from '@/lib/session';
 import { createSimLimiter, deleteMySim, enqueueSim } from '@/lib/sims';
-import { enqueueArmorySim } from '@/lib/sims-armory';
+import { enqueueArmorySim, enqueueArmorySimByName } from '@/lib/sims-armory';
 import type { FormState } from '../chat/actions';
 
 const limiter = createSimLimiter();
 
-/** Formtilstand med de indtastede værdier, så formularen kan genindsætte dem uden JavaScript (se SimForm). */
-export type SimFormState = FormState & { input?: string; characterId?: string; fightStyle?: string; optimizeBags?: boolean };
+/** Formtilstand med de indtastede værdier, så formularen kan genindsætte dem uden JavaScript (se NewSimPanel). */
+export type SimFormState = FormState & { input?: string; characterName?: string; fightStyle?: string; optimizeBags?: boolean };
 
 function fightStylesFrom(formData: FormData): string[] {
   const v = formData.get('fightStyle');
@@ -40,9 +40,10 @@ export async function enqueueSimAction(_prev: SimFormState, formData: FormData):
 export async function enqueueArmorySimAction(_prev: SimFormState, formData: FormData): Promise<SimFormState> {
   const member = await requireMember();
   const fightStyles = fightStylesFrom(formData);
-  const keep = { characterId: String(formData.get('characterId') ?? ''), fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk' };
+  const characterName = String(formData.get('characterName') ?? '');
+  const keep = { characterName, fightStyle: fightStyles[0] === 'DungeonSlice' ? 'dungeonSlice' : 'patchwerk' };
   if (!isSimConfigured()) return { error: 'Simulation er ikke sat op.', ...keep };
-  const r = await enqueueArmorySim(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, formData.get('characterId'), { fightStyles });
+  const r = await enqueueArmorySimByName(getDb(), { userId: member.userId, limiter, now: Date.now(), blizzard: charactersDeps().blizzard }, characterName, { fightStyles });
   if (!r.ok) return { error: r.error, ...keep };
   kickSimQueue();
   revalidatePath('/sim');

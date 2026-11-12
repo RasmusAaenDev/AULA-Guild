@@ -149,17 +149,49 @@ export function playerDetail(p: { className: string | null; spec: string | null;
 
 export type SimSubject = { name: string | null; className: string | null; spec: string | null; level: number | null };
 
+export type SubjectCharacter = { id: number; name: string; fullName: string; className: string; spec: string | null };
+
 /**
- * Hvem simulationen handler om: resultatets spiller når jobbet er færdigt, ellers karakteren fra armory-valget;
- * for indsat SimC-tekst uden resultat kendes navnet ikke endnu.
+ * Brugerens egen karakter, der svarer til simc-spillernavnet (kun fornavn): samme fornavn (uanset store/små bogstaver)
+ * og samme klasse, hvis klassen kendes. Kun når præcis én passer; ellers null.
+ */
+export function matchOwnCharacter(player: { name: string | null; className: string | null }, characters: readonly SubjectCharacter[]): SubjectCharacter | null {
+  if (!player.name) return null;
+  const name = player.name.trim().toLowerCase();
+  const cls = player.className?.trim().toLowerCase() ?? null;
+  const hits = characters.filter((c) => c.name.trim().toLowerCase() === name && (cls === null || c.className.trim().toLowerCase() === cls));
+  return hits.length === 1 ? hits[0] : null;
+}
+
+/**
+ * Hvem simulationen handler om, med fuldt karakternavn hvor det kendes: den registrerede karakter (armory-jobs) går
+ * forud, dernæst navnet gemt på jobbet (armory-sim af en vilkårlig karakter); for indsat SimC-tekst bruges resultatets
+ * spiller, og navnet gøres fuldt, hvis præcis én af brugerens egne karakterer passer. Før resultatet findes, og uden
+ * karakter, kendes navnet ikke endnu.
  */
 export function simSubject(
-  sim: { result: { player: SimSubject } | null; characterId: number | null },
-  characters: readonly { id: number; name: string; className: string; spec: string | null }[],
+  sim: { result: { player: SimSubject } | null; characterId: number | null; characterName: string | null; subjectName: string | null },
+  characters: readonly SubjectCharacter[],
 ): SimSubject {
-  if (sim.result) return sim.result.player;
-  const c = sim.characterId !== null ? characters.find((x) => x.id === sim.characterId) : undefined;
-  return c ? { name: c.name, className: c.className, spec: c.spec, level: null } : { name: null, className: null, spec: null, level: null };
+  const p = sim.result?.player ?? null;
+  const own = sim.characterId !== null ? characters.find((x) => x.id === sim.characterId) : undefined;
+  const registeredName = sim.characterName ?? own?.fullName ?? sim.subjectName ?? null;
+  if (p) {
+    const name = registeredName ?? matchOwnCharacter(p, characters)?.fullName ?? p.name;
+    return { name, className: p.className, spec: p.spec, level: p.level };
+  }
+  if (registeredName) return { name: registeredName, className: own?.className ?? null, spec: own?.spec ?? null, level: null };
+  return { name: null, className: null, spec: null, level: null };
+}
+
+/**
+ * Karakterfeltet i armory-formularen følger den primære karakter: når standardværdien skifter (brugeren har valgt en
+ * anden primær), erstattes feltets værdi kun, hvis den stadig er den forrige standard eller tom; har brugeren selv
+ * skrevet noget andet, bevares det.
+ */
+export function nextFieldValue(current: string, prevDefault: string, newDefault: string): string {
+  const cur = current.trim();
+  return cur === '' || cur === prevDefault.trim() ? newDefault : current;
 }
 
 /** Initialer til den klassefarvede cirkel: første bogstav i navnet (eller «?»). */
@@ -219,24 +251,48 @@ export function logProgress(log: string | null, styleCount = 1): SimProgress | n
   return { fraction, text };
 }
 
+/**
+ * Det job, «streameren» i panelet skal vise: et kørende frem for et ventende, og blandt flere af samme slags det ældste
+ * (det, der kommer først). `queued` er antallet af øvrige ventende jobs («+1 i kø»).
+ */
+export function pickStreamerJob<T extends { id: number; status: SimStatus }>(sims: readonly T[]): { job: T; queued: number } | null {
+  const running = sims.filter((s) => s.status === 'running').sort((a, b) => a.id - b.id);
+  const waiting = sims.filter((s) => s.status === 'queued').sort((a, b) => a.id - b.id);
+  const job = running[0] ?? waiting[0];
+  if (!job) return null;
+  return { job, queued: waiting.filter((s) => s.id !== job.id).length };
+}
+
+/** Seneste ikke-tomme linje i loggen, afkortet til `max` tegn med «…» (til den kompakte live-linje). */
+export function lastLogLine(log: string | null, max = 80): string | null {
+  if (!log) return null;
+  const lines = log.split('\n').map((l) => l.trim()).filter((l) => l !== '');
+  const last = lines.at(-1);
+  if (!last) return null;
+  const chars = [...last];
+  return chars.length > max ? `${chars.slice(0, Math.max(1, max - 1)).join('')}…` : last;
+}
+
 export type PreviousDps = { mean: number; createdAt: string; deltaPercent: number };
 
 /**
- * Forrige færdige simulation af samme karakter i samme kampstil (ældre end `index` i den nyeste-først-liste), så kortet
- * kan vise «+2,4 % siden sidst». null hvis der ikke er en at sammenligne med, eller en af dem mangler DPS.
+ * Forrige færdige simulation af samme karakter (samme navn i `names`, parallelt med `sims`) i samme kampstil, ældre end
+ * `index` i den nyeste-først-liste, så kortet kan vise «+2,4 % siden sidst». null hvis der ikke er en at sammenligne
+ * med, eller en af dem mangler DPS.
  */
 export function previousDps(
-  sims: readonly { status: SimStatus; createdAt: string; result: { player: { name: string | null }; styles: Pick<SimStyleResult, 'fightStyle' | 'dps'>[] } | null }[],
+  sims: readonly { status: SimStatus; createdAt: string; result: { styles: Pick<SimStyleResult, 'fightStyle' | 'dps'>[] } | null }[],
+  names: readonly (string | null)[],
   index: number,
   fightStyle: FightStyle,
 ): PreviousDps | null {
   const cur = sims[index];
-  const name = cur?.result?.player.name;
+  const name = names[index];
   const curDps = cur?.result?.styles.find((s) => s.fightStyle === fightStyle)?.dps;
   if (!name || !curDps || !(curDps.mean > 0)) return null;
   for (let i = index + 1; i < sims.length; i++) {
     const s = sims[i];
-    if (s.status !== 'done' || !s.result || s.result.player.name !== name) continue;
+    if (s.status !== 'done' || !s.result || names[i] !== name) continue;
     const dps = s.result.styles.find((x) => x.fightStyle === fightStyle)?.dps;
     if (!dps || !(dps.mean > 0)) continue;
     return { mean: dps.mean, createdAt: s.createdAt, deltaPercent: ((curDps.mean - dps.mean) / dps.mean) * 100 };

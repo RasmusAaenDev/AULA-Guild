@@ -3,8 +3,9 @@
 
 import { and, count, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
-import { simJobs, type SimStatus } from '@/lib/db/schema';
+import { characters, simJobs, type SimStatus } from '@/lib/db/schema';
 import { createSendLimiter, type SendLimiter } from '@/lib/chat-send';
+import { fullName } from '@/lib/names';
 import { parseId } from '@/lib/site-chat';
 import { validateSimcInput } from '@/lib/simc-input';
 import { BAG_SLOTS, MAX_BAG_ITEMS, MAX_ITEM_ID, cleanLabel, parseBagItems, sanitizeBagItems, type BagItem } from '@/lib/simc-bags';
@@ -142,7 +143,18 @@ export type SimOptions = {
   bagTruncated: number;
   /** Beskeder til brugeren fra da jobbet blev lagt i kø (fx talenter fra armory, der ikke kunne oversættes). */
   notices: string[];
+  /** Karakterens fulde visningsnavn fra armory-indgangen (også for karakterer, brugeren ikke har registreret). */
+  subjectName: string | null;
 };
+
+const MAX_SUBJECT_NAME = 60;
+/** Ét navn uden kontroltegn, højst 60 tegn; tomt giver null. */
+export function sanitizeSubjectName(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  // eslint-disable-next-line no-control-regex
+  const t = [...raw.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim()].slice(0, MAX_SUBJECT_NAME).join('');
+  return t === '' ? null : t;
+}
 
 const count0 = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 10_000 ? v : 0);
 
@@ -160,6 +172,7 @@ export function parseSimOptions(raw: unknown): SimOptions {
     bagIgnored: count0(o.bagIgnored),
     bagTruncated: count0(o.bagTruncated),
     notices: sanitizeNotices(o.notices),
+    subjectName: sanitizeSubjectName(o.subjectName),
   };
 }
 
@@ -189,6 +202,10 @@ export type SimView = {
   source: SimSource;
   /** Karakteren fra armory-indgangen (null for indsat SimC-tekst), så visningen kan navngive jobbet før resultatet findes. */
   characterId: number | null;
+  /** Den registrerede karakters fulde navn (fornavn + efternavn); null hvis jobbet ikke har en karakter, eller den er frakoblet. */
+  characterName: string | null;
+  /** Det fulde navn gemt da jobbet blev lagt i kø fra armory (også fremmede karakterer); null for indsat tekst. */
+  subjectName: string | null;
   /** De valgte kampstile (til fremdrift, mens jobbet kører). */
   fightStyles: FightStyle[];
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
@@ -203,6 +220,7 @@ export async function enqueueSim(
     userId: number; limiter: SendLimiter; now: number;
     /** Armory-indgangen: karakteren der simuleres. */ characterId?: number; source?: SimSource;
     /** Beskeder der gemmes med jobbet og vises sammen med det. */ notices?: string[];
+    /** Karakterens fulde visningsnavn (armory-indgangen). */ subjectName?: string;
   },
   rawInput: unknown,
   rawOptions: SimEnqueueOptions = {},
@@ -227,6 +245,7 @@ export async function enqueueSim(
     ...(bag.items.length > 0 ? { bagItems: bag.items } : {}),
     bagFound: bag.items.length, bagIgnored: bag.ignored, bagTruncated: bag.truncated,
     ...(deps.notices && deps.notices.length > 0 ? { notices: sanitizeNotices(deps.notices) } : {}),
+    ...(sanitizeSubjectName(deps.subjectName) !== null ? { subjectName: sanitizeSubjectName(deps.subjectName) } : {}),
   };
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(7302)`); // serialiserer grænserne
@@ -255,8 +274,10 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     .select({
       id: simJobs.id, status: simJobs.status, createdAt: simJobs.createdAt, finishedAt: simJobs.finishedAt,
       error: simJobs.error, result: simJobs.result, options: simJobs.options, log: simJobs.log, characterId: simJobs.characterId,
+      charName: characters.name, charSurname: characters.surname, charSlug: characters.slug,
     })
     .from(simJobs)
+    .leftJoin(characters, eq(characters.id, simJobs.characterId))
     .where(eq(simJobs.userId, userId))
     .orderBy(desc(simJobs.id))
     .limit(Math.min(Math.max(Math.trunc(limit), 1), 100));
@@ -272,6 +293,8 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     log: r.log,
     source: o.source,
     characterId: r.characterId,
+    characterName: r.charName !== null && r.charSlug !== null ? fullName({ name: r.charName, surname: r.charSurname, slug: r.charSlug }) : null,
+    subjectName: o.subjectName,
     fightStyles: o.fightStyles,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
     notices: o.notices,
