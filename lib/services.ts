@@ -63,7 +63,7 @@ export function authDeps() {
   return {
     fetchAccess: (accessToken: string) =>
       fetchAccess({ accessToken, guildId: env().DISCORD_GUILD_ID, officerRoleId: env().DISCORD_OFFICER_ROLE_ID }),
-    upsertUser: (u: { discordId: string; name: string; avatar: string | null }) => upsertUser(getDb(), u),
+    upsertUser: (u: { battlenetId: string; battletag: string }) => upsertUser(getDb(), u),
   };
 }
 

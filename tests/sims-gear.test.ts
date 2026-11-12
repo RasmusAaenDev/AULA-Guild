@@ -86,7 +86,7 @@ const free = () => createSendLimiter({ max: 1000, windowMs: 1, minGapMs: 0 });
 let seq = 0;
 async function mkUser() {
   seq++;
-  const [u] = await db.insert(users).values({ discordId: `g${seq}`, name: `G${seq}` }).returning();
+  const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: `g${seq}`, name: `G${seq}` }).returning();
   return u;
 }
 const withBags = `${BASE}\nhead=,id=100\n\n### Gear from Bags\n#\n# Hjelm (5)\n# head=,id=101\n#\n# Ring (6)\n# finger1=,id=102\n`;

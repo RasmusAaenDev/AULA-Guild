@@ -15,7 +15,7 @@ describe('skema', () => {
   });
 
   it('gemmer en bruger og en karakter knyttet til den', async () => {
-    const [u] = await db.insert(users).values({ discordId: 'd1', name: 'Rasmus' }).returning();
+    const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: 'd1', name: 'Rasmus' }).returning();
     const [c] = await db.insert(characters).values({ ...base, blizzardId: 2, userId: u.id }).returning();
     expect(c.userId).toBe(u.id);
     expect(c.inGuild).toBe(true);

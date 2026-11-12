@@ -15,7 +15,7 @@ const url = 'http://simc:8080';
 let seq = 0;
 async function mkUser() {
   seq++;
-  const [u] = await db.insert(users).values({ discordId: `l${seq}`, name: `L${seq}` }).returning();
+  const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: `l${seq}`, name: `L${seq}` }).returning();
   return u;
 }
 async function enqueue(userId: number) {

@@ -46,8 +46,9 @@ export type EventDetail = {
   durationMinutes: number | null;
   cancelled: boolean;
   seriesId: number | null;
-  createdBy: number;
-  creatorName: string;
+  /** Null når opretteren er slettet (fx events fra før Battle.net-login). */
+  createdBy: number | null;
+  creatorName: string | null;
   attendees: Attendee[];
   counts: Counts;
 };
@@ -70,8 +71,8 @@ export function validateEventFields(f: {
   return 'ok';
 }
 
-function canManage(actor: EventActor, e: { type: EventType; createdBy: number }): boolean {
-  return actor.isOfficer || (e.type === 'aften' && e.createdBy === actor.userId);
+function canManage(actor: EventActor, e: { type: EventType; createdBy: number | null }): boolean {
+  return actor.isOfficer || (e.type === 'aften' && e.createdBy !== null && e.createdBy === actor.userId);
 }
 
 export async function createEvent(
@@ -162,7 +163,7 @@ export async function getEvent(db: Db, eventId: number): Promise<EventDetail | n
   const [e] = await db
     .select({ event: events, creatorName: users.name })
     .from(events)
-    .innerJoin(users, eq(users.id, events.createdBy))
+    .leftJoin(users, eq(users.id, events.createdBy))
     .where(eq(events.id, eventId));
   if (!e) return null;
   const rows = await db

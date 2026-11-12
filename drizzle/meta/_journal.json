@@ -92,6 +92,13 @@
       "when": 1794381282397,
       "tag": "0012_glorious_amphibian",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794494243056,
+      "tag": "0013_battlenet_users",
+      "breakpoints": true
     }
   ]
 }

@@ -18,7 +18,7 @@ const PROFILE = 'hunter="Fallochli"\nlevel=11\nrace=dwarf';
 let seq = 0;
 async function mkUser() {
   seq++;
-  const [u] = await db.insert(users).values({ discordId: `s${seq}`, name: `S${seq}` }).returning();
+  const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: `s${seq}`, name: `S${seq}` }).returning();
   return u;
 }
 const free = () => createSendLimiter({ max: 1000, windowMs: 1, minGapMs: 0 });

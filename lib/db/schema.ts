@@ -7,9 +7,12 @@ export const roleEnum = pgEnum('role', roles);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  discordId: text('discord_id').notNull().unique(),
+  // Battle.net-kontoens numeriske id (OIDC `sub`), som tekst.
+  battlenetId: text('battlenet_id').notNull().unique(),
+  // Hele battletag'et, fx «Magi#1234».
+  battletag: text('battletag').notNull(),
+  // Visningsnavn: battletag uden #nummer.
   name: text('name').notNull(),
-  avatar: text('avatar'),
   activeCharacterId: integer('active_character_id'),
 });
 
@@ -31,6 +34,8 @@ export const characters = pgTable('characters', {
   // Tidspunkt for første highlight-baseline; null = ikke sat (så ingen historik backfilles).
   highlightsBaselineAt: timestamp('highlights_baseline_at', { withTimezone: true }),
   userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
+  // Sat når karakteren står på ejerens egen Battle.net-konto; null = uverificeret (fri tekst).
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),
 });
 
 export const eventTypes = ['raid', 'aften'] as const;
@@ -52,9 +57,8 @@ export const eventSeries = pgTable('event_series', {
   startTime: text('start_time').notNull(),
   durationMinutes: integer('duration_minutes').notNull(),
   active: boolean('active').notNull().default(true),
-  createdBy: integer('created_by')
-    .notNull()
-    .references(() => users.id),
+  // Null når opretteren er slettet (fx ved skiftet fra Discord til Battle.net).
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -70,9 +74,7 @@ export const events = pgTable(
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
     seriesId: integer('series_id').references(() => eventSeries.id, { onDelete: 'set null' }),
     detached: boolean('detached').notNull().default(false),
-    createdBy: integer('created_by')
-      .notNull()
-      .references(() => users.id),
+    createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -108,9 +110,10 @@ export const posts = pgTable(
   'posts',
   {
     id: serial('id').primaryKey(),
-    authorId: integer('author_id')
-      .notNull()
-      .references(() => users.id),
+    // Null når forfatteren er slettet; så vises kun authorName.
+    authorId: integer('author_id').references(() => users.id, { onDelete: 'set null' }),
+    // Forfatternavn som tekst for opslag uden ejer (sat af migrationen fra Discord-tiden).
+    authorName: text('author_name'),
     title: text('title').notNull(),
     body: text('body').notNull(),
     pinned: boolean('pinned').notNull().default(false),
@@ -128,9 +131,8 @@ export const comments = pgTable(
     postId: integer('post_id')
       .notNull()
       .references(() => posts.id, { onDelete: 'cascade' }),
-    authorId: integer('author_id')
-      .notNull()
-      .references(() => users.id),
+    authorId: integer('author_id').references(() => users.id, { onDelete: 'set null' }),
+    authorName: text('author_name'),
     body: text('body').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -181,9 +183,9 @@ export const files = pgTable(
     sizeBytes: integer('size_bytes').notNull(),
     // Serverens eget tilfældige id (crypto.randomUUID()); aldrig afledt af brugerinput.
     storageKey: text('storage_key').notNull().unique(),
-    uploadedBy: integer('uploaded_by')
-      .notNull()
-      .references(() => users.id),
+    uploadedBy: integer('uploaded_by').references(() => users.id, { onDelete: 'set null' }),
+    // Uploaderens navn som tekst for filer uden ejer (sat af migrationen fra Discord-tiden).
+    uploaderName: text('uploader_name'),
     pinned: boolean('pinned').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),

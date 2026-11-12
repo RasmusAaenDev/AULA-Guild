@@ -23,21 +23,14 @@ async function seedChar(userId: number | null, blizzardId: number, name: string,
 }
 
 describe('resolveAuthors', () => {
-  it('kendt bruger med aktiv karakter giver karakternavn og slug', async () => {
+  it('Discord-forfattere vises med Discord-navnet som tekst (ingen kobling til brugere)', async () => {
     const u = await seedUser(db, '111');
     await seedChar(u, 1, 'Ragnar', 'Stormskjold', true);
-    const [r] = await resolveAuthors(db, [msg({ authorId: '111' })]);
-    expect(r.author).toBe('Ragnar Stormskjold');
-    expect(r.characterSlug).toBe('ragnar-stormskjold');
-    expect(r.armoryUrl).toBe('https://worldofwarcraft.blizzard.com/en-gb/forever/eu/armory/character/ragnar-stormskjold');
-  });
-  it('bruger uden aktiv karakter og ukendt id beholder Discord-navnet', async () => {
-    const u = await seedUser(db, '111');
-    await seedChar(u, 1, 'Ragnar', 'Stormskjold', false);
     const out = await resolveAuthors(db, [msg({ authorId: '111' }), msg({ id: '2', authorId: '999' }), msg({ id: '3', authorId: null })]);
     for (const r of out) {
       expect(r.author).toBe('Discordnavn');
       expect(r.characterSlug).toBeNull();
+      expect(r.armoryUrl).toBeNull();
     }
   });
   it('[Aula]-præfikset parses og fjernes, og karakteren findes case-insensitivt', async () => {
@@ -64,16 +57,14 @@ describe('resolveAuthors', () => {
     expect(out[0].content).toBe(content);
     expect(out[1].content).toBe('status ok');
   });
-  it('omtaler vises med karakternavn når id er kendt', async () => {
-    const u = await seedUser(db, '111');
-    await seedChar(u, 1, 'Ragnar', 'Stormskjold', true);
+  it('omtaler bevares som Discord-navne', async () => {
     const [r] = await resolveAuthors(db, [msg({
       content: 'hej @Anna og @Ukendt',
       mentions: [{ id: '111', name: 'Anna' }, { id: '222', name: 'Ukendt' }],
     })]);
-    expect(r.content).toBe('hej @Ragnar Stormskjold og @Ukendt');
+    expect(r.content).toBe('hej @Anna og @Ukendt');
   });
-  it('ét opslag i users uanset antal beskeder, og kun kendte felter sendes til klienten', async () => {
+  it('ingen opslag uden [Aula]-beskeder, og kun kendte felter sendes til klienten', async () => {
     const u = await seedUser(db, '111');
     await seedChar(u, 1, 'Ragnar', 'Stormskjold', true);
     const queries: string[] = [];
@@ -85,7 +76,7 @@ describe('resolveAuthors', () => {
     });
     const many = Array.from({ length: 30 }, (_, i) => msg({ id: String(i + 1), authorId: '111', mentions: [{ id: '111', name: 'A' }] }));
     const out = await resolveAuthors(spy, many);
-    expect(queries).toHaveLength(1);
+    expect(queries).toHaveLength(0);
     expect(Object.keys(out[0]).sort()).toEqual(['armoryUrl', 'author', 'bot', 'characterSlug', 'content', 'id', 'timestamp']);
     expect(JSON.stringify(out)).not.toContain('111');
   });

@@ -16,7 +16,7 @@ afterAll(() => close());
 let seq = 0;
 async function mkUser(opts: { character?: boolean; name?: string; surname?: string | null } = {}) {
   seq++;
-  const [u] = await db.insert(users).values({ discordId: `d${seq}`, name: `U${seq}` }).returning();
+  const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: `d${seq}`, name: `U${seq}` }).returning();
   if (opts.character !== false) {
     const [c] = await db.insert(characters).values({
       blizzardId: 5000 + seq, slug: `magi-far${seq}`, name: opts.name ?? 'Magi', surname: opts.surname === undefined ? 'Far' : opts.surname,

@@ -22,7 +22,7 @@ export type SeriesRow = {
   startTime: string;
   durationMinutes: number;
   active: boolean;
-  createdBy: number;
+  createdBy: number | null;
   upcomingCount: number;
 };
 

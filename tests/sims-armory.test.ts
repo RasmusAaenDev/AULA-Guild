@@ -86,7 +86,7 @@ describe('buildSimInput', () => {
 let seq = 0;
 async function mkUser() {
   seq++;
-  const [u] = await db.insert(users).values({ discordId: `a${seq}`, name: `A${seq}` }).returning();
+  const [u] = await db.insert(users).values({ battletag: 'X#1', battlenetId: `a${seq}`, name: `A${seq}` }).returning();
   return u;
 }
 async function mkChar(userId: number | null, slug = `krigeren-${++seq}`) {

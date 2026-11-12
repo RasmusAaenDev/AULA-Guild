@@ -16,7 +16,8 @@ export type FileItem = {
   originalName: string;
   mime: string;
   sizeBytes: number;
-  uploadedBy: number;
+  /** Null for filer uden ejer (fra før Battle.net-login); så er uploaderName det gemte navn. */
+  uploadedBy: number | null;
   uploaderName: string;
   pinned: boolean;
   createdAt: Date;
@@ -273,12 +274,12 @@ export async function listFiles(db: Db, section: FileSection): Promise<FileItem[
       mime: files.mime,
       sizeBytes: files.sizeBytes,
       uploadedBy: files.uploadedBy,
-      uploaderName: users.name,
+      uploaderName: sql<string>`coalesce(${users.name}, ${files.uploaderName}, 'Ukendt')`,
       pinned: files.pinned,
       createdAt: files.createdAt,
     })
     .from(files)
-    .innerJoin(users, eq(users.id, files.uploadedBy))
+    .leftJoin(users, eq(users.id, files.uploadedBy))
     .where(and(eq(files.section, section), isNull(files.deletedAt)))
     .orderBy(desc(files.pinned), desc(files.createdAt), desc(files.id));
 }

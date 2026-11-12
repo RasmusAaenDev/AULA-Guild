@@ -314,7 +314,7 @@ describe('getEvent', () => {
 
 describe('countUnansweredUpcoming', () => {
   async function plainEvent(startsAt: Date, extra: Partial<typeof events.$inferInsert> = {}) {
-    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.discordId, 'creator'));
+    const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.battlenetId, 'creator'));
     const creator = existing?.id ?? (await seedUser(db, 'creator'));
     const [e] = await db.insert(events).values({
       type: 'aften', title: 'E', description: '', startsAt, durationMinutes: 60, createdBy: creator, ...extra,
@@ -362,5 +362,13 @@ describe('countUnansweredUpcoming', () => {
     await rsvp(e4, v, cv, 'deltager');
     expect(await countUnansweredUpcoming(db, u, NOW)).toBe(1);
     expect(await countUnansweredUpcoming(db, v, NOW)).toBe(3);
+  });
+});
+
+describe('events uden opretter (fra før Battle.net-login)', () => {
+  it('kan stadig åbnes og har intet opretternavn', async () => {
+    const [e] = await db.insert(events).values({ type: 'raid', title: 'Gammel raid', startsAt: new Date('2026-11-20T19:00:00Z'), createdBy: null }).returning({ id: events.id });
+    const d = (await getEvent(db, e.id))!;
+    expect(d).toMatchObject({ title: 'Gammel raid', createdBy: null, creatorName: null });
   });
 });

@@ -200,7 +200,6 @@ export type Contact = {
   lastSynced: Date | null;
   ownerName: string;
   ownerId: number;
-  ownerAvatar: string | null;
 };
 
 export async function listContacts(db: Db): Promise<Contact[]> {
@@ -220,7 +219,6 @@ export async function listContacts(db: Db): Promise<Contact[]> {
       lastSynced: characters.lastSynced,
       ownerName: users.name,
       ownerId: users.id,
-      ownerAvatar: users.avatar,
     })
     .from(characters)
     .innerJoin(users, eq(characters.userId, users.id));

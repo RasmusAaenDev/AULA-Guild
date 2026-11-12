@@ -1,6 +1,6 @@
 // Nye billeder fra Galleri som kort i Overblik. Må aldrig vælte siden: enhver fejl giver tom liste.
 
-import { and, desc, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { characters, files, users } from '@/lib/db/schema';
 import { fullName } from '@/lib/names';
@@ -9,7 +9,8 @@ export type GalleryThumb = { id: number; name: string; alt: string | null };
 export type GalleryItem = {
   /** Stabil nøgle: uploader + nyeste billedes id. */
   id: string;
-  uploaderId: number;
+  /** Null for billeder uden ejer (fra før Battle.net-login). */
+  uploaderId: number | null;
   uploader: string;
   at: Date;
   count: number;
@@ -44,24 +45,26 @@ export async function recentGalleryItems(deps: { db: Db }, now: Date): Promise<G
         title: files.title,
         uploadedBy: files.uploadedBy,
         createdAt: files.createdAt,
-        userName: users.name,
+        userName: sql<string>`coalesce(${users.name}, ${files.uploaderName}, 'Ukendt')`,
         charName: characters.name,
         charSurname: characters.surname,
         charSlug: characters.slug,
       })
       .from(files)
-      .innerJoin(users, eq(users.id, files.uploadedBy))
+      .leftJoin(users, eq(users.id, files.uploadedBy))
       .leftJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
       .where(and(eq(files.section, 'galleri'), isNull(files.deletedAt), inArray(files.mime, IMAGE_MIMES), gt(files.createdAt, since)))
       .orderBy(desc(files.createdAt), desc(files.id))
       .limit(GALLERY_FETCH_LIMIT);
 
-    const byUser = new Map<number, typeof rows>();
+    // Billeder uden ejer grupperes efter det gemte uploadernavn.
+    const byUser = new Map<string, typeof rows>();
     for (const r of rows) {
       if (r.createdAt.getTime() > now.getTime() + 60_000) continue;
-      const list = byUser.get(r.uploadedBy) ?? [];
+      const key = r.uploadedBy !== null ? `u${r.uploadedBy}` : `n${r.userName}`;
+      const list = byUser.get(key) ?? [];
       list.push(r);
-      byUser.set(r.uploadedBy, list);
+      byUser.set(key, list);
     }
     const items: GalleryItem[] = [];
     for (const list of byUser.values()) {
@@ -74,7 +77,7 @@ export async function recentGalleryItems(deps: { db: Db }, now: Date): Promise<G
             ? fullName({ name: first.charName, surname: first.charSurname, slug: first.charSlug })
             : first.userName;
         items.push({
-          id: `${first.uploadedBy}-${first.id}`,
+          id: `${first.uploadedBy ?? 'x'}-${first.id}`,
           uploaderId: first.uploadedBy,
           uploader,
           at: first.createdAt,

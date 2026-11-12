@@ -491,3 +491,14 @@ describe('cleanupStaleUploads', () => {
     expect(await cleanupStaleUploads(path.join(root, 'findes-ikke'), now, HOUR)).toBe(0);
   });
 });
+
+describe('filer uden ejer (fra før Battle.net-login)', () => {
+  it('vises med det gemte uploadernavn', async () => {
+    await db.insert(files).values({
+      section: 'filer', title: 'Gammel', originalName: 'a.png', mime: 'image/png', sizeBytes: 1, storageKey: 'k-old',
+      uploadedBy: null, uploaderName: 'Magi Far',
+    });
+    const [f] = await listFiles(db, 'filer');
+    expect(f).toMatchObject({ title: 'Gammel', uploadedBy: null, uploaderName: 'Magi Far' });
+  });
+});

@@ -59,13 +59,13 @@ describe('recentChatItems', () => {
     expect(chatItemHref(out[1])).toBe(`/chat?kanal=egen-${c.id}`);
     expect(out).toHaveLength(3);
   });
-  it('viser karakternavn og armory-link for kendte Discord-forfattere', async () => {
+  it('viser Discord-forfattere med Discord-navnet og uden armory-link', async () => {
     const u = await seedUser(db, '111');
     const [ch] = await db.insert(characters).values({ blizzardId: 1, slug: 'ragnar-storm', name: 'Ragnar', surname: 'Storm', className: 'Mage', role: 'dps', userId: u }).returning();
     await db.update(users).set({ activeCharacterId: ch.id }).where(eq(users.id, u));
     const [item] = await recentChatItems({ chat: fakeChat({ '1': [msg('a', 1, { authorId: '111' })] }), db }, now);
-    expect(item.author).toBe('Ragnar Storm');
-    expect(item.armoryUrl).toContain('ragnar-storm');
+    expect(item.author).not.toBe('Ragnar Storm');
+    expect(item.armoryUrl).toBeNull();
   });
   it('afkorter til 280 tegn med «…» og klapper mellemrum sammen', async () => {
     const long = 'x'.repeat(300);

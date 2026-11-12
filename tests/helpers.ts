@@ -70,7 +70,10 @@ export function fakeBlizzard(opts: {
   };
 }
 
-export async function seedUser(db: Db, discordId = 'd1'): Promise<number> {
-  const [u] = await db.insert(users).values({ discordId, name: `Bruger ${discordId}` }).returning({ id: users.id });
+export async function seedUser(db: Db, battlenetId = 'd1'): Promise<number> {
+  const [u] = await db
+    .insert(users)
+    .values({ battlenetId, battletag: `Bruger${battlenetId}#1234`, name: `Bruger ${battlenetId}` })
+    .returning({ id: users.id });
   return u.id;
 }

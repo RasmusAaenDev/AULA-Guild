@@ -42,7 +42,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
         <p>
           {formatDayHeading(event.startsAt)} kl. {formatTimeRange(event.startsAt, event.durationMinutes)}
         </p>
-        <p className="muted">Oprettet af {event.creatorName}</p>
+        {event.creatorName && <p className="muted">Oprettet af {event.creatorName}</p>}
         {event.description && <p style={{ whiteSpace: 'pre-wrap' }}>{event.description}</p>}
         {canManage && !event.cancelled && (
           <div className="actions">

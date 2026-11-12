@@ -9,7 +9,8 @@ export type PostListItem = {
   id: number;
   title: string;
   excerpt: string;
-  authorId: number;
+  /** Null for opslag uden ejer (fra før Battle.net-login); så er authorName det gemte navn. */
+  authorId: number | null;
   authorName: string;
   /** Navnet på forfatterens aktive karakter, ellers null. */
   authorCharacter: string | null;
@@ -23,7 +24,7 @@ export type PostListItem = {
 };
 export type CommentItem = {
   id: number;
-  authorId: number;
+  authorId: number | null;
   authorName: string;
   /** Fuldt navn på forfatterens aktive karakter, ellers null. */
   authorCharacterFullName: string | null;
@@ -34,7 +35,7 @@ export type PostDetail = {
   id: number;
   title: string;
   body: string;
-  authorId: number;
+  authorId: number | null;
   authorName: string;
   /** Fuldt navn på forfatterens aktive karakter, ellers null. */
   authorCharacterFullName: string | null;
@@ -230,7 +231,7 @@ export async function listPostsSlice(
       title: posts.title,
       excerpt: sql<string>`left(regexp_replace(btrim(${posts.body}), '\\s+', ' ', 'g'), ${EXCERPT_LENGTH + 1})`,
       authorId: posts.authorId,
-      authorName: users.name,
+      authorName: postAuthorName(),
       authorCharacter: characters.name,
       authorCharacterSurname: characters.surname,
       authorCharacterSlug: characters.slug,
@@ -241,7 +242,7 @@ export async function listPostsSlice(
       bookmarked: bookmarkedSql(userId),
     })
     .from(posts)
-    .innerJoin(users, eq(users.id, posts.authorId))
+    .leftJoin(users, eq(users.id, posts.authorId))
     .leftJoin(characters, activeCharacterOf())
     .where(where)
     .orderBy(
@@ -262,6 +263,11 @@ export async function listPostsSlice(
   return { items, hasMore: rows.length > size };
 }
 
+/** Brugerens navn, eller det gemte forfatternavn for opslag uden ejer. */
+function postAuthorName() {
+  return sql<string>`coalesce(${users.name}, ${posts.authorName}, 'Ukendt')`;
+}
+
 /** Join-betingelse: forfatterens aktive karakter, og kun hvis den tilhører forfatteren. */
 function activeCharacterOf() {
   return and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id));
@@ -279,7 +285,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       title: posts.title,
       body: posts.body,
       authorId: posts.authorId,
-      authorName: users.name,
+      authorName: postAuthorName(),
       characterName: characters.name,
       characterSurname: characters.surname,
       characterSlug: characters.slug,
@@ -289,7 +295,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       bookmarked: bookmarkedSql(userId),
     })
     .from(posts)
-    .innerJoin(users, eq(users.id, posts.authorId))
+    .leftJoin(users, eq(users.id, posts.authorId))
     .leftJoin(characters, activeCharacterOf())
     .where(and(eq(posts.id, postId), isNull(posts.deletedAt)));
   if (!p) return null;
@@ -297,7 +303,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
     .select({
       id: comments.id,
       authorId: comments.authorId,
-      authorName: users.name,
+      authorName: sql<string>`coalesce(${users.name}, ${comments.authorName}, 'Ukendt')`,
       characterName: characters.name,
       characterSurname: characters.surname,
       characterSlug: characters.slug,
@@ -305,7 +311,7 @@ export async function getPost(db: Db, userId: number, postId: number): Promise<P
       createdAt: comments.createdAt,
     })
     .from(comments)
-    .innerJoin(users, eq(users.id, comments.authorId))
+    .leftJoin(users, eq(users.id, comments.authorId))
     .leftJoin(characters, activeCharacterOf())
     .where(and(eq(comments.postId, postId), isNull(comments.deletedAt)))
     .orderBy(asc(comments.createdAt), asc(comments.id));

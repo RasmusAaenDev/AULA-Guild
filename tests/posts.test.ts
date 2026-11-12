@@ -471,3 +471,26 @@ describe('listPosts: egne og gemte, bookmarked og authorCharacter', () => {
     expect(items.find((i) => i.id === pc)!.authorCharacterFullName).toBeNull();
   });
 });
+
+describe('opslag uden ejer (fra før Battle.net-login)', () => {
+  it('vises med det gemte forfatternavn og kan kun slettes af officerer', async () => {
+    const u = await seedUser(db);
+    const [p] = await db.insert(posts).values({ authorId: null, authorName: 'Magi Far', title: 'Gammel', body: 'Tekst' }).returning({ id: posts.id });
+    await db.insert(comments).values({ postId: p.id, authorId: null, authorName: 'Ragnar', body: 'Svar' });
+    const list = (await listPosts(db, u, 'alle', 1)).items;
+    expect(list).toHaveLength(1);
+    expect(list[0]).toMatchObject({ authorId: null, authorName: 'Magi Far', authorCharacterFullName: null });
+    const detail = (await getPost(db, u, p.id))!;
+    expect(detail).toMatchObject({ authorId: null, authorName: 'Magi Far', authorCharacterFullName: null });
+    expect(detail.comments).toEqual([expect.objectContaining({ authorId: null, authorName: 'Ragnar', authorCharacterFullName: null })]);
+    expect(await deletePost(db, { userId: u, isOfficer: false }, p.id)).toEqual({ ok: false, reason: 'forbidden' });
+    expect(await deletePost(db, { userId: u, isOfficer: true }, p.id)).toEqual({ ok: true });
+  });
+
+  it('falder tilbage til «Ukendt» uden ejer og uden navn', async () => {
+    const u = await seedUser(db);
+    await db.insert(posts).values({ authorId: null, title: 'X', body: 'Y' });
+    const [item] = (await listPosts(db, u, 'alle', 1)).items;
+    expect(item.authorName).toBe('Ukendt');
+  });
+});
