@@ -127,6 +127,14 @@ for (const [name, t] of Object.entries(themes)) {
       ['chat: pladsholder --muted på --bg', t.muted, t.bg, 4.5],
       ['chat: send-knap (hvid) på --topbar', '#ffffff', t.topbar, 4.5],
     );
+    pairs.push(
+      ['sim-advarsel: --text på --bg', t.text, t.bg, 4.5],
+      ['sim-advarsel: overskrift --heading på --bg', t.heading, t.bg, 4.5],
+      ['sim-advarsel: rød kant/ikon --no mod --bg', t.no, t.bg, 3],
+      ['sim-advarsel: rød kant --no mod --card', t.no, t.card, 3],
+      ['sim-advarsel: gul kant/ikon --maybe mod --bg', t.maybe, t.bg, 3],
+      ['sim-advarsel: gul kant --maybe mod --card', t.maybe, t.card, 3],
+    );
     for (let i = 0; i < 6; i++) {
       pairs.push([`satire-kommentar: initial (--sat-av-fg) på --sat-av-${i}`, t['sat-av-fg'], t[`sat-av-${i}`], 4.5]);
     }

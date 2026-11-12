@@ -3,6 +3,7 @@ import { Icon, type IconName } from '@/components/icons';
 import { classKey } from '@/lib/character-switcher';
 import { formatAbsolute, formatRelativeDay } from '@/lib/posts-ui';
 import type { SimStatus } from '@/lib/db/schema';
+import { modelGap, type ModelGap } from '@/lib/sim-model-gaps';
 import type { SimStyleResult, SimView } from '@/lib/sims';
 import {
   NO_ROTATION_TEXT, SOURCE_LABELS, STATUS_STEPS, durationText, fightStyleHint, fightStyleName, formatInt, hasNoDps, isActiveStatus,
@@ -84,6 +85,20 @@ function DpsTile({ style, previous, single }: { style: SimStyleResult; previous:
   );
 }
 
+/** Kendte huller i simulatorens model for klassen/specen (se lib/sim-model-gaps.ts); adskilt fra «Grov model»-noten. */
+function ModelGapNotice({ gap, id }: { gap: ModelGap; id: string }) {
+  return (
+    <section className={`sim-gap sim-gap-${gap.kind}`} aria-labelledby={id}>
+      <Icon name="udraab" size={20} />
+      <div className="sim-gap-body">
+        <p id={id} className="sim-gap-title">{gap.title}</p>
+        <p>{gap.text}</p>
+        <p><strong>Mangler:</strong> {gap.missing}</p>
+      </div>
+    </section>
+  );
+}
+
 function PreviousLine({ previous }: { previous: PreviousDps }) {
   const v = itemVerdict({ deltaPercent: previous.deltaPercent });
   return (
@@ -105,6 +120,7 @@ export function SimCard({ sim, subject, previous, now, latest = false }: { sim: 
   const created = new Date(sim.createdAt);
   const result = sim.result;
   const notes = [...sim.notices, ...(result ? visibleWarnings(result.warnings) : [])];
+  const gap = sim.status === 'done' && result ? modelGap(subject, result.warnings) : null;
   // Teknisk detalje (kilde, gennemløb, varighed) hører til i en diskret linje nederst, ikke i hovedet.
   const tech = [
     `Kilde: ${SOURCE_LABELS[sim.source]}`,
@@ -148,6 +164,8 @@ export function SimCard({ sim, subject, previous, now, latest = false }: { sim: 
             {result.styles.map((s) => <DpsTile key={s.fightStyle} style={s} previous={previous[s.fightStyle] ?? null} single={result.styles.length === 1} />)}
           </div>
         )}
+
+        {gap && <ModelGapNotice gap={gap} id={`sim-${sim.id}-gap`} />}
 
         {sim.status === 'done' && <SimGear sim={sim} />}
 

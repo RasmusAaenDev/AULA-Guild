@@ -452,6 +452,15 @@ details.create .menu a:hover { background: var(--border); }
 .sim-note { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 8px 12px; border-radius: 8px; background: var(--bg); color: var(--text); border-left: 4px solid var(--maybe); font-size: 14px; }
 .sim-notes .sim-note { margin: 0; }
 .sim-note .icon { flex: none; color: var(--maybe); margin-top: 1px; }
+/* Kendte huller i simulatorens model (lib/sim-model-gaps.ts): rød kant = SimulationCraft's grundmodel, gul = Aulas model dækker ikke specen */
+.sim-gap { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 10px 14px; border-radius: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--no); border-left-width: 5px; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.sim-gap-partial { border-color: var(--maybe); }
+.sim-gap .icon { flex: none; color: var(--no); margin-top: 2px; }
+.sim-gap-partial .icon { color: var(--maybe); }
+.sim-gap-body { min-width: 0; }
+.sim-gap-body p { margin: 0 0 4px; }
+.sim-gap-body p:last-child { margin-bottom: 0; }
+.sim-gap-title { font-weight: 800; color: var(--heading); font-size: 15px; }
 
 /* DPS pr. kampstil */
 .dps-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; }

@@ -24,6 +24,8 @@ export type SimProfile = {
   faction: 'alliance' | 'horde' | null;
   equipment: { slot: string; id: number }[];
   talents: { id: number; rank: number }[];
+  /** Aktiv Forever-spec (træet med flest point); null/udeladt hvis ukendt. */
+  spec?: string | null;
 };
 
 export type RecentAchievement = { id: number; name: string; completedAt: Date };

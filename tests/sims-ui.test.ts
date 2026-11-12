@@ -133,15 +133,25 @@ describe('karakter og tekster', () => {
     expect(sub({ result: { ...player, name: 'Rød', className: 'shaman' }, subjectName: 'Rød Cecil' })).toEqual({ name: 'Rød Cecil', className: 'shaman', spec: 'mage', level: 20 });
     // Registreret navn slår navnet på jobbet.
     expect(sub({ characterId: 7, characterName: 'Magi Far', subjectName: 'Magi Gammel' }).name).toBe('Magi Far');
-    // Færdigt armory-job: fuldt navn fra databasen, klasse/spec/level fra resultatet.
-    expect(sub({ result: player, characterId: 7, characterName: 'Magi Far' })).toEqual({ name: 'Magi Far', className: 'mage', spec: 'mage', level: 20 });
+    // Færdigt armory-job: fuldt navn fra databasen, klasse/level fra resultatet; Forever-spec'en fra karakteren (simc
+    // melder kun klassens eneste spec).
+    expect(sub({ result: player, characterId: 7, characterName: 'Magi Far' })).toEqual({ name: 'Magi Far', className: 'mage', spec: 'Frost', level: 20 });
     // Paste-sim: fornavn + klasse matcher præcis én egen karakter → fuldt navn; tvetydigt eller ukendt → fornavnet.
     expect(sub({ result: player }).name).toBe('Magi Far');
     expect(sub({ result: { ...player, name: 'Rød', className: 'shaman' } }).name).toBe('Rød Hætte');
     expect(sub({ result: { ...player, name: 'Rød', className: null } }).name).toBe('Rød');
     expect(sub({ result: { ...player, name: 'Fiktivnavn', className: 'warrior' } }).name).toBe('Fiktivnavn');
+    // Paste-sim, der matcher en egen karakter: spec'en fra karakteren.
+    expect(sub({ result: player }).spec).toBe('Frost');
     expect(subjectInitial('rød')).toBe('R');
     expect(subjectInitial(null)).toBe('?');
+  });
+  it('simSubject: spec gemt fra armory på jobbet går forud for karakterens og for simcs klassenavn', () => {
+    const r = simSubject({ result: { player: { name: 'Rød', className: 'druid', spec: 'druid', level: 20 } }, characterId: null, characterName: null, subjectName: 'Rød Cecil', subjectSpec: 'Feral Combat' }, chars);
+    expect(r).toEqual({ name: 'Rød Cecil', className: 'druid', spec: 'Feral Combat', level: 20 });
+    expect(simSubject({ result: null, characterId: 7, characterName: 'Magi Far', subjectName: null, subjectSpec: 'Arcane' }, chars).spec).toBe('Arcane');
+    // Uden kendt spec: simcs værdi som før.
+    expect(simSubject({ result: { player: { name: 'X', className: 'druid', spec: 'druid', level: 20 } }, characterId: null, characterName: null, subjectName: null }, chars).spec).toBe('druid');
   });
   it('nextFieldValue: feltet følger den primære karakter kun når det er uændret eller tomt', () => {
     expect(nextFieldValue('Magi Far', 'Magi Far', 'Rød Hætte')).toBe('Rød Hætte');

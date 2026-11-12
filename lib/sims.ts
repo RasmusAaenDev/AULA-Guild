@@ -145,16 +145,21 @@ export type SimOptions = {
   notices: string[];
   /** Karakterens fulde visningsnavn fra armory-indgangen (også for karakterer, brugeren ikke har registreret). */
   subjectName: string | null;
+  /** Karakterens Forever-spec fra armory (fx «Feral Combat»); simc kender den ikke. */
+  subjectSpec: string | null;
 };
 
 const MAX_SUBJECT_NAME = 60;
+const MAX_SUBJECT_SPEC = 30;
 /** Ét navn uden kontroltegn, højst 60 tegn; tomt giver null. */
-export function sanitizeSubjectName(raw: unknown): string | null {
+export function sanitizeSubjectName(raw: unknown, max = MAX_SUBJECT_NAME): string | null {
   if (typeof raw !== 'string') return null;
   // eslint-disable-next-line no-control-regex
-  const t = [...raw.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim()].slice(0, MAX_SUBJECT_NAME).join('');
+  const t = [...raw.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim()].slice(0, max).join('');
   return t === '' ? null : t;
 }
+/** Spec-navnet fra armory: samme rensning, højst 30 tegn. */
+export const sanitizeSubjectSpec = (raw: unknown): string | null => sanitizeSubjectName(raw, MAX_SUBJECT_SPEC);
 
 const count0 = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 10_000 ? v : 0);
 
@@ -173,6 +178,7 @@ export function parseSimOptions(raw: unknown): SimOptions {
     bagTruncated: count0(o.bagTruncated),
     notices: sanitizeNotices(o.notices),
     subjectName: sanitizeSubjectName(o.subjectName),
+    subjectSpec: sanitizeSubjectSpec(o.subjectSpec),
   };
 }
 
@@ -206,6 +212,8 @@ export type SimView = {
   characterName: string | null;
   /** Det fulde navn gemt da jobbet blev lagt i kø fra armory (også fremmede karakterer); null for indsat tekst. */
   subjectName: string | null;
+  /** Forever-spec'en gemt fra armory, ellers den registrerede karakters spec; null hvis ukendt. */
+  subjectSpec: string | null;
   /** De valgte kampstile (til fremdrift, mens jobbet kører). */
   fightStyles: FightStyle[];
   /** Hvad brugeren bad om og hvad der blev fundet i taskerne. */
@@ -221,6 +229,7 @@ export async function enqueueSim(
     /** Armory-indgangen: karakteren der simuleres. */ characterId?: number; source?: SimSource;
     /** Beskeder der gemmes med jobbet og vises sammen med det. */ notices?: string[];
     /** Karakterens fulde visningsnavn (armory-indgangen). */ subjectName?: string;
+    /** Karakterens Forever-spec (armory-indgangen). */ subjectSpec?: string | null;
   },
   rawInput: unknown,
   rawOptions: SimEnqueueOptions = {},
@@ -246,6 +255,7 @@ export async function enqueueSim(
     bagFound: bag.items.length, bagIgnored: bag.ignored, bagTruncated: bag.truncated,
     ...(deps.notices && deps.notices.length > 0 ? { notices: sanitizeNotices(deps.notices) } : {}),
     ...(sanitizeSubjectName(deps.subjectName) !== null ? { subjectName: sanitizeSubjectName(deps.subjectName) } : {}),
+    ...(sanitizeSubjectSpec(deps.subjectSpec) !== null ? { subjectSpec: sanitizeSubjectSpec(deps.subjectSpec) } : {}),
   };
   return db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(7302)`); // serialiserer grænserne
@@ -274,7 +284,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     .select({
       id: simJobs.id, status: simJobs.status, createdAt: simJobs.createdAt, finishedAt: simJobs.finishedAt,
       error: simJobs.error, result: simJobs.result, options: simJobs.options, log: simJobs.log, characterId: simJobs.characterId,
-      charName: characters.name, charSurname: characters.surname, charSlug: characters.slug,
+      charName: characters.name, charSurname: characters.surname, charSlug: characters.slug, charSpec: characters.spec,
     })
     .from(simJobs)
     .leftJoin(characters, eq(characters.id, simJobs.characterId))
@@ -295,6 +305,7 @@ export async function listMySims(db: Db, userId: number, limit = 10): Promise<Si
     characterId: r.characterId,
     characterName: r.charName !== null && r.charSlug !== null ? fullName({ name: r.charName, surname: r.charSurname, slug: r.charSlug }) : null,
     subjectName: o.subjectName,
+    subjectSpec: o.subjectSpec ?? sanitizeSubjectSpec(r.charSpec),
     fightStyles: o.fightStyles,
     bags: { requested: o.optimizeBags, found: o.bagFound, ignored: o.bagIgnored, truncated: o.bagTruncated },
     notices: o.notices,

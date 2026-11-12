@@ -170,17 +170,21 @@ export function matchOwnCharacter(player: { name: string | null; className: stri
  * karakter, kendes navnet ikke endnu.
  */
 export function simSubject(
-  sim: { result: { player: SimSubject } | null; characterId: number | null; characterName: string | null; subjectName: string | null },
+  sim: { result: { player: SimSubject } | null; characterId: number | null; characterName: string | null; subjectName: string | null; subjectSpec?: string | null },
   characters: readonly SubjectCharacter[],
 ): SimSubject {
   const p = sim.result?.player ?? null;
   const own = sim.characterId !== null ? characters.find((x) => x.id === sim.characterId) : undefined;
   const registeredName = sim.characterName ?? own?.fullName ?? sim.subjectName ?? null;
+  // Forever-spec'en (fx «Feral Combat») kender simc ikke (den melder klassens eneste spec); den kommer fra armory-
+  // profilen gemt på jobbet eller fra brugerens registrerede karakter.
+  const knownSpec = sim.subjectSpec ?? own?.spec ?? null;
   if (p) {
-    const name = registeredName ?? matchOwnCharacter(p, characters)?.fullName ?? p.name;
-    return { name, className: p.className, spec: p.spec, level: p.level };
+    const matched = registeredName ? null : matchOwnCharacter(p, characters);
+    const name = registeredName ?? matched?.fullName ?? p.name;
+    return { name, className: p.className, spec: knownSpec ?? matched?.spec ?? p.spec, level: p.level };
   }
-  if (registeredName) return { name: registeredName, className: own?.className ?? null, spec: own?.spec ?? null, level: null };
+  if (registeredName) return { name: registeredName, className: own?.className ?? null, spec: knownSpec, level: null };
   return { name: null, className: null, spec: null, level: null };
 }
 

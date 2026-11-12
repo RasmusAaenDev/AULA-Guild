@@ -194,6 +194,18 @@ describe('enqueueArmorySim', () => {
     const [view] = await listMySims(db, u.id);
     expect(view).toMatchObject({ characterId: null, characterName: null, subjectName: 'Krigeren Far' });
   });
+  it('gemmer armory-spec\'en (subjectSpec) på jobbet; uden den bruges den registrerede karakters spec', async () => {
+    const u = await mkUser();
+    const c = await mkChar(u.id, 'krigeren-far');
+    const blizzard = fakeBlizzard({ simProfiles: { 'krigeren-far': { ...warrior, spec: 'Fury' } } });
+    expect(await enqueueArmorySim(db, mkDeps(u.id, blizzard), String(c.id), { fightStyles: ['Patchwerk'] })).toMatchObject({ ok: true });
+    const [row] = await db.select().from(simJobs);
+    expect(row.options).toMatchObject({ subjectSpec: 'Fury' });
+    expect((await listMySims(db, u.id))[0].subjectSpec).toBe('Fury');
+    await db.update(simJobs).set({ options: { fightStyles: ['Patchwerk'], source: 'armory' } });
+    await db.update(characters).set({ spec: 'Arms' }).where(eq(characters.id, c.id));
+    expect((await listMySims(db, u.id))[0].subjectSpec).toBe('Arms');
+  });
 });
 
 describe('enqueueArmorySimByName (fritekst: enhver karakter på WoW Forever)', () => {

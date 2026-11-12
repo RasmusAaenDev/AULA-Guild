@@ -356,6 +356,7 @@ describe('getSimProfile', () => {
       name: 'Krigeren', className: 'Warrior', race: 'High Order Skyborne', level: 21, faction: 'alliance',
       equipment: [{ slot: 'HEAD', id: 1001 }, { slot: 'SHIRT', id: 1002 }],
       talents: [{ id: 900001, rank: 5 }, { id: 900003, rank: 2 }],
+      spec: null,
     });
     const urls = calls.map((c) => c.url);
     expect(urls.filter((u) => !isToken(u)).sort()).toEqual([
@@ -372,7 +373,16 @@ describe('getSimProfile', () => {
     const { client } = setup(route({ equipment: () => jsonResponse(404), specs: () => jsonResponse(404) }));
     expect(await client.getSimProfile('x')).toMatchObject({ equipment: [], talents: [] });
   });
-  it('kender ikke fraktionen ved ukendt værdi', async () => {
+  it('aktiv spec: træet med flest point i den aktive gruppe (til resultatkortets advarsel)', async () => {
+    const specs = { specialization_groups: [{ is_active: true, specializations: [
+      { specialization: { name: 'Balance' }, spent_points: 2, talents: [] },
+      { specialization: { name: 'Feral Combat' }, spent_points: 11, talents: [] },
+    ] }] };
+    const { client } = setup(route({ specs: () => jsonResponse(200, specs) }));
+    expect((await client.getSimProfile('x')).spec).toBe('Feral Combat');
+    expect((await setup(route({ specs: () => jsonResponse(404) })).client.getSimProfile('x')).spec).toBeNull();
+  });
+    it('kender ikke fraktionen ved ukendt værdi', async () => {
     const { client } = setup(route({ profile: () => jsonResponse(200, { ...rawProfile, faction: { type: 'NEUTRAL' } }) }));
     expect((await client.getSimProfile('x')).faction).toBeNull();
   });

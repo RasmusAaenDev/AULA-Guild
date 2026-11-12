@@ -268,6 +268,7 @@ export function createBlizzardClient(opts: {
         faction: ft === 'ALLIANCE' ? 'alliance' : ft === 'HORDE' ? 'horde' : null,
         equipment: parseEquipment(equipment),
         talents: parseTalents(specs),
+        spec: specs === null ? null : (activeSpec(specs) ?? null),
       };
     },
 

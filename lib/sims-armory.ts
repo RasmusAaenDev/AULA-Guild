@@ -52,7 +52,7 @@ async function enqueueProfile(
   const { input, warnings } = buildSimProfile(profile);
   const r = await enqueueSim(
     db,
-    { userId: deps.userId, limiter: deps.limiter, now: deps.now, characterId: target.characterId ?? undefined, source: 'armory', notices: warnings, subjectName },
+    { userId: deps.userId, limiter: deps.limiter, now: deps.now, characterId: target.characterId ?? undefined, source: 'armory', notices: warnings, subjectName, subjectSpec: profile.spec ?? null },
     input,
     { fightStyles, optimizeBags: false },
   );
