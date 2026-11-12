@@ -28,4 +28,9 @@ test('modelInfo: kun klasser med anvendt rettelse får aula-rettelse', () => {
   assert.equal(modelInfo(p, 'warrior'), null);
   assert.equal(modelInfo(p, 'hunter'), null);
   assert.equal(modelInfo([], 'mage'), null);
+  // rogue.patch: rogue-resultater markeres også som grov model
+  const pr = parsePatchesApplied('mage applied\nrogue applied\n');
+  assert.equal(modelInfo(pr, 'rogue').model, 'aula-rettelse');
+  assert.match(modelInfo(pr, 'rogue').warning, /^Grov model/);
+  assert.equal(modelInfo(parsePatchesApplied('rogue dropped-upstream\n'), 'rogue'), null);
 });
