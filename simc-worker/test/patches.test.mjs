@@ -32,9 +32,11 @@ const WARLOCK = 'engine/class_modules/sc_warlock.cpp';
 const WARLOCK_APL = 'engine/class_modules/apl/warlock.cpp';
 const SHAMAN = 'engine/class_modules/sc_shaman.cpp';
 const SHAMAN_APL = 'engine/class_modules/apl/shaman.cpp';
+const HUNTER = 'engine/class_modules/sc_hunter.cpp';
+const HUNTER_APL = 'engine/class_modules/apl/hunter.cpp';
 // apply.sh går rettelserne igennem via globben *.patch, dvs. alfabetisk efter klasse.
-const CLASSES = ['druid', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock'];
-const ALL_APPLIED = 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n';
+const CLASSES = ['druid', 'hunter', 'mage', 'paladin', 'priest', 'rogue', 'shaman', 'warlock'];
+const ALL_APPLIED = 'druid applied\nhunter applied\nmage applied\npaladin applied\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n';
 
 const tmp = (p) => mkdtempSync(path.join(tmpdir(), p));
 function fakeSimc() {
@@ -86,6 +88,7 @@ test('alle rettelser rører hver sine filer (ingen afhængighed mellem rettelser
   assert.deepEqual([...touched('priest.patch')].sort(), [PRIEST_APL, PRIEST].sort());
   assert.deepEqual([...touched('warlock.patch')].sort(), [WARLOCK_APL, WARLOCK].sort());
   assert.deepEqual([...touched('shaman.patch')].sort(), [SHAMAN_APL, SHAMAN].sort());
+  assert.deepEqual([...touched('hunter.patch')].sort(), [HUNTER_APL, HUNTER].sort());
 });
 
 test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () => {
@@ -151,19 +154,28 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
       assert.match(read(src, PALADIN), new RegExp(`if \\( name == "${a}" \\)`), a);
     }
     assert.match(read(src, PALADIN_APL), /righteous_fury,if=variable\.prot[\s\S]*holy_shield,if=variable\.prot[\s\S]*holy_shock,if=mana\.pct>50/);
+    // hunter: pet (Bite/Claw efter level), nærkamp og flere skud; spec efter talenter
+    assert.match(r.out, /hunter: rettelse anvendt/);
+    assert.match(read(src, HUNTER), /struct hunter_pet_t final : public pet_t/);
+    assert.match(read(src, HUNTER), /creature_auto_attack_dps/);
+    for (const a of ['summon_pet', 'auto_attack', 'raptor_strike', 'mongoose_bite', 'strider_kick', 'multi_shot', 'aimed_shot', 'hunters_mark', 'rapid_fire', 'bestial_wrath', 'bite', 'claw']) {
+      assert.match(read(src, HUNTER), new RegExp(`if \\( name == "${a}" \\)`), a);
+    }
+    assert.match(read(src, HUNTER_APL), /precombat->add_action\( "summon_pet" \)[\s\S]*add_action\( "auto_shot" \)[\s\S]*add_action\( "bestial_wrath" \)[\s\S]*add_action\( "raptor_strike" \)[\s\S]*add_action\( "arcane_shot,[^"]*" \)/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl. Druid-rettelsen er i upstream-stil uden
-    // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md).
+    // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md). Det samme gælder hunter.
     const again = run(APPLY, [src, out]);
     assert.equal(again.code, 0, again.err);
     assert.match(again.out, /UPSTREAM HAR druid/);
+    assert.match(again.out, /UPSTREAM HAR hunter/);
     assert.match(again.out, /mage: allerede anvendt/);
     assert.match(again.out, /paladin: allerede anvendt/);
     assert.match(again.out, /rogue: allerede anvendt/);
     assert.match(again.out, /priest: allerede anvendt/);
     assert.match(again.out, /warlock: allerede anvendt/);
     assert.match(again.out, /shaman: allerede anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED.replace('druid applied', 'druid dropped-upstream'));
+    assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED.replace('druid applied', 'druid dropped-upstream').replace('hunter applied', 'hunter dropped-upstream'));
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
 
@@ -177,7 +189,7 @@ test('(b) upstream har selv implementeret mage: rettelsen droppes uden fejl', ()
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR mage — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage dropped-upstream\npaladin applied\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nhunter applied\nmage dropped-upstream\npaladin applied\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n');
     assert.equal(read(src, MAGE), impl); // upstreams fil er urørt
     assert.match(read(src, PALADIN), /AULA-RETTELSE/); // paladin-rettelsen påvirkes ikke
     assert.match(read(src, ROGUE), /AULA-RETTELSE/); // rogue anvendes uafhængigt af mage
@@ -229,7 +241,7 @@ test('(b-rogue) upstream har selv implementeret rogue: rogue.patch droppes, mage
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR rogue — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue dropped-upstream\nshaman applied\nwarlock applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nhunter applied\nmage applied\npaladin applied\npriest applied\nrogue dropped-upstream\nshaman applied\nwarlock applied\n');
     assert.equal(read(src, ROGUE), impl);
     assert.match(read(src, MAGE), /AULA-RETTELSE/);
     assert.match(read(src, PALADIN), /AULA-RETTELSE/);
@@ -318,6 +330,7 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^shaman: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^warlock: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^hunter: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), read(repo, MAGE).replace('namespace {', 'namespace { // ændret'));
     git('commit', '-q', '-am', 'konflikt');
@@ -430,11 +443,11 @@ test('(a) paladin.patch anvendes på ren upstream: Ret-model med seals, Judgemen
 
 test('alle rettelser kan anvendes i vilkårlig rækkefølge med samme resultat (rotationer frem og tilbage)', () => {
   const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP, DRUID, ENUMS, PRIEST, PRIEST_APL,
-    WARLOCK, WARLOCK_APL, SHAMAN, SHAMAN_APL];
-  // Alle rotationer frem og tilbage (hver klasse først og sidst mindst én gang); alle 7! = 5040 tager for lang tid.
+    WARLOCK, WARLOCK_APL, SHAMAN, SHAMAN_APL, HUNTER, HUNTER_APL];
+  // Alle rotationer frem og tilbage (hver klasse først og sidst mindst én gang); alle 8! = 40320 tager for lang tid.
   const rot = CLASSES.map((_, i) => [...CLASSES.slice(i), ...CLASSES.slice(0, i)]);
   const orders = [...rot, ...rot.map((o) => [...o].reverse())];
-  assert.equal(orders.length, 14);
+  assert.equal(orders.length, 16);
   const results = [];
   for (const order of orders) {
     const src = fakeSimc();
@@ -468,7 +481,7 @@ test('(b) upstream har selv implementeret paladin: paladin droppes, mage og rogu
     assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
     assert.match(r.out, /mage: rettelse anvendt/);
     assert.match(r.out, /rogue: rettelse anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin dropped-upstream\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nhunter applied\nmage applied\npaladin dropped-upstream\npriest applied\nrogue applied\nshaman applied\nwarlock applied\n');
     assert.equal(read(src, PALADIN), impl);
     assert.match(read(src, ROGUE), /AULA-RETTELSE/);
     assert.match(run(APPLY, ['--dry-run', src]).out, /^paladin: DROP \(upstream har den nu\)$/m);
@@ -711,4 +724,55 @@ test('rogue og paladin: en upstream-grundmodel uden Combat/Subtlety- hhv. Holy/P
     assert.match(dry.out, /^paladin: KONFLIKT \(skal flettes: /m);
     assert.doesNotMatch(dry.out, /DROP/);
   } finally { rmSync(src, { recursive: true, force: true }); }
+});
+
+// --- hunter ------------------------------------------------------------------------------------------------------
+
+// Det, hunter.patch tilføjer (hunter.check): en pet-klasse, nærkamp, Multi-Shot, Hunter's Mark og Bestial Wrath.
+const HUNTER_UPSTREAM_ACTIONS = '  if ( name == "summon_pet" ) return a;\n  if ( name == "auto_attack" ) return b;\n  if ( name == "raptor_strike" ) return c;\n  if ( name == "multi_shot" ) return d;\n  if ( name == "hunters_mark" ) return e;\n  if ( name == "bestial_wrath" ) return f;\n';
+
+test('hunter.check holder IKKE på ren upstream (grundmodel med Auto Shot og APL): rettelsen anvendes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('hunter');
+  try {
+    assert.match(read(src, HUNTER_APL), /add_action\( "auto_shot" \)/); // upstream har en APL
+    assert.doesNotMatch(read(src, HUNTER), /public pet_t/);
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /hunter: rettelse anvendt/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'hunter applied\n');
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('hunter: upstream med pet, men uden nærkamp, Multi-Shot og Hunter\'s Mark, er ikke «færdig» -> rettelsen skal flettes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('hunter');
+  try {
+    writeFileSync(path.join(src, HUNTER), read(src, HUNTER)
+      .replace('struct hunter_t final : public parse_player_effects_t', 'struct hunter_pet_t : public pet_t {};\nstruct hunter_t final : public parse_player_effects_t')
+      .replace('  if ( name == "auto_shot" )', '  if ( name == "summon_pet" ) return new a_t();\n  if ( name == "bestial_wrath" ) return new b_t();\n  if ( name == "auto_shot" )'));
+    writeFileSync(path.join(src, HUNTER_APL), read(src, HUNTER_APL).replace('  precombat->add_action( "aspect_of_the_hawk" );',
+      '  precombat->add_action( "summon_pet" );\n  precombat->add_action( "aspect_of_the_hawk" );'));
+    const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
+    assert.doesNotMatch(r.out, /hunter: DROP/);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^hunter: KONFLIKT \(skal flettes: .*sc_hunter\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('hunter droppes, når upstream selv har pet, nærkamp, Multi-Shot, Hunter\'s Mark og Bestial Wrath', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('hunter');
+  try {
+    writeFileSync(path.join(src, HUNTER), read(src, HUNTER)
+      .replace('struct hunter_t final : public parse_player_effects_t', 'struct hunter_pet_t : public pet_t {};\nstruct hunter_t final : public parse_player_effects_t')
+      .replace('  if ( name == "auto_shot" )', `${HUNTER_UPSTREAM_ACTIONS}  if ( name == "auto_shot" )`));
+    writeFileSync(path.join(src, HUNTER_APL), read(src, HUNTER_APL)
+      .replace('  precombat->add_action( "aspect_of_the_hawk" );', '  precombat->add_action( "summon_pet" );\n  precombat->add_action( "aspect_of_the_hawk" );')
+      .replace('  default_->add_action( "auto_shot" );', '  default_->add_action( "auto_shot" );\n  default_->add_action( "hunters_mark" );\n  default_->add_action( "raptor_strike" );\n  default_->add_action( "multi_shot" );'));
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /UPSTREAM HAR hunter/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'hunter dropped-upstream\n');
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });

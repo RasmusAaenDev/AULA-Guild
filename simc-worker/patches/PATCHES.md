@@ -2,7 +2,7 @@
 
 simc-forever (SimulationCraft til WoW Forever) mangler endnu nogle klasser: modulet findes, men er en tom skal uden
 spells og uden rotation, så simulationen giver 0 DPS (mage, paladin, rogue). For andre klasser har upstream en
-grundmodel med fejl eller store huller (druid, priest, warlock, shaman; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
+grundmodel med fejl eller store huller (druid, priest, warlock, shaman, hunter; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
 Indtil upstream selv retter dem, lægger vi en rettelse (patch) pr. klasse oven på den fastlåste `SIMC_REF` i
 `../Dockerfile`.
 
@@ -54,14 +54,14 @@ desuden på de spec-dele, rettelsen har (paladin: `holy_shock`, `holy_shield`; r
 `ghostly_strike`), så en upstream-grundmodel uden Holy/Protection hhv. Combat/Subtlety ikke får vores rettelse
 droppet (testet i `test/patches.test.mjs`).
 
-**Klasser upstream allerede har en grundmodel af (druid, priest, warlock, shaman):** her holder
+**Klasser upstream allerede har en grundmodel af (druid, priest, warlock, shaman, hunter):** her holder
 linjeantal og `add_action` fra dag ét, så den heuristik ville droppe rettelsen med det samme. `.check` skal i stedet
 liste præcis det, rettelsen tilføjer, som konkrete spells/handlinger eller kodestumper, fx
 `has_action engine/class_modules/sc_priest.cpp shoot`. Rettelsen droppes kun, når upstream har **alle** dele. Har
 upstream kun nogle af dem, passer rettelsen typisk ikke længere (konflikt), og et menneske må flette. Alle
 betingelser skal være falske på den rene upstream-kilde ved `SIMC_REF` (testet i `test/patches.test.mjs`).
 
-En rettelse i ren upstream-stil (uden `AULA-RETTELSE`-markør, fx druid, der også er foreslået upstream) kan ikke
+En rettelse i ren upstream-stil (uden `AULA-RETTELSE`-markør, fx druid og hunter, der er tænkt som upstream-PR'er) kan ikke
 skelnes fra upstreams egen kode, når den er anvendt: kører man `apply.sh` igen på en arbejdskopi, hvor den allerede
 er anvendt, melder den `DROP`. I Docker-bygget er kilden altid ren, så det sker ikke dér.
 
@@ -1566,3 +1566,137 @@ Elemental 40 ligger stadig langt under Enhancement 40 (44 mod 118). Det er manae
 mens en Lightning Bolt koster 121 (level 40, Convection 5), og spirit-regen kører kun uden for femsekundsreglen.
 Uden mana-drikke og med 300 s Patchwerk er en caster-shaman uden wand mana-begrænset; i loggen er manaen brugt efter
 ca. 25 s, og resten af kampen veksler mellem venten og korte kast-perioder.
+
+## hunter
+
+**Hvad:** Tilføjelser til upstreams hunter-grundmodel (Auto Shot, Aspect of the Hawk, Serpent Sting og Arcane Shot,
+samme rotation for alle specs). Auditten fandt 16-20 DPS på level 20 og 37-50 på level 40, ingen pet og ingen
+nærkamp; Beast Mastery og Survival gav præcis samme tal. Rettelsen er skrevet i upstream-stil (engelske kommentarer,
+ingen `AULA-RETTELSE`-markør) og er tænkt som en upstream-PR; udkastet til PR-beskrivelsen ligger i
+`upstream-hunter-pet.md` (ikke sendt).
+
+**Petten** (`hunter_pet_t : pet_t`; formlerne fra wowsims/forever `sim/hunter/pets.go`, MIT, og simcs
+`expected_stat.inc`):
+
+- **Nærkamp:** pettens basis-DPS er `creature_auto_attack_dps` for dens level (L10 7,62 · L20 17,10 · L40 32,59 ·
+  L60 60,45). Dens egen AP er 0,3 × 14 × creature-dps (= 4,2 ×), og slaget før AP er resten:
+  `(creature-dps − egen AP/14) × 2,0 s` = 1,4 × creature-dps, ±20 %. Oven i det kommer 10 % af jægerens højeste AP
+  (nærkamp eller ranged), opdateret på simcs heartbeat (wowsims fryser den ved summon; forskellen er Aspect of the
+  Hawks andel). **Verificeret:** `floor(4,2 × creature-dps)` på level 11/17/30 giver 36/61/103 = wowsims' målte
+  pet-ark; debug-loggen på level 20 viser slag på 19,2-28,7 + AP 83/14 × 2 s.
+- **Fra jægeren:** crit (simcs `pet_crit`, dvs. jægerens), hit (jægerens), 30 % rustning, ingen expertise. Haste:
+  kun Rapid Fire og Frenzy gør petten hurtigere (ikke quiver/ranged haste; som wowsims).
+- **Focus:** 100, 10/s; Bestial Discipline +10/20 %. **Bite** (17253 … 17261, 35 focus, 10 s) og **Claw** (16827 …
+  3009, 25 focus) i den rank, jægerens level giver; faste skader uden AP. Autocast: længste nedkøling først, og en
+  evne uden nok focus springes over (wowsims). Derfor bruges Bite næsten aldrig, når petten også har Claw.
+- **Modifikatorer:** happiness altid «Happy» (× 1,25, som wowsims), familiens skade (Tamed Pet Passive, håndkodet fra
+  spildataen, da simc mangler passiverne, upstream issue #5: kat og raptor +10 %, bat/spider/wind serpent/bird of prey
+  +7 %, gorilla +2 %, core hound +1 %, crab −5 %, scorpid −6 %, bear −9 %, boar/turtle −10 %, resten 0), Unleashed
+  Fury (+3-15 %; spildataen siger 15 % ved 5/5, ikke 20 %), Focused Fire (+1/2 % på jæger og pet, mens petten er
+  ude), Ferocity (+2-10 % crit), Frenzy (crit giver 20-100 % chance for +30 % angrebshastighed i 8 s) og Bestial
+  Wrath (+50 % i 18 s, 2 min, 12 % basis-mana) og orc-racialen Command (20576: +5 % pet-skade; 2. commit `0b72e8c`;
+  BM 40 som orc: pet 48,8 → 50,6, resten af forskellen er orcens andre stats).
+- **Familie:** `summon_pet=auto|none|<familie>` (fx `cat`, `wolf`, `boar`, `raptor`, `bear`, `wind_serpent`). `auto` =
+  **kat** (Bite + Claw, +10 %: den familie med mest skade og både Bite og Claw; den typiske DPS-pet), **men ingen
+  pet med Lone Wolf** (MM-talentet: +20 % skade uden pet). Vælges en pet alligevel, fjernes Lone Wolfs +20 %.
+  Under level 10 (Call Pet 883) er der ingen pet. Familiens særevner (Furious Howl, Lightning Breath, Charge, Dash
+  …) er ikke med. Appens profil-hvidliste tillader ikke `summon_pet=`, så i appen gælder automatikken.
+- Petten tilkaldes før kampen (`summon_pet`), står i nærkamp fra start og **dør aldrig**.
+
+**Jægeren** (spell-id: level fra spildataen):
+
+- **Hunter's Mark** (1130: 6, 14323: 22, 14324: 40, 14325: 58): debuff på målet; jægerens ranged-angreb mod det får
+  effekt 2 som RAP (26/45/98 …). Petten får intet (det er ranged AP).
+- **Rapid Fire** (3045: 26; 300 s): +40 % ranged- og nærkampshastighed i 15 s, også for petten.
+- **Multi-Shot** (2643: 18) og **Aimed Shot** (19434: 20 … 20904: 60): normaliseret ranged-våbenskade + rankens bonus,
+  delt nedkøling (6 s). Multi-Shot har 0,5 s cast (wowsims' måling; ikke i spildataen). **Sniper Shot** (MM-talent,
+  1310687: 40 …): 4 s cast. **Skud med cast-tid holder Auto Shot tilbage**, til castet er færdigt.
+- **Trueshot Aura** (MM-talent, 1299346: 25 … 20906): RAP-buff før kampen.
+- **Nærkamp** (Survival): auto-attack, **Raptor Strike** (2973 … 14266; på næste slag, som warriorens Heroic Strike;
+  6 s), **Strider Kick** (talent, 1317257: normaliseret våbenskade), **Mongoose Bite** (1495 …; kun efter en dodge,
+  som målet aldrig giver i en skadesimulering, eller via **Expose Prey** på et mål med Hunter's Mark) og **Lacerating
+  Strikes** (40 % af Mongoose Bite som bleed over 21 s). Savage Strikes og Predator's Edge virker via
+  `parse_all_passive_talents()` på spildataens spell-liste.
+- **Afstand:** en jæger med et af nærkamp-talenterne Savage Strikes, Predator's Edge, Counterattack, Strider Kick eller
+  Lacerating Strikes står i nærkamp (5 yd) hele kampen; alle andre står på Auto Shot-afstand. Profilens `distance=`
+  vinder. Nærkampsevner kræver nærkamp, og skud kræver mindst 8 yd (spildataens min-range), så en Survival-jæger i
+  nærkamp skyder ikke (ingen melee-weaving).
+
+**Rotation** (fælles; spec-delen styres af talenter og afstand):
+
+```
+precombat: summon_pet, aspect_of_the_hawk, trueshot_aura, hunters_mark
+auto_shot                                    # på afstand
+auto_attack                                  # i nærkamp
+hunters_mark
+bestial_wrath                                # BM
+rapid_fire
+variable,name=pool,value=talent.bestial_wrath.enabled&pet_active&cooldown.bestial_wrath.remains<3
+raptor_strike / mongoose_bite / strider_kick # i nærkamp
+serpent_sting,if=!ticking&!variable.pool
+multi_shot,if=active_enemies>1&!variable.pool
+arcane_shot,if=dot.serpent_sting.ticking&!variable.pool
+```
+
+**Mana er det, der styrer jægeren.** I loggen er manaen brugt efter ca. 40-110 s (MM 20: 44 s, BM 40: 68 s, SV 40:
+106 s), og derefter venter jægeren på regen (de 82 % «venter» er tid, hvor Auto Shot kører, og der ikke er mana til
+andet). Manaen går derfor til det, der giver mest skade pr. mana (målt, level 40): Serpent Sting ca. 2 skade/mana,
+Arcane Shot ca. 1,5, Aimed Shot ca. 0,7 og Sniper Shot ca. 0,8. **Aimed Shot og Sniper Shot er implementeret, men står
+ikke i standardrotationen**: med mana-grænse 40/60/80 % gav de alle lidt mindre (BM 40: 91,6 uden mod 90,7-91,3 med,
+målt før pettens hvide slag kunne dodges; MM 40: 58,9 mod 56,4-57,9), fordi de bruger manaen, som Arcane Shot ellers
+ville bruge, og holder Auto Shot tilbage. Det svarer til wowsims' standard-APL (`use_aimed_shot=false`). Bestial Wrath
+koster mere end Arcane Shot, så uden «pool» blev den kun kastet én gang på 300 s (BM 40 uden Aimed Shot, samme
+tidligere version: 90,4 uden pool, 91,6 med).
+
+**Antagelser:** petten er altid glad, dør aldrig og står i nærkamp fra start; ingen melee-weaving (Raptor Strike
+mellem skuddene), ingen fælder, Summon Hawk, Intimidation, Wing Clip, Counterattack (kræver parry), Volley eller
+Scatter Shot; Arcane Shots og Serpent Stings AP-andele er upstreams (0,10/0,03, «Only tested at low levels»;
+wowsims bruger 0,15/0,05), og ingen af dem er målt på højere level. Multi-Shots 0,5 s cast og at et cast holder Auto
+Shot tilbage er wowsims' observation, ikke spildata.
+
+**Filer:** `engine/class_modules/sc_hunter.cpp`, `engine/class_modules/apl/hunter.cpp` (mellem `//hunter_apl_start` og
+`//hunter_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/hunter` (to commits oven på
+`SIMC_REF`: `4663e42` pet og evner, `0b72e8c` Command); patchen er `git diff 3c1d319..aula/hunter`. Den passer også uændret på upstream `main` `c4c9b16`
+(ingen hunter-ændringer siden pin; `check-upstream.sh main` giver OK).
+
+**Upstream-tjek (`hunter.check`):** upstream har en pet-klasse (`public pet_t` i `sc_hunter.cpp`), opretter selv
+`summon_pet`, `auto_attack`, `raptor_strike`, `multi_shot`, `hunters_mark` og `bestial_wrath` (`has_action`), og
+APL'en bruger `"summon_pet"`, `"hunters_mark"`, `"raptor_strike"` og `"bestial_wrath` eller `"multi_shot`. Har
+upstream kun en del (fx en pet men ingen nærkamp), holder tjekket ikke, rettelsen giver en konflikt (testet), og et
+menneske må flette. Uden markør melder en arbejdskopi med rettelsen anvendt `DROP` (som druid).
+
+**Model i workeren:** hunter står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs` («Grov model: SimulationCraft's
+grundmodel med Aulas rettelser»). Appen viser en gul advarsel pr. spec med det, rettelsen ikke dækker
+(`lib/sim-model-gaps.ts`); den røde «mangler pet»-advarsel falder væk.
+
+### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42)
+
+Auditens syntetiske profiler (dværg, udstyr fra fixtures, ikke level-tilpasset; se auditten §11). BM 20 har ingen
+pet-talenter (3 BM-talenter i række 1-3), BM 40 har Unleashed Fury 5, Focused Fire 2, Ferocity 1 og Bestial Wrath
+(ikke Frenzy), MM har Lone Wolf på begge level (dvs. ingen pet), og Survival 20 har ingen nærkamp-talenter, så den
+skyder som BM 20.
+
+| Profil | Før: DPS | Efter: Patchwerk | Efter: DungeonSlice | Pettens andel | Venter (efter) | Største kilder (efter) |
+|---|---|---|---|---|---|---|
+| BM 20 | 16,5 | **38,2** | 34,1 | 20,4 (53 %) | 82 % | kat-nærkamp 15,5, Auto Shot 9,3, Claw 4,9, Serpent Sting 4,5 |
+| BM 40 | 36,6 | **89,1** | 78,0 | 48,8 (55 %) | 82 % | kat-nærkamp 35,9, Auto Shot 18,6, Claw 12,6, Serpent Sting 11,8, Arcane Shot 10,0 |
+| MM 20 | 19,8 | **21,3** | 18,0 | ingen (Lone Wolf) | 82 % | Auto Shot 11,2, Serpent Sting 5,4, Arcane Shot 4,7 |
+| MM 40 | 49,6 | **58,9** | 46,6 | ingen (Lone Wolf) | 78 % | Auto Shot 24,5, Serpent Sting 19,6, Arcane Shot 14,8 |
+| SV 20 | 16,5 | **38,2** | 34,1 | 20,4 (53 %) | 82 % | som BM 20 (på afstand) |
+| SV 40 | 36,7 | **84,0** | 72,9 | 37,1 (44 %) | 81 % | kat-nærkamp 27,2, jægerens nærkamp 26,8, Strider Kick 12,9, Claw 9,7, Raptor Strike 7,3 |
+
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle otte rettelser, via `/run` på 127.0.0.1:18082, 1000
+iterationer, Patchwerk / DungeonSlice): BM 20/40 38,3/89,1 og 34,1/78,0, MM 20/40 21,3/58,9 og 18,0/46,6, SV 20/40
+38,3/83,9 og 34,1/73,1; `/health` melder `hunter applied`, og resultatet har «Grov model: SimulationCraft's grundmodel
+med Aulas rettelser». Fixturen `hunter-11` (rigtig armory-profil): 23,9 (pet 11,4).
+
+- **Petten er halvdelen af skaden** for BM og Survival (44-55 %), som researchen forudså (pet ≈ 0,8-1,3 × jægerens
+  egen DPS). Pettens nærkamp er i praksis creature-dps × 1,25 (glad) × 1,1 (kat) før rustning og miss.
+- **MM med Lone Wolf** stiger kun 7-19 % (Hunter's Mark, Rapid Fire og Trueshot Aura) og ligger nu langt under BM.
+  Med en kat i stedet (`summon_pet=cat`, uden Lone Wolfs +20 %) giver MM 40 88,8; uden pet giver BM 40 41,3. Modellen
+  siger altså, at Lone Wolf koster ca. en tredjedel af skaden; om det passer i spillet, er ikke målt.
+- **Survival 40 i nærkamp** (84,0) ligger lidt under BM 40 (89,1); uden Expose Prey er der ingen Mongoose Bite.
+- Andre kontroller: level 5 og 9 (ingen pet, ingen fejl), level 60 med alle talenter (`enable_all_talents=1`,
+  `summon_pet=cat`, `distance=35`: 236,5, Frenzy 73 % oppetid, Bestial Wrath 2,9 gange), `summon_pet=boar` (76,2) og
+  en ukendt familie (simc-fejl «Unknown summon_pet»).
+

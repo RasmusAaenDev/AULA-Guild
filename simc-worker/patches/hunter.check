@@ -1,0 +1,18 @@
+# Har upstream (simc-forever) selv det, hunter.patch tilføjer? Tjekkes på den RENE upstream-kilde, før rettelsen anvendes.
+# Alle betingelser skal holde; så droppes hunter.patch. Syntaks: se PATCHES.md.
+# Hunter har en upstream-grundmodel (334 linjer og en APL ved SIMC_REF 3c1d319: Auto Shot, Serpent Sting, Arcane Shot,
+# Aspect of the Hawk), så linjeantal siger intet her. Rettelsen tilføjer en pet (en pet-klasse og summon_pet),
+# nærkamp (auto_attack, Raptor Strike), Multi-Shot, Hunter's Mark og Bestial Wrath som handlinger og bruger dem i
+# rotationen. Den er i upstream-stil (uden AULA-RETTELSE-markør) og tænkt som upstream-PR
+# (upstream-hunter-pet.md); merges den, holder alle linjer, og rettelsen droppes.
+contains_re engine/class_modules/sc_hunter.cpp public pet_t
+has_action engine/class_modules/sc_hunter.cpp summon_pet
+has_action engine/class_modules/sc_hunter.cpp auto_attack
+has_action engine/class_modules/sc_hunter.cpp raptor_strike
+has_action engine/class_modules/sc_hunter.cpp multi_shot
+has_action engine/class_modules/sc_hunter.cpp hunters_mark
+has_action engine/class_modules/sc_hunter.cpp bestial_wrath
+contains engine/class_modules/apl/hunter.cpp "summon_pet"
+contains engine/class_modules/apl/hunter.cpp "hunters_mark"
+contains engine/class_modules/apl/hunter.cpp "raptor_strike"
+contains_re engine/class_modules/apl/hunter.cpp "(bestial_wrath|multi_shot)
