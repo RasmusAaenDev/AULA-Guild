@@ -1,8 +1,10 @@
 # Aulas rettelser oven på simc-forever
 
 simc-forever (SimulationCraft til WoW Forever) mangler endnu nogle klasser: modulet findes, men er en tom skal uden
-spells og uden rotation, så simulationen giver 0 DPS. Indtil upstream selv implementerer dem, lægger vi en lille
-rettelse (patch) pr. klasse oven på den fastlåste `SIMC_REF` i `../Dockerfile`.
+spells og uden rotation, så simulationen giver 0 DPS (mage, paladin, rogue). For andre klasser har upstream en
+grundmodel med fejl eller store huller (druid, priest; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
+Indtil upstream selv retter dem, lægger vi en rettelse (patch) pr. klasse oven på den fastlåste `SIMC_REF` i
+`../Dockerfile`.
 
 - Én rettelse pr. klasse: `<klasse>.patch` (`git diff`-format mod simc-kilden) + `<klasse>.check` (er upstream færdig?).
 - `apply.sh` kører i Docker-builder-stagen efter kloningen og før `make` (se `../Dockerfile`).
@@ -960,3 +962,59 @@ og DungeonSlice. Rettelsen rører kun de tre rogue-filer.
 
 Docker: imaget bygget fra `../Dockerfile` (`aula-simc:roguetest`, PATCHES_APPLIED: `mage applied`, `rogue applied`) giver
 for `test/fixtures/rogue-33.simc` samme DPS som den native bygning (92,73 / 77,22).
+
+## druid
+
+**Hvad:** Rettelse af én fejl i upstreams druid-grundmodel, i upstream-stil (foreslået upstream, se
+`upstream-druid-moonkin.md`). `druid_action_t` sætter `form_mask = data().stance_mask()`, og `ready()` kræver
+`(form_mask & form) == form`. Wrath, Moonfire, Starfire, Insect Swarm, Hurricane, Faerie Fire og Innervate har i
+spildataen kun Moonkin Form i stance-masken (`0x40000000`; Faerie Fire `0x40000091`, Innervate `0x40000002`), men
+attributten **83 «Allow While Not Shapeshifted (caster form)»** (kontrolleret med `simc spell_query`). Koden læste ikke
+attributten, så en druid uden Moonkin Form (alle under level 40 og alle Feral/Restoration uden talentet) kastede
+ingenting og slog kun med staven (100 % venter i auditten).
+
+Rettelsen tilføjer `SX_ALLOW_WHILE_NOT_SHAPESHIFTED = 83u` til `spell_attribute` og lægger `CASTER_FORM` til
+`form_mask`, når spellen har en stance-maske og attributten. Intet andet ændres: Moonkin Form virker som før (Balance
+40 er uændret), og spells uden stance-maske (Entangling Roots) var allerede tilladt.
+
+**Filer:** `engine/class_modules/sc_druid.cpp` (konstruktøren i `druid_action_t`), `engine/dbc/data_enums.hh` (én
+enum-værdi). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/druid` (én commit oven på `SIMC_REF`); patchen er
+`git diff 3c1d319..aula/druid`. Den passer også uændret på upstream `main` `1b8e01d` (kat-ændringerne flytter kun
+linjenumrene).
+
+**Upstream-tjek (`druid.check`):** både `data_enums.hh` og `sc_druid.cpp` indeholder `SX_ALLOW_WHILE_NOT_SHAPESHIFTED`.
+Det gør de kun, hvis upstream har taget rettelsen (eller en med samme navn). Linjeantal og `add_action` bruges ikke:
+upstream har allerede 974 linjer og en APL. Lægger upstream kun enum-værdien ind (uden brug i druiden), holder
+tjekket ikke, rettelsen passer ikke, og bygget stopper (konflikt; testet). Rettelsen har ingen `AULA-RETTELSE`-markør
+(upstream-stil); se «`.check`-format» om hvad det betyder for en arbejdskopi.
+
+**Model i workeren:** druid står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs`, så resultatet markeres «Grov model:
+SimulationCraft's grundmodel med Aulas rettelser». Appen viser ikke længere den røde «mangler vigtige evner»-advarsel
+for Balance/Restoration, men stadig en gul for Feral (ingen kat-rotation; se `lib/sim-model-gaps.ts`).
+
+**Antagelser og huller (ikke rettet her):**
+
+- Feral har stadig ingen kat-rotation: en Feral-druid simuleres som caster med Wrath og Moonfire. Kat-delen bygges
+  upstream (Khazak) og er ikke vores at lave.
+- Druiden har ingen wand og ingen mana-styring: under 40 er manaen brugt efter ca. 1 minut, og derefter slår den med
+  staven og kaster, når der er mana til én spell (ca. 60 % venter). Det er sandsynligvis tæt på spillet for en druid
+  uden mana-drikke, men ikke målt mod spillet.
+- Faerie Fire er stadig med i APL'en med `if=time<1`; masken tillader kat (`0x1`) og bjørn, uændret.
+
+### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42, Patchwerk)
+
+Profilerne er auditens syntetiske (level 20 og 40, alle point i ét træ; udstyr lånt fra fixtures og ikke
+level-tilpasset, se auditten §11). Kun til sammenligning før/efter og mellem klasser på samme udstyr.
+
+| Profil | Før: DPS | Før: venter | Efter: DPS | Efter: venter | Wrath / Moonfire / Starfire (efter) |
+|---|---|---|---|---|---|
+| Balance 20 | 5,1 | 100 % | **12,9** | 61 % | 63 / 9 / 2 |
+| Balance 40 (Moonkin) | 46,4 | 44 % | **46,4** | 44 % | 71 / 13 / 4 (uændret) |
+| Feral 20 | 2,4 | 100 % | **7,2** | 68 % | 40 / 8 / 1 |
+| Feral 40 | 25,5 | 100 % | **31,3** | 62 % | 41 / 10 / 1 |
+| Restoration 20 | 5,1 | 100 % | **10,5** | 63 % | 46 / 9 / 1 |
+| Restoration 40 | 11,7 | 100 % | **27,6** | 50 % | 57 / 11 / 2 |
+
+På upstream `main` `1b8e01d` (med kat-ændringerne): Balance 20 7,0 → 14,1, Feral 20 4,3 → 8,6, Restoration 40
+14,9 → 29,3 (samme profiler, samme indstillinger).
+

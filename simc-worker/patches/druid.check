@@ -1,0 +1,8 @@
+# Har upstream (simc-forever) selv rettet druid-formfejlen? Tjekkes på den RENE upstream-kilde, før druid.patch anvendes.
+# Alle betingelser skal holde; så droppes druid.patch. Syntaks: se PATCHES.md.
+# Druid har en upstream-grundmodel (974 linjer og en APL ved SIMC_REF 3c1d319), så linjeantal siger intet her.
+# Rettelsen tilføjer spell-attribut 83 («Allow While Not Shapeshifted (caster form)») og bruger den i
+# druid_action_t, så Wrath, Moonfire, Starfire m.fl. kan kastes uden Moonkin Form. Den er i upstream-stil og
+# foreslået upstream (upstream-druid-moonkin.md); merges den, holder begge linjer, og rettelsen droppes.
+contains engine/dbc/data_enums.hh SX_ALLOW_WHILE_NOT_SHAPESHIFTED
+contains engine/class_modules/sc_druid.cpp SX_ALLOW_WHILE_NOT_SHAPESHIFTED

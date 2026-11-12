@@ -1,0 +1,28 @@
+diff --git a/engine/class_modules/sc_druid.cpp b/engine/class_modules/sc_druid.cpp
+index 1963dc2910..bfad9954a1 100644
+--- a/engine/class_modules/sc_druid.cpp
++++ b/engine/class_modules/sc_druid.cpp
+@@ -320,6 +320,11 @@ struct druid_action_t : public parse_action_effects_t<Base>
+   {
+     form_mask = this->data().stance_mask();
+ 
++    // Spells such as Wrath and Moonfire list only Moonkin Form in their stance mask, but are flagged as castable
++    // without a shapeshift (attribute 83), i.e. in caster form.
++    if ( form_mask && this->data().flags( spell_attribute::SX_ALLOW_WHILE_NOT_SHAPESHIFTED ) )
++      form_mask |= CASTER_FORM;
++
+     if ( this->data().ok() )
+     {
+       p->apply_action_effects( this );
+diff --git a/engine/dbc/data_enums.hh b/engine/dbc/data_enums.hh
+index d783032fe6..5ec9a18624 100644
+--- a/engine/dbc/data_enums.hh
++++ b/engine/dbc/data_enums.hh
+@@ -1854,6 +1854,7 @@ enum spell_attribute : unsigned
+   SX_NO_THREAT                      = 42u,
+   SX_DISCOUNT_ON_MISS               = 59u,
+   SX_DONT_DISPLAY_IN_AURA_BAR       = 60u,
++  SX_ALLOW_WHILE_NOT_SHAPESHIFTED   = 83u,
+   SX_CANNOT_CRIT                    = 93u,
+   SX_FOOD_AURA                      = 95u,
+   SX_NOT_A_PROC                     = 105u,
