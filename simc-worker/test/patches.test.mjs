@@ -51,6 +51,8 @@ const read = (dir, f) => readFileSync(path.join(dir, f), 'utf8');
 // Navne, rettelserne tilføjer for Combat/Subtlety (rogue) og Holy/Protection (paladin): upstream regnes kun for
 // færdig med klassen, når den også selv opretter dem (se rogue.check / paladin.check).
 const ROGUE_UPSTREAM_ACTIONS = '  if ( name == "backstab" ) return a;\n  if ( name == "hemorrhage" ) return b;\n  if ( name == "ghostly_strike" ) return c;\n';
+// Dæmonerne warlock.patch tilføjer (warlock.check): upstream har kun Imp.
+const WARLOCK_UPSTREAM_DEMONS = '  if ( name == "summon_voidwalker" ) return d;\n  if ( name == "summon_succubus" ) return e;\n  if ( name == "summon_felhunter" ) return f;\n  if ( name == "lash_of_pain" ) return g;\n  if ( name == "demonic_sacrifice" ) return h;\n';
 const PALADIN_UPSTREAM_ACTIONS = '  if ( name == "holy_shock" ) return a;\n  if ( name == "holy_shield" ) return b;\n';
 
 test('fixturen er præcis den upstream-version hver rettelse er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
@@ -658,14 +660,31 @@ test('warlock: upstream med Life Tap, men uden wand og Bane of Agony, er ikke «
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });
 
+test('warlock: upstream med Life Tap, wand og Bane of Agony, men kun Imp, er ikke «færdig» (dæmonerne mangler)', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('warlock');
+  try {
+    // Som før dæmon-rettelsen ville have regnet for «upstream færdig»: alle tre handlinger og en APL med dem.
+    writeFileSync(path.join(src, WARLOCK), read(src, WARLOCK).replace('  if ( name == "summon_imp" )',
+      '  if ( name == "life_tap" ) return new a_t();\n  if ( name == "shoot" ) return new b_t();\n  if ( name == "bane_of_agony" ) return new c_t();\n  if ( name == "summon_imp" )'));
+    writeFileSync(path.join(src, WARLOCK_APL), read(src, WARLOCK_APL).replace('  default_->add_action( "shadow_bolt" );',
+      '  default_->add_action( "life_tap,if=mana.pct<10" );\n  default_->add_action( "bane_of_agony" );\n  default_->add_action( "shadow_bolt" );'));
+    const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
+    assert.doesNotMatch(r.out, /warlock: DROP/);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^warlock: KONFLIKT \(skal flettes: .*sc_warlock\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
 test('warlock og shaman droppes, når upstream selv har alle dele (uden vores markør)', () => {
   const src = fakeSimc();
   const pdir = patchDirWith('shaman', 'warlock');
   try {
     writeFileSync(path.join(src, WARLOCK), read(src, WARLOCK).replace('  if ( name == "summon_imp" )',
-      '  if ( name == "life_tap" ) return new a_t();\n  if ( name == "shoot" ) return new b_t();\n  if ( name == "bane_of_agony" ) return new c_t();\n  if ( name == "summon_imp" )'));
+      `  if ( name == "life_tap" ) return new a_t();\n  if ( name == "shoot" ) return new b_t();\n  if ( name == "bane_of_agony" ) return new c_t();\n${WARLOCK_UPSTREAM_DEMONS}  if ( name == "summon_imp" )`));
     writeFileSync(path.join(src, WARLOCK_APL), read(src, WARLOCK_APL).replace('  default_->add_action( "shadow_bolt" );',
-      '  default_->add_action( "life_tap,if=mana.pct<10" );\n  default_->add_action( "bane_of_agony" );\n  default_->add_action( "shadow_bolt" );'));
+      '  default_->add_action( "life_tap,if=mana.pct<10" );\n  default_->add_action( "bane_of_agony" );\n  default_->add_action( "shadow_bolt" );')
+      .replace('  precombat->add_action( "summon_imp" );', '  precombat->add_action( "summon_succubus" );'));
     writeFileSync(path.join(src, SHAMAN), read(src, SHAMAN).replace('  if ( name == "earth_shock" )',
       '  if ( name == "lightning_bolt" ) return new a_t();\n  if ( name == "stormstrike" ) return new b_t();\n  if ( name == "mana_spring_totem" ) return new c_t();\n  if ( name == "earth_shock" )'));
     writeFileSync(path.join(src, SHAMAN_APL), read(src, SHAMAN_APL).replace('  default_->add_action( "auto_attack" );',

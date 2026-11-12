@@ -1294,11 +1294,15 @@ og specs kunne ikke skelnes (samme tre spells for alle).
   12 s) på warlockens Shadow-skade.
 - Talenternes passive effekter (Improved Corruption, Bane, Ruin, Cataclysm, Suppression …) læses som hidtil af
   upstreams `parse_all_passive_talents()`.
+- **Dæmonerne** (2. commit på `aula/warlock`): Imp for alle level, Voidwalker, Succubus og Felhunter, Demonic
+  Sacrifice/Pact og dæmon-talenterne; se «Dæmonerne» nedenfor.
 
 **Rotation** (fælles; spec-delen styres af, hvilke talenter warlocken har):
 
 ```
-precombat: summon_imp
+precombat: summon_demon                      # dæmonen efter level og talenter (eller den, der skal ofres)
+precombat: demonic_sacrifice                 # kun Demonology med Demonic Sacrifice + Demonic Pact
+precombat: summon_demon                      # dæmonen efter ofringen
 life_tap,if=mana.pct<20
 shadowburn                                   # Destruction
 conflagrate,if=dot.immolate.ticking          # Destruction
@@ -1320,23 +1324,75 @@ shoot
   antagelse; den står i appens gule advarsel.
 - Shadow Vulnerability og Wrack-forstærkningen ligger på warlocken (kun dens egen skade påvirkes); med flere mål
   gælder de for alle mål.
-- Demonology har intet ud over Imp (upstreams, med stats tilpasset level 3-10) og passive talenter. Voidwalker,
-  Felhunter, Succubus og Demonic Sacrifice er for store til denne rettelse.
-- Ikke med: Drain Life/Soul, Searing Pain, Soul Fire, Curses (Elements, Recklessness), Nightfall, Amplify Curse,
-  Bane of Doom og Demonic Pact.
+- Ikke med: Drain Life/Soul, Searing Pain, Soul Fire, Curses (Elements, Recklessness), Nightfall, Amplify Curse
+  og Bane of Doom. (Dæmonerne og Demonic Pact: se næste afsnit.)
+
+### Dæmonerne (2. commit, `9e218c5`)
+
+Upstream har kun Imp, med mana og regen målt på level 3-8 (`29 + 9,5 × level`, 1,65/2,73 mana/s): over level 10 var
+Imp'en tom for mana og stod for 2-5 % af skaden. Modellen er nu fælles for de fire dæmoner og bygger på
+wowsims/forever `sim/warlock/pets.go` og `talents_demonology.go` (MIT; formlerne er skrevet som andele af
+creature-værdierne og kan derfor flyttes til andre level) og simcs `expected_stat.inc` (`creature_auto_attack_dps`
+for hvert level 1-133).
+
+| Dæmon | Fra level (summon-spell) | Skade | Kilde |
+|---|---|---|---|
+| Imp | 1 (688) | Firebolt (3110 … 11763, rank efter level), Improved Imp +10/20/30 % | upstream + spildata |
+| Voidwalker | 10 (697) | nærkamp: 0,494 × creature-dps × 2,0 s pr. slag (±26,4 %), **× 0,5**. Torment er threat og simuleres ikke | wowsims |
+| Succubus | 20 (712) | nærkamp: 0,698 × creature-dps × 2,0 s (±21,5 %) + Lash of Pain (7814 … 11780; 0,429 × dæmonens spell damage, 12 s), Improved Sayaad +10/20/30 % | wowsims + spildata |
+| Felhunter | 30 (691) | nærkamp: **skøn** 0,691 × creature-dps × 2,0 s (±16,2 %), × 0,8. Spell Lock/Devour Magic er utility | wowsims' level 60-konstant 70-97 omregnet til en andel |
+
+Fælles for alle (wowsims; upstream for Imp'en): AP = 3 × level + 6 (nærkamp-dæmoner; wowsims' linje gennem
+Succubus-arkene på level 20 og 30) + 0,17 × warlockens spell damage; spell damage = 0,10 × warlockens; crit =
+warlockens spell crit (melee og spell); spell hit = warlockens, melee hit = 8/17 af den; ingen expertise. Mana-regen
+= andel af warlockens Intellect som MP5: Imp 0,30, de andre 0,10 (målt på level 30; giver 1,5 mana/s ved 25 Int, tæt
+på upstreams 1,65 på level 7). **Manapuljen er et skøn:** upstreams fit op til level 8, derefter lineært til wowsims'
+level 60-pulje (576 + 5 × 264 Int = 1896); level 20: 518, level 40: 1207. I spillet viser pet-arket på level 60 ca.
+10.870 mana mere (fra warlocken, ikke modelleret hos wowsims heller).
+
+**Dæmonvalg** (`choose_demons`, efter talenter og level; spec er `unknown` i armory-profilerne):
+
+- **Dæmonen ude:** Succubus fra level 20, Voidwalker på level 10-19, Imp under level 10. Felhunter vælges aldrig
+  automatisk (dens evner er utility). Målt (Patchwerk, 1000 it.): level 15 Voidwalker 21,2 mod Imp 19,6 og ingen
+  dæmon 17,9; Demonology 40 uden ofring Succubus 70,7, Imp 68,8 (Demonic Energies fodrer den med Life Taps mana),
+  Felhunter 63,1, Voidwalker 55,1; Destruction 40 Succubus 78,5, Felhunter 73,3, Imp 62,8 (uden Demonic Energies er
+  Imp'en mana-bundet).
+- **Demonic Sacrifice (18788):** kun **med Demonic Pact** (425464). Så tilkaldes og ofres Imp'en før kampen
+  (Burning Shadow 18789: +15 % Shadow; spildataens Forever-version, omvendt af original Classic), og Succubus (eller
+  Voidwalker under 20) tilkaldes bagefter (Icy Veins' Demonology-build; Demonology 40: 76,1 mod 70,7 uden ofring).
+  Imp'en ofres, fordi den er den svageste af dæmonerne på de fleste profiler. **Uden Pact beholdes dæmonen**: Demonology
+  20 med Succubus 32,5 mod ofret Imp 23,9 og ofret Succubus (Touch of Fire 18791, +15 % Fire) 22,2.
+- **Profilen kan selv vælge:** `default_pet=auto|none|imp|voidwalker|succubus|felhunter` og
+  `demonic_sacrifice=auto|none|imp|succubus` (ukendt værdi giver en simc-fejl; en dæmon over spillerens level giver
+  automatikkens valg). Uden Demonic Pact betyder en ofring, at ingen dæmon er ude. Appens profil-hvidliste
+  (`lib/simc-input.ts`, `sanitize.mjs`) tillader ikke de to nøgler, så i appen gælder automatikken.
+
+**Talenter** (rankens værdi fra talentkurven): Unholy Power 18769 (+2-10 % dæmon-skade), Soul Link 19028/25228 (+3 %
+for warlock og dæmon, antaget kastet før kampen uden mana), Master Demonologist 23785 (Imp: +Fire, Succubus:
++Shadow for begge; Voidwalker/Felhunter er forsvar), Demonic Knowledge 412732 (+33/67/100 % af level i spell damage
+for begge, mens en dæmon er ude), Demonic Energies 1225214 (dæmonen får 50/100 % af Life Taps mana), Improved Imp
+og Improved Sayaad. Ikke med: Fel Domination (kun relevant, hvis dæmonen dør eller tilkaldes midt i kampen), Master
+Summoner, Demonic Brand (kræver Searing Pain), Fel Energy/Fel Stamina (ofret Voidwalker/Felhunter; ingen skade),
+Improved Imps effekt 3 (en dummy uden beskrivelse), Blood Pact og dæmonernes forsvarsevner.
+
+**Antagelser:** tilkaldelser før kampen koster ingen mana (warlocken tilkalder og drikker før pull; i kampen gælder
+spildataens pris og 10 s cast). Dæmonen dør aldrig (målet slår ikke). Lash of Pain og Firebolt bruges, så snart
+manaen rækker. Felhunterens nærkamp og alle puljer mellem level 9 og 59 er skøn.
 
 **Filer:** `engine/class_modules/sc_warlock.cpp`, `engine/class_modules/apl/warlock.cpp` (mellem
-`//warlock_apl_start` og `//warlock_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/warlock` (én
-commit oven på `SIMC_REF`); patchen er `git diff 3c1d319..aula/warlock`. Den passer også uændret på upstream `main`
-`1b8e01d`.
+`//warlock_apl_start` og `//warlock_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/warlock` (to
+commits oven på `SIMC_REF`: `d036ae9` Life Tap m.m., `9e218c5` dæmonerne); patchen er `git diff 3c1d319..aula/warlock`.
+Den passer også uændret på upstream `main` `c4c9b16` (12-11; ingen warlock-ændringer siden pin).
 
-**Upstream-tjek (`warlock.check`):** upstream opretter selv `life_tap`, `shoot` og `bane_of_agony` (`has_action`),
-APL'en bruger `"life_tap` og `"bane_of_agony`, og `sc_warlock.cpp` har ikke vores markør. Har upstream kun en del
-(fx Life Tap uden wand), holder tjekket ikke, rettelsen giver en konflikt (testet), og et menneske må flette.
+**Upstream-tjek (`warlock.check`):** upstream opretter selv `life_tap`, `shoot` og `bane_of_agony` og dæmon-delen
+`summon_voidwalker`, `summon_succubus`, `summon_felhunter`, `lash_of_pain` og `demonic_sacrifice` (`has_action`),
+APL'en bruger `"life_tap`, `"bane_of_agony` og `"demonic_sacrifice` eller `"summon_succubus` (`contains_re`), og
+`sc_warlock.cpp` har ikke vores markør. Har upstream kun en del (fx Life Tap, wand og Bane of Agony men kun Imp),
+holder tjekket ikke, rettelsen giver en konflikt (testet), og et menneske må flette.
 
 **Model i workeren:** warlock står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs`: «Grov model: SimulationCraft's
 grundmodel med Aulas rettelser». Appen viser en gul advarsel pr. spec med det, rettelsen ikke dækker (pets, Life
-Tap uden livsomkostning; `lib/sim-model-gaps.ts`).
+Tap uden livsomkostning, dæmonvalget og det, der stadig mangler; `lib/sim-model-gaps.ts`).
 
 ### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42, Patchwerk)
 
@@ -1359,6 +1415,31 @@ uden fejl (Affliction 40: 45,6, Destruction 20: 18,1).
 
 Imp'ens andel er 2-5 % (upstreams model). Bane of Agony tikker 14-41 på Affliction 40 (opbygningen virker); Shadow
 Vulnerability har ca. 6 % oppetid på Destruction 20 (5 % crit).
+
+### Målt med dæmonerne (samme profiler og indstillinger, native bygning, 1000 iterationer, seed 42)
+
+«Før» er den forrige rettelse (genskabt bit for bit med den gamle kode). Alle seks profiler får Succubus; Demonology
+40 har Demonic Sacrifice + Demonic Pact og ofrer Imp'en først (Burning Shadow), Demonology 20 har Demonic Sacrifice
+uden Pact og beholder Succubus.
+
+| Profil | Før | Efter (Patchwerk) | Dæmonens andel | DungeonSlice (efter) | Største kilder (efter) |
+|---|---|---|---|---|---|
+| Affliction 20 | 25,1 | **35,4** | 11,4 (32 %) | 28,5 | Succubus-melee 10,7, Shadow Bolt 8,4, Immolate 5,7 |
+| Affliction 40 | 62,5 | **81,2** | 19,8 (24 %) | 63,5 | Wrack 20,9, Succubus-melee 18,2, Agony 12,8 |
+| Demonology 20 | 22,7 | **32,5** | 11,1 (34 %) | 26,0 | Succubus-melee 10,4, Shadow Bolt 7,0, Agony 5,4 |
+| Demonology 40 | 47,3 | **76,1** | 23,7 (31 %) | 60,6 | Succubus-melee 20,2, Shadow Bolt 17,7 (+15 % +3 %), Agony 12,8 |
+| Destruction 20 | 24,7 | **34,8** | 11,1 (32 %) | 28,1 | Succubus-melee 10,5, Shadow Bolt 5,4, Immolate 5,2 |
+| Destruction 40 | 60,4 | **78,5** | 19,3 (25 %) | 63,1 | Succubus-melee 17,7, Immolate 12,7, Agony 10,8 |
+
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle syv rettelser, via `/run` på 127.0.0.1:18082, 1000
+iterationer): Affliction 20/40 35,5/81,2, Demonology 20/40 32,5/76,2, Destruction 20/40 34,8/78,6; DungeonSlice
+Demonology 40 60,5 og Destruction 20 28,1 uden fejl. `/health` melder `warlock applied`.
+
+Warlockens egen skade er uændret undtagen på Demonology 40 (Burning Shadow og Soul Link: Shadow Bolt 15,0 → 17,7).
+Lash of Pain er kun 0,6-3,6 DPS, fordi Succubus' mana (skønnet pulje, 0,10 × Int som MP5) ikke rækker til en Lash
+hvert 12. sekund på level 20. Uden talenter på level 5 er det stadig Imp'en (16,2, Imp 1,0). Level 60 med alle
+Demonology-talenter kører uden fejl (194,3; Imp med Demonic Energies og Master Demonologist ville her give 199,8, så
+over level 40 kan Imp'en være lige så god som Succubus for dybe Demonology-builds).
 
 ## shaman
 

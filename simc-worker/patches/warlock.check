@@ -7,5 +7,13 @@ has_action engine/class_modules/sc_warlock.cpp shoot
 has_action engine/class_modules/sc_warlock.cpp bane_of_agony
 contains engine/class_modules/apl/warlock.cpp "life_tap
 contains engine/class_modules/apl/warlock.cpp "bane_of_agony
+# ... og dæmonerne: Voidwalker, Succubus (med Lash of Pain) og Felhunter samt Demonic Sacrifice. Upstream har kun
+# Imp (summon_imp/firebolt), så en upstream med Life Tap men uden dæmoner droppes ikke.
+has_action engine/class_modules/sc_warlock.cpp summon_voidwalker
+has_action engine/class_modules/sc_warlock.cpp summon_succubus
+has_action engine/class_modules/sc_warlock.cpp summon_felhunter
+has_action engine/class_modules/sc_warlock.cpp lash_of_pain
+has_action engine/class_modules/sc_warlock.cpp demonic_sacrifice
+contains_re engine/class_modules/apl/warlock.cpp "(demonic_sacrifice|summon_succubus)
 # Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor warlock.patch allerede er anvendt).
 not_contains engine/class_modules/sc_warlock.cpp AULA-RETTELSE
