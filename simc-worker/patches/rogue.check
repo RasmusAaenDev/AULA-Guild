@@ -3,5 +3,11 @@
 # Ren upstream ved SIMC_REF 3c1d319: sc_rogue.cpp er en tom skal på 42 linjer, og apl/rogue.cpp har ingen add_action.
 min_lines engine/class_modules/sc_rogue.cpp 150
 contains engine/class_modules/apl/rogue.cpp add_action
+# Rettelsen dækker også Combat og Subtlety (Backstab, Hemorrhage, Ghostly Strike). Har upstream kun en grundmodel
+# uden dem, holder tjekket ikke: rettelsen passer da typisk ikke (konflikt), og et menneske må flette.
+has_action engine/class_modules/sc_rogue.cpp backstab
+has_action engine/class_modules/sc_rogue.cpp hemorrhage
+has_action engine/class_modules/sc_rogue.cpp ghostly_strike
+contains_re engine/class_modules/apl/rogue.cpp "(backstab|hemorrhage)
 # Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor rogue.patch allerede er anvendt).
 not_contains engine/class_modules/sc_rogue.cpp AULA-RETTELSE

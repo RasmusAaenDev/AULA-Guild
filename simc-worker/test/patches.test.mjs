@@ -48,6 +48,10 @@ function run(script, args, env = {}) {
 }
 const read = (dir, f) => readFileSync(path.join(dir, f), 'utf8');
 
+// Navne, rettelserne tilføjer for Combat/Subtlety (rogue) og Holy/Protection (paladin): upstream regnes kun for
+// færdig med klassen, når den også selv opretter dem (se rogue.check / paladin.check).
+const ROGUE_UPSTREAM_ACTIONS = '  if ( name == "backstab" ) return a;\n  if ( name == "hemorrhage" ) return b;\n  if ( name == "ghostly_strike" ) return c;\n';
+
 test('fixturen er præcis den upstream-version hver rettelse er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
   const patches = readdirSync(patchDir).filter((f) => f.endsWith('.patch'));
   for (const cls of CLASSES) assert.ok(patches.includes(`${cls}.patch`), cls);
@@ -107,6 +111,11 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(read(src, ROGUE), /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
     assert.match(read(src, ROGUE_APL),
       /add_action\( "slice_and_dice,[^"]*" \)[\s\S]*add_action\( "rupture,[^"]*" \)[\s\S]*add_action\( "eviscerate,[^"]*" \)[\s\S]*add_action\( "mutilate,[^"]*" \)[\s\S]*add_action\( "sinister_strike,[^"]*" \)/);
+    // rogue Combat/Subtlety: Backstab, Hemorrhage, Ghostly Strike, Premeditation, Preparation
+    for (const a of ['backstab', 'hemorrhage', 'ghostly_strike', 'premeditation', 'preparation']) {
+      assert.match(read(src, ROGUE), new RegExp(`if \\( name == "${a}" \\)`), a);
+    }
+    assert.match(read(src, ROGUE_APL), /add_action\( "ghostly_strike,[^"]*" \)[\s\S]*add_action\( "hemorrhage,[^"]*" \)[\s\S]*add_action\( "backstab,[^"]*" \)[\s\S]*add_action\( "sinister_strike,[^"]*" \)/);
     // druid: caster form tilladt for spells med attribut 83
     assert.match(r.out, /druid: rettelse anvendt/);
     assert.match(read(src, ENUMS), /SX_ALLOW_WHILE_NOT_SHAPESHIFTED\s+= 83u,/);
@@ -206,9 +215,9 @@ test('(b-rogue) upstream har selv implementeret rogue: rogue.patch droppes, mage
   const src = fakeSimc();
   const out = path.join(src, 'PATCHES_APPLIED');
   try {
-    const impl = `// upstream rogue\n${'// linje\n'.repeat(200)}`;
+    const impl = `// upstream rogue\n${'// linje\n'.repeat(200)}${ROGUE_UPSTREAM_ACTIONS}`;
     writeFileSync(path.join(src, ROGUE), impl);
-    writeFileSync(path.join(src, ROGUE_APL), 'void rogue( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "sinister_strike" ); }\n');
+    writeFileSync(path.join(src, ROGUE_APL), 'void rogue( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "backstab" ); }\n');
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR rogue — vores rettelse droppes/);
@@ -340,8 +349,8 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.equal(r.code, 1);
     assert.match(r.out, /^rogue: KONFLIKT \(skal flettes: /m);
 
-    writeFileSync(path.join(repo, ROGUE), `${'// upstream\n'.repeat(300)}`);
-    writeFileSync(path.join(repo, ROGUE_APL), 'x->add_action( "sinister_strike" );\n');
+    writeFileSync(path.join(repo, ROGUE), `${'// upstream\n'.repeat(300)}${ROGUE_UPSTREAM_ACTIONS}`);
+    writeFileSync(path.join(repo, ROGUE_APL), 'x->add_action( "hemorrhage" );\n');
     git('commit', '-q', '-am', 'upstream har rogue');
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 0, r.err);
