@@ -10,7 +10,7 @@ import { parseId } from '@/lib/site-chat';
 import { buildSimProfile, isSimClass } from '@/lib/simc-armory';
 import { FIGHT_STYLES, enqueueSim, isFightStyle, type SimEnqueueOptions, type SimFail, type SimView } from '@/lib/sims';
 
-export const ARMORY_NOT_FOUND = 'Karakteren blev ikke fundet i armory. Tjek at den findes på WoW Forever.';
+export const ARMORY_NOT_FOUND = 'Karakteren blev ikke fundet i armory. Tjek at den findes på WoW Forever. Helt nye karakterer på et meget lavt level vises ikke i armory endnu.';
 export const ARMORY_UNAVAILABLE = 'Armory er ikke tilgængelig lige nu. Prøv igen om lidt.';
 
 export function armoryErrorMessage(e: unknown): string {
