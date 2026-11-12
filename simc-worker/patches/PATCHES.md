@@ -57,7 +57,7 @@ Filerne ligger allerede i simcs byggelister, så intet andet skal røres.
 
 **Upstream-tjek (`mage.check`):** `sc_mage.cpp` har flere end 150 linjer, `apl/mage.cpp` indeholder `add_action`,
 og `sc_mage.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er `sc_mage.cpp` 47 linjer og
-APL'en tom; med rettelsen er modulet 1086 linjer.
+APL'en tom; med rettelsen er modulet 1092 linjer.
 
 ### Spells (alle tal fra spildata, intet opfundet)
 
@@ -72,7 +72,7 @@ Kun spells en mage lærer hos træneren; id'er og levels er slået op i `engine/
 | Arcane Missiles | 5143/7268:8, 5144/7269:16, 5145/7270:24, 8416/8419:32, 8417/8418:40, 10211/10273:48, 10212/10274:56, 25345/25346:56-60 | kanaliseret driver; hvert tick udløser spildataens Arcane Missile. Ranken vælges efter missilets level |
 | Shoot (wand) | 5019:1 | skud med wanden i ranged-pladsen; se nedenfor |
 | Evocation | 12051:20 | kanaliseret 8 s på magen selv, 480 s nedkøling, 1,5 s GCD; se nedenfor |
-| Ice Lance (talent) | 1312002:20, 400640:28, 1240044:34, 1240045:42, 1240046:48, 1240047:56 | kun med talentet; se «Frost-pakken» |
+| Ice Lance (talent) | 1312002:20, 400640:28, 1240044:34, 1240045:42, 1240046:48, 1240047:56 | kun med talentet; spell power-koefficienten er en **antagelse** (Frostbolts); se «Frost-pakken» |
 | Ice Barrier (talent) | 11426:40, 13031:46, 13032:52, 13033:58 | kun med talentet; se «Frost-pakken» |
 | Scorch | 2948:22, 8444:28, 8445:34, 8446:40, 10205:46, 10206:52, 10207:58 | 1,5 s cast; se «Fire-pakken» |
 | Pyroblast (talent) | 11366:20, 12505:24, 12522:30, 12523:36, 12524:42, 12525:48, 12526:54, 18809:60 | 6 s cast, direkte + DoT (4 ticks à 3 s); kun med talentet |
@@ -189,8 +189,15 @@ overskrevet med talentkurvens værdi for den valgte rank (`player.cpp`, «talent
 - **Shatter** (11170): +17/33/50 % crit-chance for alle spells mod frosne mål (talentkurven; effekt 1 er «Dummy»).
 - **Ice Lance** (talent; rank 1 = talentet, højere ranks kræver det, som paladinens Seal of Command): instant, 8 s
   nedkøling, 1,5 s GCD, effekt 2: **+300 %** skade mod frosne mål. Spildataen har **ingen spell power-koefficient**
-  på skadeeffekten (alle seks ranks), så skaden er kun rankens niveau-skalerede basisværdi; vi opfinder ingen
-  koefficient. Effekt 3 og 4 (Dummy 20 og 5) er ubeskrevne og bruges ikke.
+  på skadeeffekten (alle seks ranks). Effekt 3 og 4 (Dummy 20 og 5) er ubeskrevne og bruges ikke.
+  **Antagelse efter brugerens ønske: Ice Lance bruger Frostbolts koefficient (spildata har ingen); bemærk at
+  klassisk instant-spells normalt har lavere koefficient end en 3 s cast, så tallet er sandsynligvis optimistisk.**
+  Koefficienten tages fra spildataens skadeeffekt (School Damage) på den Frostbolt-rank, spilleren har efter level
+  (`rank.frostbolt.find_rank()`): 0,706 på level 20-25 (rank 4), 0,814 fra level 26 (rank 5+). Den lægges på Ice
+  Lances egen basisskade, og +300 % ganges på summen: (basis + koefficient × spell power) × 4 mod frosset mål.
+  Nedkøling og GCD er uændrede. **Ét sted at ændre:** linjen `spell_power_mod.direct = e.sp_coeff();` i
+  `ice_lance_t`s konstruktør i `sc_mage.cpp` (slettes linjen, er Ice Lance igen uden koefficient; et andet tal
+  sættes samme sted).
 - **Ice Barrier** (talent): effekt 2 (+5 % direkte Frost-skade, mens skjoldet holder) og, ifølge beskrivelsen,
   **Frigid Power** 1326891 (+15 % Frost-skade i 60 s) lægges som buffs og læses med `parse_effects` pr. handling
   (multiplikativt: × 1,05 × 1,15 = 1,2075). **Antagelse:** Frigid Power udløses af Ice Barrier (står kun i
@@ -452,7 +459,8 @@ Reach 2, Permafrost 2). DPS før = forrige mage.patch, efter = denne.
 
 Håndregning (ezzek, Patchwerk):
 
-- **Ice Lance** rank 3 (1240044, level 34): 45 + 0,5 × (35 − 34) = 45,5 → simc 46 (log: `base=46 s_power=0`);
+- **Ice Lance** (før koefficient-antagelsen, se næste afsnit) rank 3 (1240044, level 34): 45 + 0,5 × (35 − 34) =
+  45,5 → simc 46 (log: `base=46 s_power=0`);
   frossen × (1 + 3,00) = **184**; crit × 2,0 (Ice Shards 5) = **368**; mana 70 × 0,95 = **66,5**. Alle Ice Lance-hits
   i 1000 iterationer er 184/368, dvs. altid frosne.
 - **Shatter 3**: crit mod frosne = 8,79 % + 50 % = **58,8 %**; observeret Ice Lance 3,82 / 6,45 landede = **59,2 %**.
@@ -470,6 +478,37 @@ Regression (samme indstillinger, binær med forrige mod ny mage.patch): hunter-1
 warlock-25, paladin-39 (holy og ret), rogue-33, mage-20, mage-35, ezzek uden talenter og en level 45-mage med kun
 passive Frost-talenter giver bit-for-bit samme DPS i Patchwerk og DungeonSlice. `check-upstream.sh` giver OK mod
 3c1d319 og main (1b8e01d); de tre rettelser kan anvendes i alle seks rækkefølger.
+
+### Ice Lance med Frostbolts koefficient (antagelse): målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
+
+Før = mage.patch uden koefficient på Ice Lance, efter = med Frostbolts. Ezzek hentet igen fra armory 12.11.2026
+(`getSimProfile` + `buildSimInput`, uændret profil); Frost L<n> = den konstruerede Frost 45 med `level=<n>`.
+
+| Profil | Patchwerk før → efter | DungeonSlice før → efter |
+|---|---|---|
+| ezzek 35 | 49,42 → **51,77** (+4,8 %) | 42,71 → **44,64** (+4,5 %) |
+| Frost 45 | 68,19 → **70,15** (+2,9 %) | 58,71 → **60,37** (+2,8 %) |
+| Frost L20 (Ice Lance rank 1, Frostbolt rank 4) | 40,33 → 43,41 | 34,40 → 36,96 |
+| Frost L60 (Ice Lance rank 6, Frostbolt rank 11) | 98,68 → 100,38 | 84,59 → 85,98 |
+
+Håndregning (simc-log, Patchwerk, seed 42; spell power 21 Frost = 11 generel + 10 Frost fra udstyr):
+
+| Level | Ice Lance-rank (id) | Frostbolt-rank (id) | Koefficient | Basis (log) | Frosset hit | Log |
+|---|---|---|---|---|---|---|
+| 20 | 1 (1312002) | 4 (7322) | 0,706 | 28 | (28 + 0,706 × 21) × 4 = **171,30** | 171,304 |
+| 28 | 2 (400640) | 5 (8406) | 0,814 | 36 | (36 + 17,094) × 4 = **212,38** | 212,376 |
+| 34 | 3 (1240044) | 6 (8407) | 0,814 | 45 | (45 + 17,094) × 4 = **248,38** | 248,376 |
+| 35 (ezzek) | 3 (1240044) | 6 (8407) | 0,814 | 46 | (46 + 17,094) × 4 = **252,38**; crit × 2 = **504,75** | 252,376 / 504,752 |
+| 42 | 4 (1240045) | 7 (8408) | 0,814 | 79 | (79 + 17,094) × 4 × 1,2075 = **464,13** | 464,134 |
+| 48 | 5 (1240046) | 8 (10179) | 0,814 | 98 | (98 + 17,094) × 4,83 = **555,90** | 555,904 |
+| 56 | 6 (1240047) | 10 (10181) | 0,814 | 145 | (145 + 17,094) × 4,83 = **782,91** | 782,914 |
+| 60 | 6 (1240047) | 11 (25304) | 0,814 | 149 | (149 + 17,094) × 4,83 = **802,23** | 802,234 |
+
+(× 1,2075 = Ice Barrier + Frigid Power fra level 40.) Log-linjen viser `s_mod` = Frostbolt-rankens koefficient og
+`mult=4` (4,83 med Ice Barrier). Regression (binær uden mod med koefficienten): hunter-11, warrior-11, shaman-20,
+warlock-10, warlock-25, paladin-39 (holy og ret), rogue-33, mage-20, mage-35, ezzek uden talenter, Frost 45 uden Ice
+Lance, kun passive Frost/Fire/Arcane 45, Fire 45 og Arcane 45 giver bit-for-bit samme DPS i Patchwerk og
+DungeonSlice. `check-upstream.sh` OK mod 3c1d319 og main (1b8e01d); alle seks rækkefølger.
 
 ### Målt og håndregnet (SIMC_REF 3c1d319, 1000 iterationer, seed 42)
 
