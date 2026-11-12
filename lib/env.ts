@@ -28,10 +28,6 @@ const schema = z.object({
   UPLOAD_DIR: z.string().min(1).default('./data/uploads'),
   MAX_UPLOAD_MB: z.coerce.number().int().positive().max(1024).default(10),
   MAX_TOTAL_MB: z.coerce.number().int().positive().default(2048),
-  // Chat (valgfri): kun aktiv hvis BEGGE er sat. Tomme værdier regnes som ikke sat.
-  // Valideres bevidst løst her (se lib/chat-config.ts), så en fejl i chat-opsætningen aldrig vælter env().
-  DISCORD_BOT_TOKEN: z.string().optional(),
-  DISCORD_CHAT_CHANNEL_ID: z.string().optional(),
   // Sim (valgfri): adressen på simc-worker, fx http://simc:8080. Ikke sat = Sim-siden er slået fra.
   SIMC_WORKER_URL: optionalHttpUrl,
 });
