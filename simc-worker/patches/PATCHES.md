@@ -1018,6 +1018,10 @@ level-tilpasset, se auditten §11). Kun til sammenligning før/efter og mellem k
 På upstream `main` `1b8e01d` (med kat-ændringerne): Balance 20 7,0 → 14,1, Feral 20 4,3 → 8,6, Restoration 40
 14,9 → 29,3 (samme profiler, samme indstillinger).
 
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle fem rettelser, via `/run`, 1000 iterationer): samme tal
+inden for støjen (Feral 40 31,1); `/health` melder `druid applied`, og resultatet har «Grov model: SimulationCraft's
+grundmodel med Aulas rettelser». DungeonSlice kører uden fejl (Balance 20: 11,7).
+
 ## priest
 
 **Hvad:** Tilføjelser til upstreams priest-grundmodel (PR #33): wand (Shoot) og mana-styring i rotationen. Auditten
@@ -1083,6 +1087,9 @@ level 30-40-udstyr, wand 7001). Til sammenligning: mage (Frost) på samme udstyr
 | Holy 40 | 12,1 | 81 % | **39,5** | 0 % | 173 skud | 4 / 1 / – |
 | Shadow Magic 20 | 9,9 | 56 % | **22,3** | 0 % | 141 skud | – / – / 6 |
 | Shadow Magic 40 | 42,9 | 49 % | **64,3** | 0 % | 131 skud (25 %) | – / – / 18 |
+
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle fem rettelser, via `/run`, 1000 iterationer): Discipline
+20/40 25,1/47,1, Holy 21,7/39,3, Shadow 22,3/64,0, 0 % venter; DungeonSlice kører uden fejl (Holy 40: 31,3).
 
 Håndtjek af Shoot: Shadow 40 og mage Frost 40 (samme wand 7001, ingen Wand Specialization) rammer begge for 44;
 Discipline 40 med Wand Specialization 2 (+25 % i spildataen) rammer for 54 (44 × 1,25 = 55 før afrunding af

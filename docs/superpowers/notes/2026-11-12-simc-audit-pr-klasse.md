@@ -424,3 +424,37 @@ inputformat end SimC-addon-profiler) og er ikke undersøgt her.
 - Hunter: [Warcraft Tavern – Hunter leveling](https://www.warcrafttavern.com/forever/guides/hunter-leveling/),
   [Mobalytics – Survival 1-60](https://mobalytics.gg/wow-forever/classes/survival-hunter-guide-1-60-ludideo) og
   [Mobalytics – BM leveling](https://mobalytics.gg/wow-forever/classes/1-60-beast-mastery-hunter-leveling-guide).
+
+---
+
+## 12. Opfølgning (samme dag): trin 1-4 er udført
+
+Brugeren valgte første trin af anbefalingen. Status:
+
+1. **Advarsel på resultatkortet** (`lib/sim-model-gaps.ts`, `SimCard.tsx`): warrior, hunter, shaman, druid, priest og
+   warlock uden Aula-rettelse får en rød advarsel «Simulatoren mangler vigtige evner for <klasse> (<spec>)» med en
+   konkret liste fra denne audit. Med en Aula-rettelse («Grov model») forsvinder den. Paladin Holy/Prot, rogue
+   Combat/Sub og druid Feral får en gul «Aulas model dækker ikke … fuldt ud». Forever-spec'en gemmes nu fra armory på
+   jobbet, fordi simc kun kender klassens ene spec.
+2. **`.check` på konkrete spells:** nye betingelser `has_action`, `contains_re` og `not_contains_re` (PATCHES.md).
+3. **Druid-formfejlen** er rettet i upstream-stil (`druid.patch`, fork-branch `aula/druid`); udkast til upstream i
+   `simc-worker/patches/upstream-druid-moonkin.md` (ikke sendt).
+4. **Priest:** wand (Shoot) og en wand-fase ved lav mana, Holy Fire for Discipline/Holy (`priest.patch`, fork-branch
+   `aula/priest`).
+
+**Før/efter** (samme profiler og indstillinger som §1; «efter» målt i et lokalt bygget worker-image med alle fem
+rettelser, 1000 iterationer, Patchwerk):
+
+| Klasse | Spec | DPS L20 før → efter | DPS L40 før → efter | Venter L40 før → efter |
+|---|---|---|---|---|
+| Druid | Balance | 5,1 → **12,9** | 46,4 → **46,4** | 44 % → 44 % |
+| Druid | Feral Combat | 2,4 → **7,2** | 25,6 → **31,1** | 100 % → 62 % |
+| Druid | Restoration | 5,1 → **10,5** | 11,7 → **27,6** | 100 % → 50 % |
+| Priest | Shadow Magic | 9,9 → **22,3** | 42,8 → **64,0** | 49 % → 0 % |
+| Priest | Discipline | 7,2 → **25,1** | 15,0 → **47,1** | 76 % → 0 % |
+| Priest | Holy | 7,1 → **21,7** | 12,1 → **39,3** | 81 % → 0 % |
+
+Mage, paladin og rogue er uændrede (Frost 40: 51,2, Ret 40: 83,9, Assassination 40: 103,4 i samme image). Druiden
+under 40 venter stadig ca. 60 %: den har ingen wand, går tom for mana og slår så med staven. Feral har stadig ingen
+kat-rotation (upstream bygger den). Priest-tallene hviler på antagelsen om wand-fasen (10 %/40 %); se PATCHES.md.
+
