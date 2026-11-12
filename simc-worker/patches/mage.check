@@ -1,0 +1,7 @@
+# Er upstream (simc-forever) færdig med mage? Tjekkes på den RENE upstream-kilde, før mage.patch anvendes.
+# Alle betingelser skal holde; så droppes mage.patch. Syntaks: se PATCHES.md.
+# Ren upstream ved SIMC_REF 3c1d319: sc_mage.cpp er en tom skal på 47 linjer, og apl/mage.cpp har ingen add_action.
+min_lines engine/class_modules/sc_mage.cpp 150
+contains engine/class_modules/apl/mage.cpp add_action
+# Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor mage.patch allerede er anvendt).
+not_contains engine/class_modules/sc_mage.cpp AULA-RETTELSE

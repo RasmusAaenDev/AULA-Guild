@@ -1,0 +1,17 @@
+mage="Testmagi"
+level=20
+race=gnome
+region=eu
+server=forever
+spec=unknown
+legacy_talents=135309:5/135308:3/135304:2/135297:1
+chest=,id=7509
+waist=,id=253885
+legs=,id=4309
+feet=,id=2569
+wrist=,id=4308
+hands=,id=280096
+finger1=,id=286737
+back=,id=5542
+main_hand=,id=9514
+ranged=,id=279896
