@@ -21,5 +21,5 @@ export async function applySignIn(
     name: profile.global_name || profile.username,
     avatar: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : null,
   });
-  return { ...token, userId, isMember: true, isOfficer: access.isOfficer };
+  return { ...token, userId, discordId: profile.id, isMember: true, isOfficer: access.isOfficer };
 }
