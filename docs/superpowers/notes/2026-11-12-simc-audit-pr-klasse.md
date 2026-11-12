@@ -580,3 +580,62 @@ mana i simc. Ingen af tallene er sammenlignet med Forever-logs.
 **Tilbage fra §10:** warrior (vent på PR #59 eller byg oven på den) og hunter (pet-modellen; seriallos ejer hunter
 upstream). For de rettede klasser er de oplagte udvidelser: Death Mark (Subtlety), Seal of Wisdom og Blessings
 (paladin-mana), Magma/Fire Nova Totem (shaman) og pets ud over Imp (warlock).
+
+## 15. Opfølgning: warlock-dæmonerne og Demonic Sacrifice
+
+Første punkt i anbefalingen fra pet-researchen (`2026-11-12-pets-i-simc-forever.md`): dæmonerne i vores egen
+`warlock.patch` (fork-branch `aula/warlock`, ny commit `9e218c5` oven på `d036ae9`).
+
+1. **Dæmonerne:** Imp (nu for alle level: mana-regen = 0,30 × warlockens Intellect som MP5, manapuljen skønnet op til
+   wowsims' level 60-værdi), Voidwalker (nærkamp × 0,5; Torment er threat og simuleres ikke), Succubus (nærkamp +
+   Lash of Pain) og Felhunter (nærkamp som skøn). Nærkamp-skaden er wowsims/forever's andele af simcs
+   `creature_auto_attack_dps` for hvert level; AP = 3 × level + 6 + 0,17 × warlockens spell damage.
+2. **Dæmonvalg** (efter talenter og level, da armory-profilerne har `spec=unknown`): Succubus fra level 20,
+   Voidwalker på level 10-19, Imp under 10, for alle specs. Profilen kan overstyre med `default_pet=` og
+   `demonic_sacrifice=` (appens hvidliste tillader dem ikke endnu).
+3. **Demonic Sacrifice** (Forever: ofret Imp = Burning Shadow +15 % Shadow, ofret Succubus = Touch of Fire +15 % Fire;
+   bekræftet i spildataen 18789/18791): kun med Demonic Pact, hvor Imp'en ofres før kampen og Succubus tilkaldes
+   bagefter. Uden Pact beholdes dæmonen, fordi den giver mere (målt: Demonology 20 32,5 med Succubus mod 23,9 med ofret
+   Imp).
+4. **Talenter:** Soul Link, Master Demonologist, Demonic Knowledge, Unholy Power, Improved Imp, Improved Sayaad og
+   Demonic Energies. Fel Domination modelleres ikke (dæmonen dør aldrig og tilkaldes før kampen).
+5. **`.check`:** kræver nu også `summon_voidwalker`, `summon_succubus`, `summon_felhunter`, `lash_of_pain` og
+   `demonic_sacrifice`, så en upstream med Life Tap og wand men kun Imp ikke får rettelsen droppet (testet).
+   `check-upstream.sh` giver OK for alle syv rettelser på både `3c1d319` og `main` `c4c9b16`.
+
+**Før/efter** (samme profiler og indstillinger som §13: native bygning, 1000 iterationer, seed 42, Patchwerk;
+«før» genskabt bit for bit med den forrige kode; kontrolleret i et lokalt bygget worker-image):
+
+| Spec | DPS L20 før → efter | DPS L40 før → efter | Dæmon (L20 / L40) | Dæmonens andel L40 | DungeonSlice L40 (efter) |
+|---|---|---|---|---|---|
+| Affliction | 25,1 → **35,4** | 62,5 → **81,2** | Succubus / Succubus | 24 % | 63,5 |
+| Demonology | 22,7 → **32,5** | 47,3 → **76,1** | Succubus / ofret Imp + Succubus (Pact) | 31 % | 60,6 |
+| Destruction | 24,7 → **34,8** | 60,4 → **78,5** | Succubus / Succubus | 25 % | 63,1 |
+
+- Stigningen er +29-61 %, næsten al fra Succubus' nærkamp (10-20 DPS). Researchens skøn for Demonology 40 var
+  +40-55 %; målt +61 %, fordi Demonic Pact giver både dæmonen og +15 % Shadow (Shadow Bolt 15,0 → 17,7).
+- Demonology er ikke længere lavest: alle tre specs ligger nu på 76-81 på level 40, over Frost-mage (51) og
+  Shadow-priest (64) på samme udstyr. Det skyldes stadig også, at Life Tap ikke koster liv.
+- Andre dæmoner på Demonology 40 uden ofring: Succubus 70,7, Imp 68,8 (Demonic Energies fodrer den), Felhunter
+  63,1, Voidwalker 55,1. Level 15: Voidwalker 21,2, Imp 19,6, ingen dæmon 17,9.
+- Øvrige klasser er uændrede (rettelsen rører kun warlock-filerne).
+
+**Advarslen nu** (gul, sammen med «Grov model»; fælles for alle tre specs: «Dæmonen er Succubus fra level 20
+(Voidwalker på level 10-19, Imp under 10), uanset hvilken du selv bruger, og dæmonernes mana er et skøn»):
+
+- Affliction: «Drain Life, Drain Soul, Nightfall og Amplify Curse, og Life Tap koster ikke liv …» + fællesteksten.
+- Demonology: «Fel Domination, Demonic Brand og Felhunterens evner (Felhunterens skade er et skøn).» + fællesteksten
+  + «Med Demonic Sacrifice og Demonic Pact ofres Imp'en før kampen (+15 % Shadow); uden Pact beholdes dæmonen. Life
+  Tap koster ikke liv …».
+- Destruction: «Searing Pain, Soul Fire og Curse of the Elements, og Life Tap koster ikke liv …» + fællesteksten.
+
+**Antagelser og forbehold:** dæmonernes manapulje mellem level 9 og 59 er et skøn (interpoleret; i spillet viser
+pet-arket på level 60 ca. 10.870 mana mere), og derfor er Lash of Pain og Imp'ens Firebolt usikre; Felhunterens
+nærkamp er wowsims' level 60-konstant omregnet til en andel; Voidwalkerens AP antages som Succubus'; tilkaldelser før
+kampen koster ingen mana; dæmonen dør aldrig; at alle specs har Succubus ude fra level 20, er et valg for en
+skade-simulering (leveling-guider bruger ofte Voidwalker solo). Ingen tal er sammenlignet med Forever-logs.
+
+**Næste trin:** hunter-petten (punkt 2 i pet-researchens anbefaling): spørg på upstream #41, om nogen arbejder på
+pets, og byg den ellers som upstream-klar `hunter_pet_t` på `aula/hunter-pet` med samme `expected_stat`-grundlag.
+For warlock: Drain Life som alternativ til gratis Life Tap, Searing Pain/Demonic Brand og evt. `default_pet=` i
+appens hvidliste, hvis addonet en dag kan sende den aktive dæmon.
