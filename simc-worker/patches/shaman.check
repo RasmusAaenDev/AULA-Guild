@@ -1,0 +1,11 @@
+# Har upstream (simc-forever) selv det, shaman.patch tilføjer? Tjekkes på den RENE upstream-kilde, før rettelsen anvendes.
+# Alle betingelser skal holde; så droppes shaman.patch. Syntaks: se PATCHES.md.
+# Shaman har en upstream-grundmodel (469 linjer og en APL ved SIMC_REF 3c1d319), så linjeantal siger intet her.
+# Rettelsen tilføjer bl.a. Lightning Bolt (Elemental/Restoration) og Stormstrike (Enhancement) som handlinger og
+# bruger dem i rotationen.
+has_action engine/class_modules/sc_shaman.cpp lightning_bolt
+has_action engine/class_modules/sc_shaman.cpp stormstrike
+contains engine/class_modules/apl/shaman.cpp "lightning_bolt
+contains engine/class_modules/apl/shaman.cpp "stormstrike"
+# Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor shaman.patch allerede er anvendt).
+not_contains engine/class_modules/sc_shaman.cpp AULA-RETTELSE

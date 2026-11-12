@@ -2,7 +2,7 @@
 
 simc-forever (SimulationCraft til WoW Forever) mangler endnu nogle klasser: modulet findes, men er en tom skal uden
 spells og uden rotation, så simulationen giver 0 DPS (mage, paladin, rogue). For andre klasser har upstream en
-grundmodel med fejl eller store huller (druid, priest, warlock; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
+grundmodel med fejl eller store huller (druid, priest, warlock, shaman; se `docs/superpowers/notes/2026-11-12-simc-audit-pr-klasse.md`).
 Indtil upstream selv retter dem, lægger vi en rettelse (patch) pr. klasse oven på den fastlåste `SIMC_REF` i
 `../Dockerfile`.
 
@@ -51,7 +51,7 @@ Et ugyldigt regulært udtryk eller handlingsnavn giver exit 2 (aldrig «findes i
 rotation), holder betingelserne ikke, rettelsen passer heller ikke, og bygget stopper som en konflikt. Det er
 meningen: så skal et menneske se på, om vores eller upstreams version skal bruges.
 
-**Klasser upstream allerede har en grundmodel af (druid, priest, warlock; senere shaman …):** her holder
+**Klasser upstream allerede har en grundmodel af (druid, priest, warlock, shaman):** her holder
 linjeantal og `add_action` fra dag ét, så den heuristik ville droppe rettelsen med det samme. `.check` skal i stedet
 liste præcis det, rettelsen tilføjer, som konkrete spells/handlinger eller kodestumper, fx
 `has_action engine/class_modules/sc_priest.cpp shoot`. Rettelsen droppes kun, når upstream har **alle** dele. Har
@@ -1189,3 +1189,90 @@ udstyr: Frost-mage 51, Shadow-priest 64, Ret-paladin 84 på level 40.
 Imp'ens andel er 2-5 % (upstreams model). Bane of Agony tikker 14-41 på Affliction 40 (opbygningen virker); Shadow
 Vulnerability har ca. 6 % oppetid på Destruction 20 (5 % crit).
 
+## shaman
+
+**Hvad:** Tilføjelser til upstreams shaman-grundmodel (melee, Earth/Flame Shock, Flametongue/Rockbiter, Strength of
+Earth). Auditten fandt, at Elemental og Restoration blev simuleret som nærkæmpere uden Lightning Bolt (forkert rolle),
+og at Enhancement manglede Stormstrike, Windfury, Flurry og Maelstrom Weapon.
+
+**Valg af rotation:** `variable.caster` = ingen Stormstrike og mindst ét af førsterække-talenterne i Elemental
+(Convection, Concussion) eller Restoration (Improved Healing Wave, Tidal Focus). Casters bruger listen `caster` og
+står på afstand (ingen auto-attack); alle andre, også shamaner uden talenter, er nærkæmpere som hos upstream.
+
+**Rettelsen** (spildata via `simc spell_query`; kilde-id: spell level):
+
+- **Lightning Bolt** (403: 1, 529: 8, 548: 14, 915: 20, 943: 26, 6041: 32, 10391: 38, 10392: 44, 15207: 50, 15208: 56)
+  og **Chain Lightning** (421: 32, 930: 40, 2860: 48, 10605: 56; 6 s nedkøling).
+- **Elemental Focus** (16164): 10 % chance pr. kast af en skade-spell (også et miss) for Clearcasting (16246): næste
+  skade-spell er gratis (wowsims/forever).
+- **Lightning Overload** (408438): 10/20/30 % chance for en kopi af Lightning Bolt/Chain Lightning med halv skade og
+  uden pris. Antagelse: kopien bruger hovedspellens spildata (Forever har egne overload-rækker, fx 408439).
+- **Lightning Mastery** (16166, 180 s): 15 s med −0,5 s på Lightning Bolt og ingen nedkøling på Chain Lightning; varer
+  hele tiden (wowsims/forever).
+- **Water Shield** (Restoration-talent 408510): 3 kugler; et spell-crit giver 2 % af max mana (408511), højst hver
+  3,5 s. Mana ved at blive ramt er ikke med (Patchwerk slår ikke).
+- **Searing Totem** (3599: 10 … 10438: 60): totemets «Attack» (3606, 6350, 6351, 6352, 10435, 10436) hvert 2,2 s i
+  totemets levetid, modelleret som en DoT fra shamanen med angrebets skade og SP-koefficient (0,017) og shamanens
+  hit/crit. Bruges af både casters og nærkæmpere.
+- **Stormstrike** (talent 17364): 150 % normaliseret våbenskade (effekt 1 + 3) og +20 % på næste Lightning Bolt, Chain
+  Lightning eller Earth Shock (effekt 2, én ladning, 12 s).
+- **Flurry** (talent 16256/16257): et nærkamps-crit giver 3 ladninger med +6-30 % angrebshastighed (talentets rank);
+  hvert hvidt slag bruger en.
+- **Windfury Totem** (8512/8515/8516: 32, 10613/10609/10608: 42, 10614/10612/10610: 52): totemet som selv-aura (som
+  upstreams Strength of Earth). Main hand-slag har 20 % chance (0,1 s ICD) for ét ekstra slag med +AP (95/179/246).
+  Wowsims/forever's Enhancement bruger Flametongue Weapon + Windfury Totem; Windfury Weapon er ikke med.
+- **Maelstrom Weapon** (talent 408498/408505): nærkampsslag giver stakke med 20 slag pr. minut-rate efter
+  våbenhastigheden (wowsims/forever: målt 10, fordoblet i patch notes, «TODO»); hver stak −4 % pr. talentpoint på
+  Lightning Bolts kastetid og pris; Lightning Bolt ved 5 stakke.
+- **Rage of the Farseer** (talent 425336, 180 s): +30 % angrebshastighed i 25 s.
+
+**Rotation:**
+
+```
+precombat: variable,name=caster,…; flametongue_weapon / strength_of_earth_totem / windfury_totem (kun nærkamp); water_shield
+default:   run_action_list,name=caster,if=variable.caster
+           auto_attack, strength_of_earth_totem, windfury_totem, rage_of_the_farseer, searing_totem,if=!ticking,
+           flame_shock,if=!ticking|remains<1, stormstrike, lightning_bolt,if=buff.maelstrom_weapon.stack=5,
+           earth_shock,if=dot.flame_shock.ticking|!action.flame_shock.enabled
+caster:    water_shield, mana-fase (variable mana_phase: 1 under 10 % mana, 0 over 40 %), searing_totem,if=!ticking,
+           lightning_mastery, flame_shock (ikke i mana-fasen), chain_lightning,if=mana.pct>80|buff.clearcasting.up,
+           lightning_bolt,if=!variable.mana_phase|buff.clearcasting.up
+```
+
+**Antagelser:**
+
+- **Mana-fasen** (10 %/40 %, som priest) erstatter wand: shamanen har ingen. Målt (500 iterationer, Elemental 20 og
+  40): 5/30, 20/60 og 10/80 ligger inden for −7 % og +2 % af 10/40; uden mana-fase er det 6-8 % lavere. Chain
+  Lightning kun over 80 % mana (eller gratis): ved 40 % (wowsims' level 60-grænse med mana-drikke) bruger den manaen
+  dårligere (Elemental 40: 37,4 mod 40,0).
+- **Elemental og Restoration er mana-begrænsede:** 70-80 % venter er tid, hvor shamanen venter på mana (ingen wand,
+  drikke, Mana Spring eller Mana Tide). En Elemental med 2210 mana og ca. 12 mana/s i regen kan kaste ca. 5.700
+  mana på 300 s. Det er vores bedste bud på en shaman uden mana-hjælp, ikke målt mod spillet.
+- Stormstrike-debuffen, Flurry og Maelstrom ligger på shamanen (ét mål).
+- Ikke med: Mana Spring-, Magma-, Fire Nova- og Flametongue Totem, Windfury Weapon, Lightning Shield (skader kun den,
+  der slår), Elemental Devastation, Call of Flame (rammer kun totemets egen spell), Improved Stormstrike og healing.
+
+**Filer:** `engine/class_modules/sc_shaman.cpp`, `engine/class_modules/apl/shaman.cpp` (mellem `//shaman_apl_start`
+og `//shaman_apl_end`). Kilde: forken `RasmusAaenDev/simc-forever`, branch `aula/shaman` (én commit oven på
+`SIMC_REF`); patchen er `git diff 3c1d319..aula/shaman`. Den passer også uændret på upstream `main` `1b8e01d`.
+
+**Upstream-tjek (`shaman.check`):** upstream opretter selv `lightning_bolt` og `stormstrike` (`has_action`), APL'en
+bruger `"lightning_bolt` og `"stormstrike"`, og `sc_shaman.cpp` har ikke vores markør.
+
+**Model i workeren:** shaman står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs` («Grov model: SimulationCraft's grundmodel
+med Aulas rettelser»). Appen viser en gul advarsel pr. spec (totems, mana, healing; `lib/sim-model-gaps.ts`).
+
+### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42, Patchwerk)
+
+| Profil | Før: DPS | Før: venter | Efter: DPS | Efter: venter | Største kilder (efter) |
+|---|---|---|---|---|---|
+| Elemental 20 | 22,6 (nærkamp) | 84 % | **16,2** | 69 % | Searing Totem 42 %, Lightning Bolt 40 %, Flame Shock 18 % |
+| Elemental 40 | 55,7 (nærkamp) | 87 % | **40,0** | 79 % | Searing Totem 35 %, Lightning Bolt 34 %, Flame Shock 22 %, Chain Lightning 10 % |
+| Enhancement 20 | 21,6 | 80 % | **26,0** | 81 % | melee 31 %, Searing Totem 25 %, Flame Shock 20 %, Flametongue 15 % |
+| Enhancement 40 | 86,8 | 81 % | **113,8** | 76 % | melee 41 %, Stormstrike 24 %, Flametongue 14 %, Windfury 10 % |
+| Restoration 20 | 23,9 (nærkamp) | 85 % | **15,1** | 73 % | Searing Totem 45 %, Lightning Bolt 36 % |
+| Restoration 40 | 56,7 (nærkamp) | 87 % | **36,1** | 74 % | Searing Totem 38 %, Lightning Bolt 34 % |
+
+Elemental og Restoration falder, fordi «før» var en nærkæmper med en 2H-mace (en anden spillestil); «efter» er en
+caster på afstand uden mana-hjælp. Tallet kan ikke sammenlignes med før, kun med andre casters på samme udstyr (mage
+51, priest 64 på level 40). Enhancement 40 stiger 31 % (auditens skøn var 20-40 %).
