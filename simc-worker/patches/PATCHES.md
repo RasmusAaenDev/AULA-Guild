@@ -1186,6 +1186,11 @@ udstyr: Frost-mage 51, Shadow-priest 64, Ret-paladin 84 på level 40.
 | Destruction 20 | 9,2 | 76 % | **24,7** | 0 % | 66 | Shadow Bolt 22 %, Immolate 21 %, Shadowburn 15 % |
 | Destruction 40 | 15,3 | 77 % | **60,4** | 0 % | 64 | Immolate 21 %, Conflagrate 17 %, Incinerate 14 %, Shadowburn 14 % |
 
+Kontrolleret i et lokalt bygget worker-image (Dockerfile, alle syv rettelser, via `/run`, 1000 iterationer): samme tal
+inden for støjen (Affliction 20/40 25,0/62,6, Demonology 22,7/47,2, Destruction 24,6/60,4); `/health` melder
+`warlock applied`, og resultatet har «Grov model: SimulationCraft's grundmodel med Aulas rettelser». DungeonSlice kører
+uden fejl (Affliction 40: 45,6, Destruction 20: 18,1).
+
 Imp'ens andel er 2-5 % (upstreams model). Bane of Agony tikker 14-41 på Affliction 40 (opbygningen virker); Shadow
 Vulnerability har ca. 6 % oppetid på Destruction 20 (5 % crit).
 
@@ -1272,6 +1277,10 @@ med Aulas rettelser»). Appen viser en gul advarsel pr. spec (totems, mana, heal
 | Enhancement 40 | 86,8 | 81 % | **113,8** | 76 % | melee 41 %, Stormstrike 24 %, Flametongue 14 %, Windfury 10 % |
 | Restoration 20 | 23,9 (nærkamp) | 85 % | **15,1** | 73 % | Searing Totem 45 %, Lightning Bolt 36 % |
 | Restoration 40 | 56,7 (nærkamp) | 87 % | **36,1** | 74 % | Searing Totem 38 %, Lightning Bolt 34 % |
+
+Kontrolleret i et lokalt bygget worker-image (via `/run`, 1000 iterationer): Elemental 20/40 16,2/40,2, Enhancement
+26,0/114,1, Restoration 15,1/36,0; `/health` melder `shaman applied`, og resultatet har «Grov model …». DungeonSlice
+kører uden fejl (Elemental 40: 27,5, Enhancement 40: 100,1).
 
 Elemental og Restoration falder, fordi «før» var en nærkæmper med en 2H-mace (en anden spillestil); «efter» er en
 caster på afstand uden mana-hjælp. Tallet kan ikke sammenlignes med før, kun med andre casters på samme udstyr (mage

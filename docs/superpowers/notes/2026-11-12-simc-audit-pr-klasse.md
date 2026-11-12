@@ -458,3 +458,46 @@ Mage, paladin og rogue er uændrede (Frost 40: 51,2, Ret 40: 83,9, Assassination
 under 40 venter stadig ca. 60 %: den har ingen wand, går tom for mana og slår så med staven. Feral har stadig ingen
 kat-rotation (upstream bygger den). Priest-tallene hviler på antagelsen om wand-fasen (10 %/40 %); se PATCHES.md.
 
+
+## 13. Opfølgning: warlock og shaman (trin 3 og 5 i rækkefølgen)
+
+Brugeren bad om «de næste»: warlock, derefter shaman.
+
+1. **Warlock** (`warlock.patch`, fork-branch `aula/warlock`): Life Tap, wand (Shoot), Bane of Agony med opbygning,
+   Siphon Life, Shadowburn, Conflagrate, Incinerate, Wrack og Improved Shadow Bolt; rotationen vælger efter talenter,
+   så de tre specs nu kan skelnes. Pets ud over Imp er ikke med (for stort).
+2. **Shaman** (`shaman.patch`, fork-branch `aula/shaman`): Elemental/Restoration bliver casters (Lightning Bolt, Chain
+   Lightning, Flame Shock, Searing Totem, Elemental Focus, Lightning Overload, Lightning Mastery, Water Shield) med en
+   mana-fase i stedet for wand; Enhancement får Stormstrike, Flurry, Windfury Totem, Maelstrom Weapon, Rage of the
+   Farseer og Searing Totem.
+3. **Advarslen i appen:** warlock og shaman får «Grov model: SimulationCraft's grundmodel med Aulas rettelser»; den
+   røde advarsel falder væk og erstattes af en gul pr. spec med det, der stadig mangler (warlock: pets, Drain Life,
+   Life Tap uden livsomkostning; shaman: totems, mana-hjælp, healing).
+
+**Før/efter** (samme profiler og indstillinger som §1 og §12; «efter» målt natively med alle syv rettelser, 1000
+iterationer, seed 42, Patchwerk; kontrolleret i et lokalt bygget worker-image, se PATCHES.md):
+
+| Klasse | Spec | DPS L20 før → efter | DPS L40 før → efter | Venter L20 før → efter | Venter L40 før → efter |
+|---|---|---|---|---|---|
+| Warlock | Affliction | 9,9 → **25,1** | 16,8 → **62,5** | 77 % → 0 % | 78 % → 0 % |
+| Warlock | Demonology | 9,4 → **22,7** | 14,8 → **47,3** | 74 % → 0 % | 75 % → 0 % |
+| Warlock | Destruction | 9,2 → **24,7** | 15,3 → **60,4** | 76 % → 0 % | 77 % → 0 % |
+| Shaman | Elemental Combat | 22,6 → **16,2** | 55,7 → **40,0** | 84 % → 69 % | 87 % → 79 % |
+| Shaman | Enhancement | 21,6 → **26,0** | 86,8 → **113,8** | 80 % → 81 % | 81 % → 76 % |
+| Shaman | Restoration | 23,9 → **15,1** | 56,7 → **36,1** | 85 % → 73 % | 87 % → 74 % |
+
+- **Warlock:** 2,5-3,7× højere og 0 % venter, fordi Life Tap giver mana uden at koste liv (simc's spillerliv er
+  uendeligt, dvs. en healer er antaget). Det er den største antagelse; solo uden healer er tallet for højt.
+  Affliction 40 og Destruction 40 (62,5/60,4) ligger nu mellem Frost-mage (51) og Shadow-priest (64); Demonology
+  (47,3) er lavest, fordi den kun har Imp.
+- **Shaman Elemental/Restoration** falder, fordi «før» var den forkerte spillestil (nærkamp med en 2H-mace). «Efter»
+  er en caster på afstand, og den er mana-begrænset: 70-80 % venter er tid uden mana (ingen wand, drikke, Mana Spring
+  eller Mana Tide). Searing Totem er 35-45 % af skaden.
+- **Shaman Enhancement** stiger 20-31 % (auditens skøn var 20-40 %).
+- Mage, paladin, rogue, druid og priest er uændrede (Frost 40: 51,2, Ret 40: 83,6, Assassination 40: 103,2, Shadow
+  40: 64,3, Balance 20: 12,9).
+
+**Næste trin** (fra §10, uændret rækkefølge): rogue Combat/Subtlety og paladin Holy i vores egne filer (lille-mellem),
+derefter warrior og hunter, når PR #59 og hunter-aktiviteten upstream har afklaret sig. For warlock og shaman er de
+oplagte udvidelser pets (Voidwalker/Succubus/Felhunter og en imp-tabel over level 10), Drain Life som alternativ til
+Life Tap uden healer, og Mana Spring/Magma Totem.
