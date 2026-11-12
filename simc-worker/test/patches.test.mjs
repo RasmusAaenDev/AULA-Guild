@@ -26,9 +26,11 @@ const ROGUE_APL = 'engine/class_modules/apl/rogue.cpp';
 const ROGUE_HPP = 'engine/class_modules/apl/rogue.hpp';
 const DRUID = 'engine/class_modules/sc_druid.cpp';
 const ENUMS = 'engine/dbc/data_enums.hh';
+const PRIEST = 'engine/class_modules/sc_priest.cpp';
+const PRIEST_APL = 'engine/class_modules/apl/priest.cpp';
 // apply.sh går rettelserne igennem via globben *.patch, dvs. alfabetisk efter klasse.
-const CLASSES = ['druid', 'mage', 'paladin', 'rogue'];
-const ALL_APPLIED = 'druid applied\nmage applied\npaladin applied\nrogue applied\n';
+const CLASSES = ['druid', 'mage', 'paladin', 'priest', 'rogue'];
+const ALL_APPLIED = 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue applied\n';
 
 const tmp = (p) => mkdtempSync(path.join(tmpdir(), p));
 function fakeSimc() {
@@ -70,6 +72,7 @@ test('alle rettelser rører hver sine filer (ingen afhængighed mellem rettelser
   assert.deepEqual([...touched('paladin.patch')].sort(), [PALADIN_HPP, PALADIN_APL, PALADIN].sort());
   assert.deepEqual([...touched('rogue.patch')].sort(), [ROGUE_HPP, ROGUE_APL, ROGUE].sort());
   assert.deepEqual([...touched('druid.patch')].sort(), [DRUID, ENUMS].sort());
+  assert.deepEqual([...touched('priest.patch')].sort(), [PRIEST_APL, PRIEST].sort());
 });
 
 test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () => {
@@ -102,6 +105,12 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(r.out, /druid: rettelse anvendt/);
     assert.match(read(src, ENUMS), /SX_ALLOW_WHILE_NOT_SHAPESHIFTED\s+= 83u,/);
     assert.match(read(src, DRUID), /flags\( spell_attribute::SX_ALLOW_WHILE_NOT_SHAPESHIFTED \) \)\s*\n\s*form_mask \|= CASTER_FORM;/);
+    // priest: wand (Shoot) og wand-fase ved lav mana, Holy Fire uden Mind Flay
+    assert.match(r.out, /priest: rettelse anvendt/);
+    assert.match(read(src, PRIEST), /AULA-RETTELSE/);
+    assert.match(read(src, PRIEST), /if \( name == "shoot" \)\s*\n\s*return new shoot_t/);
+    assert.match(read(src, PRIEST), /player->find_spell\( 5019 \)/);
+    assert.match(read(src, PRIEST_APL), /wand_phase,op=set,value=1,if=mana\.pct<10[\s\S]*wand_phase,op=set,value=0,if=mana\.pct>40[\s\S]*add_action\( "shoot,if=variable\.wand_phase" \)[\s\S]*add_action\( "holy_fire,if=!ticking&!talent\.mind_flay\.enabled" \)[\s\S]*add_action\( "smite" \)\s*;\s*\n\s*default_->add_action\( "shoot" \);/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl. Druid-rettelsen er i upstream-stil uden
     // markør og kan ikke skelnes fra upstreams egen rettelse: den melder DROP (se PATCHES.md).
@@ -111,6 +120,7 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     assert.match(again.out, /mage: allerede anvendt/);
     assert.match(again.out, /paladin: allerede anvendt/);
     assert.match(again.out, /rogue: allerede anvendt/);
+    assert.match(again.out, /priest: allerede anvendt/);
     assert.equal(readFileSync(out, 'utf8'), ALL_APPLIED.replace('druid applied', 'druid dropped-upstream'));
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
@@ -125,7 +135,7 @@ test('(b) upstream har selv implementeret mage: rettelsen droppes uden fejl', ()
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR mage — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage dropped-upstream\npaladin applied\nrogue applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage dropped-upstream\npaladin applied\npriest applied\nrogue applied\n');
     assert.equal(read(src, MAGE), impl); // upstreams fil er urørt
     assert.match(read(src, PALADIN), /AULA-RETTELSE/); // paladin-rettelsen påvirkes ikke
     assert.match(read(src, ROGUE), /AULA-RETTELSE/); // rogue anvendes uafhængigt af mage
@@ -177,7 +187,7 @@ test('(b-rogue) upstream har selv implementeret rogue: rogue.patch droppes, mage
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR rogue — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin applied\nrogue dropped-upstream\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin applied\npriest applied\nrogue dropped-upstream\n');
     assert.equal(read(src, ROGUE), impl);
     assert.match(read(src, MAGE), /AULA-RETTELSE/);
     assert.match(read(src, PALADIN), /AULA-RETTELSE/);
@@ -260,6 +270,7 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     let r = run(CHECK_UPSTREAM, [clean], env);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^druid: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^priest: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^mage: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
     assert.match(r.out, /^rogue: OK \(kan anvendes\)$/m);
@@ -318,6 +329,14 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^druid: DROP \(upstream har den nu\)$/m);
 
+    // Upstream får selv wand og Holy Fire i priest (uden vores markør): priest droppes.
+    writeFileSync(path.join(repo, PRIEST), read(repo, PRIEST).replace('  if ( name == "smite" )', '  if ( name == "shoot" )\n    return new wand_t( this, options_str );\n  if ( name == "smite" )'));
+    writeFileSync(path.join(repo, PRIEST_APL), read(repo, PRIEST_APL).replace('  default_->add_action( "smite" );', '  default_->add_action( "holy_fire" );\n  default_->add_action( "smite" );\n  default_->add_action( "shoot" );'));
+    git('commit', '-q', '-am', 'upstream har priest-wand');
+    r = run(CHECK_UPSTREAM, ['main'], env);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /^priest: DROP \(upstream har den nu\)$/m);
+
     assert.equal(run(CHECK_UPSTREAM, ['findes-ikke'], env).code, 2);
   } finally { rmSync(repo, { recursive: true, force: true }); }
 });
@@ -365,11 +384,12 @@ test('(a) paladin.patch anvendes på ren upstream: Ret-model med seals, Judgemen
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });
 
-test('alle rettelser kan anvendes i vilkårlig rækkefølge med samme resultat (alle permutationer)', () => {
-  const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP, DRUID, ENUMS];
-  const perms = (xs) => (xs.length <= 1 ? [xs] : xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map((p) => [x, ...p])));
-  const orders = perms(CLASSES);
-  assert.equal(orders.length, 24);
+test('alle rettelser kan anvendes i vilkårlig rækkefølge med samme resultat (rotationer frem og tilbage)', () => {
+  const files = [MAGE, MAGE_APL, MAGE_HPP, PALADIN, PALADIN_APL, PALADIN_HPP, ROGUE, ROGUE_APL, ROGUE_HPP, DRUID, ENUMS, PRIEST, PRIEST_APL];
+  // Alle rotationer frem og tilbage (hver klasse først og sidst mindst én gang); alle 5! = 120 tager for lang tid.
+  const rot = CLASSES.map((_, i) => [...CLASSES.slice(i), ...CLASSES.slice(0, i)]);
+  const orders = [...rot, ...rot.map((o) => [...o].reverse())];
+  assert.equal(orders.length, 10);
   const results = [];
   for (const order of orders) {
     const src = fakeSimc();
@@ -403,7 +423,7 @@ test('(b) upstream har selv implementeret paladin: paladin droppes, mage og rogu
     assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
     assert.match(r.out, /mage: rettelse anvendt/);
     assert.match(r.out, /rogue: rettelse anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin dropped-upstream\nrogue applied\n');
+    assert.equal(readFileSync(out, 'utf8'), 'druid applied\nmage applied\npaladin dropped-upstream\npriest applied\nrogue applied\n');
     assert.equal(read(src, PALADIN), impl);
     assert.match(read(src, ROGUE), /AULA-RETTELSE/);
     assert.match(run(APPLY, ['--dry-run', src]).out, /^paladin: DROP \(upstream har den nu\)$/m);
@@ -534,5 +554,33 @@ test('druid: kun enum-værdien upstream (uden brug i druid_action_t) er ikke «f
     const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
     assert.equal(r.code, 1);
     assert.match(r.out, /^druid: KONFLIKT \(skal flettes: .*data_enums\.hh/m);
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+// --- priest ----------------------------------------------------------------------------------------------------
+
+test('priest.check holder IKKE på ren upstream (grundmodel med 946 linjer og APL): rettelsen anvendes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('priest');
+  try {
+    assert.ok(read(src, PRIEST).split('\n').length > 900);
+    assert.match(read(src, PRIEST_APL), /add_action\( "smite" \)/); // upstream har en APL
+    assert.doesNotMatch(read(src, PRIEST), /name == "shoot"/);
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /priest: rettelse anvendt/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'priest applied\n');
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('priest: upstream med Shoot, men uden Holy Fire i APL\'en, er ikke «færdig» -> rettelsen skal flettes', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('priest');
+  try {
+    // Upstream lægger Shoot sidst i create_action (hvor vores rettelse også gør).
+    writeFileSync(path.join(src, PRIEST), read(src, PRIEST).replace('    return new shadowform_t( this, options_str );\n', '    return new shadowform_t( this, options_str );\n  if ( name == "shoot" )\n    return new wand_t( this, options_str );\n'));
+    const r = run(APPLY, ['--dry-run', src], { PATCH_DIR: pdir });
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^priest: KONFLIKT \(skal flettes: .*sc_priest\.cpp/m);
   } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
 });

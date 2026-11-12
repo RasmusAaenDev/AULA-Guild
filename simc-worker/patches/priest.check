@@ -1,0 +1,9 @@
+# Har upstream (simc-forever) selv det, priest.patch tilføjer? Tjekkes på den RENE upstream-kilde, før rettelsen anvendes.
+# Alle betingelser skal holde; så droppes priest.patch. Syntaks: se PATCHES.md.
+# Priest har en upstream-grundmodel (946 linjer og en APL ved SIMC_REF 3c1d319), så linjeantal siger intet her.
+# Rettelsen tilføjer: wand-handlingen Shoot, Shoot i rotationen (wand-fase ved lav mana) og Holy Fire i rotationen.
+has_action engine/class_modules/sc_priest.cpp shoot
+contains engine/class_modules/apl/priest.cpp "shoot
+contains engine/class_modules/apl/priest.cpp "holy_fire
+# Vores egen rettelse tæller ikke som upstream (fx en arbejdskopi hvor priest.patch allerede er anvendt).
+not_contains engine/class_modules/sc_priest.cpp AULA-RETTELSE

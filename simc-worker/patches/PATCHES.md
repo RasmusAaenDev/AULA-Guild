@@ -1018,3 +1018,74 @@ level-tilpasset, se auditten §11). Kun til sammenligning før/efter og mellem k
 På upstream `main` `1b8e01d` (med kat-ændringerne): Balance 20 7,0 → 14,1, Feral 20 4,3 → 8,6, Restoration 40
 14,9 → 29,3 (samme profiler, samme indstillinger).
 
+## priest
+
+**Hvad:** Tilføjelser til upstreams priest-grundmodel (PR #33): wand (Shoot) og mana-styring i rotationen. Auditten
+fandt, at Discipline/Holy var tomme for mana efter ca. 30 s og derefter stod stille (76-81 % venter), og at Shadow på
+lavt level heller ikke havde noget at lave uden mana. Årsagen er to ting:
+
+1. **Ingen wand.** Upstream har ingen Shoot-handling (TODO i koden: «Apply to the wand auto attack once
+   implemented»). Det er det, en priest laver det meste af kampen på lave level.
+2. **Ingen mana-bevidsthed.** Rotationen kaster, så snart der er mana til én Smite. Hver spell nulstiller
+   femsekundsreglen, så spirit-regenerationen næsten aldrig kommer i gang: priesten «drypper» én Smite hvert
+   tiende sekund og venter resten af tiden (24 Smites på 300 s i auditten).
+
+**Rettelsen:**
+
+- `shoot_t` (Shoot, 5019) med samme model som mage-rettelsen (se «mage» ovenfor): wandens våbenskade fra
+  ranged-pladsen, spell-tabellen (hit/crit), ingen rustning, wandens hastighed (uhastet), ingen mana. Kun klar med
+  en wand i ranged-pladsen. **Wand Specialization** (som upstream allerede fjernede fra de passive effekter) lægges
+  på Shoot, som i mage-rettelsen.
+- Rotationen (fælles for alle specs, som upstream):
+  - `variable,name=wand_phase,op=set,value=1,if=mana.pct<10` og `…value=0,if=mana.pct>40`, derefter
+    `shoot,if=variable.wand_phase`. Under 10 % mana skydes der med wand, til manaen er over 40 % igen. Uden spells
+    løber femsekundsreglen ud, og spirit-regenerationen kører fuldt (simcs formel; samme forbehold som for mage).
+  - `holy_fire,if=!ticking&!talent.mind_flay.enabled` før Mind Flay/Smite: Holy Fire er implementeret upstream, men
+    stod ikke i rotationen. Kun uden Mind Flay-talentet (Discipline/Holy), fordi Shadow har Mind Flay og Shadowform.
+  - `shoot` sidst, når intet andet er klar.
+- Markøren `AULA-RETTELSE` står i en kommentar øverst i `sc_priest.cpp` og i APL'en.
+
+**Antagelser:**
+
+- **Tærsklerne 10 % / 40 %** er vores valg. Målt (500 iterationer) giver alle varianter fra 5/30 til 30/90 mellem
+  −10 % og +3 % i forhold til 10/40, og alle er 10-20 % bedre end kun at bruge Shoot som sidste udvej. 10/40 ligger i
+  midten og svarer til det, leveling-guides beskriver (DoTs, derefter wand, og spells igen, når manaen er der).
+- Shoot-skolen er spildataens (Physical) i rapporten, medmindre profilen angiver wandens skole; ingen rustning.
+  Wand Specialization i spildataen gælder alle skoler.
+- Ingen mana-drikke, Inner Fire, Power Infusion eller Spirit Tap (død-baseret).
+- Holy Fire uden Mind Flay er en tommelfingerregel for «ikke Shadow»; en Discipline/Holy med Mind Flay-talentet
+  bruger Mind Flay i stedet.
+
+**Filer:** `engine/class_modules/sc_priest.cpp` (`shoot_t`, `create_action`, kommentar ved Wand Specialization),
+`engine/class_modules/apl/priest.cpp` (rotationen mellem `//priest_apl_start` og `//priest_apl_end`). Kilde: forken
+`RasmusAaenDev/simc-forever`, branch `aula/priest` (én commit oven på `SIMC_REF`); patchen er
+`git diff 3c1d319..aula/priest`. Den passer også uændret på upstream `main` `1b8e01d`.
+
+**Upstream-tjek (`priest.check`):** upstream opretter selv handlingen `shoot` (`has_action`), APL'en bruger `"shoot`
+og `"holy_fire`, og `sc_priest.cpp` har ikke vores markør. Linjeantal og `add_action` bruges ikke: upstream har allerede
+946 linjer og en APL. Har upstream kun Shoot (uden Holy Fire i APL'en), holder tjekket ikke, og rettelsen giver en
+konflikt (testet), så et menneske må flette.
+
+**Model i workeren:** priest står i `FIX_ON_UPSTREAM` i `../patchinfo.mjs`: «Grov model: SimulationCraft's grundmodel
+med Aulas rettelser». Appen viser ikke længere den røde «mangler vigtige evner»-advarsel for priest.
+
+### Målt (SIMC_REF 3c1d319 + alle rettelser, native bygning, 1000 iterationer, seed 42, Patchwerk)
+
+Auditens syntetiske profiler (udstyr fra fixtures; level 20 bruger level 5-10-udstyr, wand 279896; level 40 bruger
+level 30-40-udstyr, wand 7001). Til sammenligning: mage (Frost) på samme udstyr 48 DPS på level 40, hvor wanden er
+32 % af skaden.
+
+| Profil | Før: DPS | Før: venter | Efter: DPS | Efter: venter | Shoot (andel af skaden) | Smite / Holy Fire / Mind Flay |
+|---|---|---|---|---|---|---|
+| Discipline 20 | 7,2 | 68 % | **25,2** | 0 % | 144 skud | 4 / 2 / – |
+| Discipline 40 | 15,0 | 76 % | **47,1** | 0 % | 171 skud (56 %) | 2 / 1 / – |
+| Holy 20 | 7,1 | 68 % | **21,7** | 0 % | 144 skud | 4 / 2 / – |
+| Holy 40 | 12,1 | 81 % | **39,5** | 0 % | 173 skud | 4 / 1 / – |
+| Shadow Magic 20 | 9,9 | 56 % | **22,3** | 0 % | 141 skud | – / – / 6 |
+| Shadow Magic 40 | 42,9 | 49 % | **64,3** | 0 % | 131 skud (25 %) | – / – / 18 |
+
+Håndtjek af Shoot: Shadow 40 og mage Frost 40 (samme wand 7001, ingen Wand Specialization) rammer begge for 44;
+Discipline 40 med Wand Specialization 2 (+25 % i spildataen) rammer for 54 (44 × 1,25 = 55 før afrunding af
+gennemsnittet). Discipline 40 er nu på niveau med Frost-magen (47 mod 48); Shadow 40 ligger over (64), fordi Shadowform
+og DoTs bærer, og wanden fylder hullerne.
+
