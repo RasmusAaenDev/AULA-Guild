@@ -222,3 +222,190 @@ ikke og bruger hverken manadrik eller manasten; i spillet ville de give mere man
 Regression (samme seed og indstillinger, gammelt image `aula-simc:main` med den forrige mage.patch mod det nye):
 hunter-11, warrior-11, shaman-20, warlock-10 og warlock-25 giver bit-for-bit samme DPS i Patchwerk og
 DungeonSlice. Rettelsen rører kun de tre mage-filer.
+
+## paladin
+
+**Hvad:** Grov basismodel for Forever-paladin, Retribution, efter warrior-modulets nærkampsskabelon
+(`warrior_melee_t`/`warrior_auto_attack_t`) og mage-rettelsens opbygning (`parse_player_effects_t`, `spell_ranks_t`,
+`parse_all_passive_talents()`). Mana som primær ressource, auto-attack med våbnet i main hand, seals som buffs (én ad
+gangen), Judgement, Holy Strike, Hammer of Wrath og Consecration. Holy og Protection er ikke modelleret: en Holy- eller
+Prot-paladin (fx guildens level 39) kører samme rotation med Seal of Righteousness, fordi Seal of Command er et talent.
+
+**Filer:** `engine/class_modules/sc_paladin.cpp` (modulet), `engine/class_modules/apl/paladin.cpp` (rotationen mellem
+`//paladin_apl_start` og `//paladin_apl_end`), `engine/class_modules/apl/paladin.hpp` (erklæring af
+`paladin_apl::paladin`). Rettelsen rører ingen af mage-rettelsens filer, så de to kan anvendes uafhængigt og i vilkårlig
+rækkefølge (testet i `test/patches.test.mjs`).
+
+**Upstream-tjek (`paladin.check`):** `sc_paladin.cpp` har flere end 150 linjer, `apl/paladin.cpp` indeholder
+`add_action`, og `sc_paladin.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er
+`sc_paladin.cpp` 52 linjer og APL'en tom (0 DPS); med rettelsen er modulet 656 linjer.
+
+### Spells (fra spildata; afvigelser står under «Antagelser»)
+
+Id'er og levels er slået op i `engine/dbc/generated/sc_spell_data.inc` og `SpellDataDump/paladin.txt` og kontrolleret med
+`simc spell_query=spell.id=<id>`. Ranken vælges efter spillerens level med `find_rank()`.
+
+| Spell | Ranks (id: level) | Spildata |
+|---|---|---|
+| Seal of Righteousness | 21084:1, 20287:10, 20288:18, 20289:26, 20290:34, 20291:42, 20292:50, 20293:58 | 30 s, mana og GCD 1,5 s; Judgement-spell 20187, 20280-20286 |
+| Seal of Command (talent) | 20375:20, 20915:30, 20918:40, 20919:50, 20920:60 | proc 20424: *Weapon Damage%* 70 %, SP-koefficient 0,29, Holy; ICD 1 s; Judgement-spell 20467, 20963-20966 |
+| Judgement | 20271:4 | 6 % base mana, 10 s nedkøling; «Unleash the energy of a Seal … **Does not consume the Seal**» |
+| Holy Strike | 679:6, 678:12, 1866:20, 680:28, 2495:36, 5569:44, 10332:52, 10333:60 | *Normalized Weapon Damage* (flad værdi, SP 0,429) + *Weapon Damage%* 25-39 %, Holy, 10 s |
+| Hammer of Wrath | 24275:44, 24274:52, 24239:60 | School Damage, SP 0,429, 1 s cast, 6 s nedkøling, kun mål med ≤ 20 % liv |
+| Consecration | 26573:20, 20116:30, 20922:40, 20923:50, 20924:60 | 8 s, et tick pr. sekund; tick-skaden er 1280345-1280349 (effekt 1 til alle, effekt 2 til de første 4) |
+
+Mekanik i modellen:
+
+- **Én seal ad gangen:** at kaste en seal fjerner den anden. Seals reagerer kun på hvide slag (spildata: «Proc Flags:
+  White Melee»), ikke på Holy Strike.
+- **Judgement** koster sin egen mana, forbruger ikke seglet og giver skaden fra den aktive seals judgement-spell. Uden en
+  seal er Judgement aldrig klar.
+- **Seal of Command-proc** er et gult nærkampsslag (spildata: Spell Type Melee) med 70 % af våbenslaget (våben + AP) plus
+  0,29 × spell power, Holy-skade (rustning gælder ikke). Højst ét proc pr. sekund (ICD fra spildata).
+- **Judgement of Command** er *School Damage* med «Always Hit» og den halve skade (se nedenfor). **Judgement of
+  Righteousness** er spildataens *School Damage* (s1 + 0,429 × SP).
+- **Holy Strike** regnes af simcs fælles kode som (flad værdi + normaliseret våbenslag) × Weapon Damage% + 0,429 × SP. Den
+  flade værdi ganges altså med procenten; beskrivelsen («$m2% weapon damage plus an additional $s1») kan også læses, så
+  den lægges til bagefter (det giver ca. 12 skade mere pr. Holy Strike på level 39).
+- **Hammer of Wrath** og **Consecration** som spildataen siger; Consecration-ticks antages at ramme alle mål med begge
+  effekter (simulationerne har aldrig over 4 mål).
+- **Angrebskraft:** classic-formlen for paladin (samme som warrior-modulet): 3 × level − 20 + 2 × styrke. Crit, hit og
+  regen kommer fra simcs egne Forever-værdier; ingen egne basiskonstanter.
+
+### Antagelser (står ikke entydigt i spildata)
+
+- **Seal of Command: 7 procs pr. minut.** Spildataen siger «Proc Chance 100 %» og 1 s ICD, men beskrivelsen siger «a
+  chance», og simc eksporterer ikke Blizzards PPM-tabel (`_rppm` er 0 for alle paladin-spells; Seal of Wisdom, Seal of
+  Light og Omen of Clarity står også til 100 %). 100 % ville give 70 % ekstra våbenskade på hvert slag. Vi bruger 7 PPM
+  (chance = 7 × våbnets hastighed ÷ 60, dvs. 39,7 % med et 3,4 s-våben), som er classic-værdien, og som Icy Veins'
+  Forever-guide også angiver («you can expect about 7»). Druid-modulet gør det samme for Omen of Clarity (2 PPM).
+  Konstanten `SEAL_OF_COMMAND_PPM` i `sc_paladin.cpp`.
+- **Judgement of Command: halv skade.** Seal of Commands beskrivelse: «instantly causing $/2;20467s1 Holy damage, $20467s1
+  if the target is stunned or incapacitated». Bosser er ikke bedøvede, så skaden halveres. Vi halverer hele beløbet
+  (også spell power-delen); beskrivelsen siger kun noget om grundværdien.
+- **Seal of Righteousness pr. slag.** Beskrivelsen: «an additional ${($s3/87+$<1h>)*$<mult>} to
+  ${($s3/25+$<2h>)*$<mult>} Holy damage. Slower weapons cause more Holy damage per swing», med $1h = 0,0765 × SP,
+  $2h = 0,12 × SP og $mult = 1 + Improved Seals. Vi bruger den nedre grænse for enhåndsvåben og den øvre for
+  tohåndsvåben; afhængigheden af våbnets hastighed inden for hver gruppe kendes ikke og er ikke med. Kan ikke crit'e og
+  kan ikke misse (ekstra skade på et slag, der allerede har ramt).
+- **Hammer of Wrath** (Spell Type Ranged) bruger angrebstabellen uden dodge/parry.
+
+### Talenter
+
+`init_spells` kalder `parse_all_passive_talents()` efter `parse_all_class_passives()` som mage, warrior og de andre.
+
+**Med nu (gratis via spildata):** Improved Seals (+3-15 % på Seal of Command-proc og Judgements), Conviction (+2-6 %
+crit), Precision (+1-3 % hit), Benediction (−2-10 % mana på instant-spells), Improved Judgement (−1/2 s nedkøling på
+Judgement), Divine Strength (+2-10 % styrke), Sacred Arbiter (+20 % Holy Strike), Champion of the Light (spell power af
+Intellect, −cast på Hammer of Wrath), Holy Conduit, Divine Intellect, Divine Precision og de defensive/heal-talenter (de
+parses, men påvirker ikke DPS).
+
+**Håndskrevet:**
+- **Two-Handed Weapon Specialization** (20111) er *Modify Damage Done%* med kravet «Requires weapon: Two-handed …», som
+  simc ikke ser. Den afregistreres (som mage-rettelsens Wand Specialization) og lægges kun på Physical og Holy, når main
+  hand er et tohåndsvåben (+2/4/6 %).
+- **Vengeance** (20049 → buff 20050): efter et ikke-periodisk kritisk slag +1/2/3 % Physical og Holy pr. stak (talentets
+  kurve), op til 5 stakke, 30 s (spildata). Consecration-ticks og Seal of Righteousness tæller ikke.
+- **Sanctified Judgement** (1311074): ved Judgement 33/66/100 % chance for at få 20/40/60 % af den dømte seals
+  manapris igen.
+- **Seal of Command** (talent) låser Seal of Command-ranks op (`spell_ranks_t` med talentet som betingelse).
+
+**Mangler:** **Unsealed Wrath** (31-point-talenten: gemmer seglet som stakke og udløser dem ved seal-skift; spildataen har
+stakbuffen «Echo of …», men mekanikken er server-side og ikke beskrevet nok til at modellere), seal-twisting generelt
+(Method skifter til Seal of Righteousness ved 3 stakke), **Seal of the Crusader** og **Judgement of the Crusader**
+(åbningen), **Exorcism** (kun Undead/Demon), **Holy Shock** (Holy-talent, Methods alternative opbygning), Reckoning,
+Vindication (debuff på målet), Repentance, auraer og blessings, Libram/Twist of Light, Improved Hammer of Wrath og
+Retribution-sætbonusser. **Benediction på Judgement:** Judgements pris er en procent af base mana, og simcs passiv-parser
+ændrer kun den faste pris; Judgement koster derfor de fulde 6 % (51 i stedet for 46 mana på level 39).
+
+### Rotation (Retribution, standard)
+
+```
+auto_attack
+seal_of_command,if=buff.seal_of_command.remains<1.5        # hold Seal of Command oppe (forny i sidste GCD)
+seal_of_righteousness,if=!buff.seal_of_command.up&buff.seal_of_righteousness.remains<1.5
+                                                           # kun når Seal of Command ikke er lært / ikke er råd til den
+judgement                                                  # på nedkøling (forbruger ikke seglet)
+hammer_of_wrath,if=target.health.pct<20                    # level 44+
+holy_strike                                                # på nedkøling
+consecration,if=active_enemies>1&mana.pct>50               # aldrig på ét mål
+```
+
+Kilder, læst 2026-11-12:
+
+- **Method** (method.gg/wow-forever/class-guides/retribution-paladin/rotation-and-playstyle): **læst.** «Apply Seal Of
+  Command and keep your seals active», «Judgement off cooldown», «Hammer Of Wrath when 20% and below», «Holy Strike off
+  cooldown», Exorcism på Undead/Demon, seal-skift med Unsealed Wrath, «Consecration unless Mana is an issue». Vores
+  rækkefølge er Methods.
+- **Warcraft Tavern** (warcrafttavern.com/forever/guides/retribution-paladin): **læst** (beta, level 30-opbygning).
+  Åbning med Seal of the Crusader + Judgement of the Crusader, derefter Seal of Command, Judgement og Holy Strike på
+  nedkøling og Consecration opretholdt. Ingen PPM.
+- **Mobalytics** (mobalytics.gg/wow-forever/classes/retribution-paladin-guide): **ikke læst** (HTTP 403).
+- **Icy Veins** (Forever Retribution-rotation og stat-prioritet): **ikke læst** (403); kun søgeresuméet, som er kilden til
+  «about 7» procs pr. minut for Seal of Command.
+- **wowtbc.gg** (404) og **wowforever.be** (forsiden har kun nyhedsoverskrifter, ingen Ret-guide): **ikke brugt.**
+
+Uenigheder og valg: Warcraft Tavern opretholder Consecration og åbner med Seal of the Crusader; Method bruger
+Consecration «unless Mana is an issue» og nævner ikke Crusader. Opgaven og Method udelader Consecration på ét mål, så
+den bruges kun mod flere fjender, og kun med over halv mana (**vores tærskel**, ingen kilde nævner et tal; i
+DungeonSlice løb manaen ellers næsten tør). Åbningen med Seal of the Crusader er en **kendt udeladelse**. Der er ingen
+egen mana-grænse på Judgement og Holy Strike: målt rækker manaen hele kampen (se nedenfor), og er den væk, sker der kun
+auto-attack, indtil der er mana igen.
+
+### Målt og håndregnet (SIMC_REF 3c1d319, 1000 iterationer, seed 42)
+
+Profiler: `test/fixtures/paladin-39-holy.simc` (guildens level 39-paladin med fiktivt navn: Holy 22 / Protection 8,
+Mograine's Might 7723 i main hand, ingen Seal of Command) og `paladin-39-ret.simc` (samme udstyr og level med en
+konstrueret Ret-opbygning på 30 point, kodet med appens `encodeTalents`: Benediction 5, Improved Judgement 2, Conviction 3,
+Seal of Command, Sacred Arbiter, Two-Handed Weapon Specialization 3, Vengeance 3, Sanctified Judgement 3, Improved Seals
+5, Divine Strength 4). Workerens indstillinger (threads=1, max_time=300 for Patchwerk, vary_combat_length=0,2), lokalt
+bygget simc (`make -C engine release`).
+
+| Profil | Stil | DPS før → efter | Auto-attack | Seal-proc | Judgement | Holy Strike | Consecration |
+|---|---|---|---|---|---|---|---|
+| Ret 39 | Patchwerk | 0 → **104,3** | 48,9 | 20,9 (Command) | 19,6 | 14,2 | – |
+| Ret 39 | DungeonSlice | 0 → **93,5** | 39,7 | 18,1 | 17,7 | 12,9 | 4,0 |
+| Ret 39 uden `talents=` | Patchwerk | 0 → **68,1** | 38,4 | 9,7 (Righteousness) | 10,1 | 9,4 | – |
+| Ret 39 uden `talents=` | DungeonSlice | 0 → **60,5** | 31,2 | 8,7 | 9,7 | 8,5 | 1,6 |
+| Holy 39 (guildens) | Patchwerk | 0 → **73,3** | 39,6 | 11,6 (Righteousness) | 11,9 | 9,7 | – |
+| Holy 39 (guildens) | DungeonSlice | 0 → **69,0** | 32,3 | 10,4 | 11,6 | 8,8 | 5,2 |
+
+(Resten op til totalen er et trinket-proc.) Levels 1, 3, 12, 20, 50 og 60 med samme udstyr kører også uden fejl og med
+de forventede ranks: kun Seal of Righteousness under level 4, Judgement fra 4, Holy Strike fra 6, Seal of Command fra
+20 og Hammer of Wrath fra 44 (7 gange pr. kamp på level 50).
+
+Håndregning for Ret 39, Patchwerk (simc-loggen i parentes; AP 335 = 307 egen + raid-buffs, AP-multiplikator 1,09 fra
+raid-buffs, melee-crit 15,9 %, mål level 42):
+
+- **Våben:** Mograine's Might (ilvl 44, kvalitet 3, tohånds-mace, 3,4 s): simc giver 105-159, gennemsnit 132.
+- **Auto-attack:** 1,09 × 132 + 3,4 × 335 ÷ 14 = 143,88 + 81,36 = **225,24** (log: total=225.237) × 1,06 (2H-spec 3)
+  = 238,75; rustning 2262 mod level 39: 2262 ÷ (2262 + 400 + 85 × 39) = 37,85 % → **148,4** (log: 148,396). Pr. slag
+  med simcs udfald (69,8 % hit, 15,7 % crit, resten miss/dodge/parry): 148,4 × (0,698 + 2 × 0,157) = 150,2; ×
+  gennemsnitlig Vengeance 1,115 (målt: gennemsnitligt hit 165,4 ÷ 148,4) × 87,7 slag ÷ 300 s = **49,0 DPS** (simc 48,9).
+- **Seal of Command:** chance 7 × 3,4 ÷ 60 = **39,7 %** pr. ramt hvidt slag; 75,0 ramte slag → **29,8 procs** (simc
+  29,8). Skade 225,24 × 0,70 × 1,15 (Improved Seals 5) × 1,06 = **192,19** (log: 192,195; crit 384,4). Pr. proc med
+  udfald og Vengeance: 192,19 × (21,5 + 2 × 3,9) ÷ 29,8 × 1,115 = 210,7 → 29,8 × 210,7 ÷ 300 = **20,9 DPS** (simc 20,9).
+- **Judgement of Command** rank 2 (20963, level 30-38): 153 + 6,1 × 8 = 201,8 → 202 × 0,5 × 1,15 × 1,06 = **123,12**
+  (log: 123,119). Nedkøling 10 − 2 (Improved Judgement 2) = 8 s → højst 37,5 pr. 300 s (simc 36,9). Med crit og
+  Vengeance: 123,12 × 1,165 × 1,115 × 36,9 ÷ 300 = **19,7 DPS** (simc 19,6).
+- **Holy Strike** rank 5 (2495, level 36): flad 31 + 1 × 3 = 34; normaliseret våbenslag 143,88 + 3,3 × 335 ÷ 14 =
+  222,84; (222,84 + 34) × 0,39 = 100,17 × 1,20 (Sacred Arbiter) × 1,06 = **127,42** (log: 127,415). 10 s → 30,4
+  slag; med udfald og Vengeance 127,42 × 0,987 × 1,115 × 30,4 ÷ 300 = **14,2 DPS** (simc 14,2).
+- **I alt** 49,0 + 20,9 + 19,7 + 14,2 + 0,7 (trinket) = 104,5 (simc 104,3).
+- **Mana:** pulje 1895 + regen 924 + Sanctified Judgement 2193 = 5012; brugt 36,9 × 51 (Judgement, 6 % af base mana
+  850) + 30,4 × 14,4 (Holy Strike 16 − 10 % Benediction) + 10,7 × 99 (Seal of Command 110 − 10 %) = 1882 + 438 + 1059 =
+  **3379** (simc 3382) → 1630 tilbage ved kampens slut (simc 1629). Manaen er aldrig en begrænsning i Patchwerk; spirit-
+  regen er 0,25 × 50 + 0,125 × 55 = 19,4/s (log: 4,84 pr. 0,25 s) uden for femsekundsreglen. I DungeonSlice ender den
+  på 806 (Consecration med halv-mana-grænsen).
+- **Seal of Righteousness** (Holy 39, rank 5 20290, level 34-40): s3 = 785 + 37 × 5 = 970 ÷ 25 = 38,8 → 39 × 1,15
+  (Improved Seals) = **44,85** pr. ramt slag (log: 44,85; simc gennemsnit 44,9). Judgement of Righteousness 20283: 98 ×
+  1,15 = **112,7** (log: 112,7).
+
+Rimelighed: med samme udstyr giver Seal of Command 192 × 39,7 % ≈ 76 pr. slag mod Seal of Righteousness' 45, og
+Ret-talenterne løfter fra 68 til 104 DPS (+53 %). Tallene afhænger meget af PPM-antagelsen (Seal of Command er 20 % af
+skaden) og af simcs angrebstabel for Forever (der forekom ingen glancing blows i kørslerne; de 14,5 % miss/dodge/parry er
+simcs egne værdier mod et mål tre levels over).
+
+Regression (samme seed og indstillinger, binær med kun mage.patch mod binær med mage.patch + paladin.patch):
+hunter-11, warrior-11, shaman-20, warlock-10, mage-20 og mage-35 giver bit-for-bit samme DPS i Patchwerk og
+DungeonSlice. Rettelsen rører kun de tre paladin-filer.

@@ -29,3 +29,10 @@ test('modelInfo: kun klasser med anvendt rettelse får aula-rettelse', () => {
   assert.equal(modelInfo(p, 'hunter'), null);
   assert.equal(modelInfo([], 'mage'), null);
 });
+test('modelInfo: paladin med anvendt rettelse markeres som «Grov model» (flere rettelser i samme fil)', () => {
+  const p = parsePatchesApplied('mage applied\npaladin applied\n');
+  assert.equal(modelInfo(p, 'paladin').model, 'aula-rettelse');
+  assert.match(modelInfo(p, 'paladin').warning, /^Grov model/);
+  assert.equal(modelInfo(p, 'mage').model, 'aula-rettelse');
+  assert.equal(modelInfo(parsePatchesApplied('mage applied\npaladin dropped-upstream\n'), 'paladin'), null);
+});

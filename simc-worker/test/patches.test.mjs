@@ -1,5 +1,6 @@
 // Tests af rettelses-mekanismen (patches/apply.sh og check-upstream.sh) mod en lille falsk simc-mappe,
-// uden at bygge simc. fixtures/simc-upstream/ er de rene upstream-filer ved SIMC_REF, som mage.patch er lavet mod.
+// uden at bygge simc. fixtures/simc-upstream/ er de rene upstream-filer ved SIMC_REF, som rettelserne (mage.patch,
+// paladin.patch) er lavet mod.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync, execFileSync } from 'node:child_process';
@@ -16,6 +17,10 @@ const APPLY = path.join(patchDir, 'apply.sh');
 const CHECK_UPSTREAM = path.join(patchDir, 'check-upstream.sh');
 const MAGE = 'engine/class_modules/sc_mage.cpp';
 const MAGE_APL = 'engine/class_modules/apl/mage.cpp';
+const PALADIN = 'engine/class_modules/sc_paladin.cpp';
+const PALADIN_APL = 'engine/class_modules/apl/paladin.cpp';
+const PALADIN_HPP = 'engine/class_modules/apl/paladin.hpp';
+const BOTH_APPLIED = 'mage applied\npaladin applied\n';
 
 const tmp = (p) => mkdtempSync(path.join(tmpdir(), p));
 function fakeSimc() {
@@ -29,14 +34,24 @@ function run(script, args, env = {}) {
 }
 const read = (dir, f) => readFileSync(path.join(dir, f), 'utf8');
 
-test('fixturen er præcis den upstream-version mage.patch er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
-  const patch = readFileSync(path.join(patchDir, 'mage.patch'), 'utf8');
-  const files = [...patch.matchAll(/^diff --git a\/(\S+) b\/\S+\nindex ([0-9a-f]+)\.\./gm)];
-  assert.ok(files.length >= 3);
-  for (const [, file, blob] of files) {
-    const actual = execFileSync('git', ['hash-object', path.join(upstream, file)], { encoding: 'utf8' }).trim();
-    assert.ok(actual.startsWith(blob), `${file}: fixture ${actual.slice(0, 7)} ≠ patchens ${blob}`);
+test('fixturen er præcis den upstream-version rettelserne er lavet mod (ellers: opdatér fixtures/simc-upstream)', () => {
+  for (const cls of ['mage', 'paladin']) {
+    const patch = readFileSync(path.join(patchDir, `${cls}.patch`), 'utf8');
+    const files = [...patch.matchAll(/^diff --git a\/(\S+) b\/\S+\nindex ([0-9a-f]+)\.\./gm)];
+    assert.ok(files.length >= 3, cls);
+    for (const [, file, blob] of files) {
+      const actual = execFileSync('git', ['hash-object', path.join(upstream, file)], { encoding: 'utf8' }).trim();
+      assert.ok(actual.startsWith(blob), `${cls} ${file}: fixture ${actual.slice(0, 7)} ≠ patchens ${blob}`);
+    }
   }
+});
+
+test('mage.patch og paladin.patch rører hver sine filer (ingen afhængighed mellem rettelserne)', () => {
+  const touched = (cls) => new Set([...readFileSync(path.join(patchDir, `${cls}.patch`), 'utf8').matchAll(/^\+\+\+ b\/(\S+)$/gm)].map((m) => m[1]));
+  const mage = touched('mage');
+  const paladin = touched('paladin');
+  assert.deepEqual([...paladin].sort(), [PALADIN_HPP, PALADIN_APL, PALADIN].sort());
+  for (const f of paladin) assert.equal(mage.has(f), false, f);
 });
 
 test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () => {
@@ -55,12 +70,14 @@ test('(a) rettelsen anvendes på ren upstream og skriver PATCHES_APPLIED', () =>
     // Talenternes passive effekter fra spildata; Wand Specialization kun på Shoot.
     assert.match(read(src, MAGE), /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
     assert.match(read(src, MAGE), /deregister_passive_spell\( talent\.wand_specialization \)/);
-    assert.equal(readFileSync(out, 'utf8'), 'mage applied\n');
+    assert.match(r.out, /paladin: rettelse anvendt/);
+    assert.equal(readFileSync(out, 'utf8'), BOTH_APPLIED);
     // Igen på samme mappe: genkendes som allerede anvendt, ingen fejl.
     const again = run(APPLY, [src, out]);
     assert.equal(again.code, 0, again.err);
     assert.match(again.out, /mage: allerede anvendt/);
-    assert.equal(readFileSync(out, 'utf8'), 'mage applied\n');
+    assert.match(again.out, /paladin: allerede anvendt/);
+    assert.equal(readFileSync(out, 'utf8'), BOTH_APPLIED);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
 
@@ -74,8 +91,9 @@ test('(b) upstream har selv implementeret mage: rettelsen droppes uden fejl', ()
     const r = run(APPLY, [src, out]);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /UPSTREAM HAR mage — vores rettelse droppes/);
-    assert.equal(readFileSync(out, 'utf8'), 'mage dropped-upstream\n');
+    assert.equal(readFileSync(out, 'utf8'), 'mage dropped-upstream\npaladin applied\n');
     assert.equal(read(src, MAGE), impl); // upstreams fil er urørt
+    assert.match(read(src, PALADIN), /AULA-RETTELSE/); // paladin-rettelsen påvirkes ikke
     assert.match(run(APPLY, ['--dry-run', src]).out, /^mage: DROP \(upstream har den nu\)$/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
@@ -106,6 +124,7 @@ test('(c) konflikt: bygget fejler tydeligt, intet anvendes og ingen resultatfil 
     assert.equal(existsSync(out), false);
     assert.equal(read(src, MAGE), changed);
     assert.doesNotMatch(read(src, MAGE_APL), /add_action/);
+    assert.doesNotMatch(read(src, PALADIN), /AULA-RETTELSE/); // heller ikke paladin (alt eller intet)
     const dry = run(APPLY, ['--dry-run', src]);
     assert.equal(dry.code, 1);
     assert.match(dry.out, /^mage: KONFLIKT \(skal flettes: .*sc_mage\.cpp/m);
@@ -161,12 +180,14 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     let r = run(CHECK_UPSTREAM, [clean], env);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^mage: OK \(kan anvendes\)$/m);
+    assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), read(repo, MAGE).replace('namespace {', 'namespace { // ændret'));
     git('commit', '-q', '-am', 'konflikt');
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 1);
     assert.match(r.out, /^mage: KONFLIKT \(skal flettes: /m);
+    assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
 
     writeFileSync(path.join(repo, MAGE), `${'// upstream\n'.repeat(300)}`);
     writeFileSync(path.join(repo, MAGE_APL), 'x->add_action( "frostbolt" );\n');
@@ -174,15 +195,124 @@ test('check-upstream.sh rapporterer OK / DROP / KONFLIKT mod et (lokalt) simc-re
     r = run(CHECK_UPSTREAM, ['main'], env);
     assert.equal(r.code, 0, r.err);
     assert.match(r.out, /^mage: DROP \(upstream har den nu\)$/m);
+    assert.match(r.out, /^paladin: OK \(kan anvendes\)$/m);
+
+    writeFileSync(path.join(repo, PALADIN), read(repo, PALADIN).replace('namespace paladin', 'namespace paladin // ændret'));
+    git('commit', '-q', '-am', 'paladin-konflikt');
+    r = run(CHECK_UPSTREAM, ['main'], env);
+    assert.equal(r.code, 1);
+    assert.match(r.out, /^paladin: KONFLIKT \(skal flettes: /m);
+
+    writeFileSync(path.join(repo, PALADIN), `${'// upstream\n'.repeat(300)}`);
+    writeFileSync(path.join(repo, PALADIN_APL), 'x->add_action( "judgement" );\n');
+    git('commit', '-q', '-am', 'upstream har paladin');
+    r = run(CHECK_UPSTREAM, ['main'], env);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /^paladin: DROP \(upstream har den nu\)$/m);
 
     assert.equal(run(CHECK_UPSTREAM, ['findes-ikke'], env).code, 2);
   } finally { rmSync(repo, { recursive: true, force: true }); }
 });
 
-test('mage-profilerne i fixtures (fiktive navne) godkendes af saneringen', () => {
-  for (const f of ['mage-35.simc', 'mage-20.simc']) {
+test('mage- og paladin-profilerne i fixtures (fiktive navne) godkendes af saneringen', () => {
+  for (const [f, cls] of [['mage-35.simc', 'mage'], ['mage-20.simc', 'mage'], ['paladin-39-holy.simc', 'paladin'], ['paladin-39-ret.simc', 'paladin']]) {
     const r = sanitizeProfile(readFileSync(path.join(here, 'fixtures', f), 'utf8'));
     assert.equal(r.ok, true, r.error);
-    assert.equal(r.className, 'mage');
+    assert.equal(r.className, cls);
   }
+});
+
+// --- paladin ---------------------------------------------------------------------------------------------------
+
+/** Kun de navngivne rettelser i en midlertidig PATCH_DIR. */
+function patchDirWith(...classes) {
+  const pdir = tmp('patches-');
+  for (const c of classes) {
+    cpSync(path.join(patchDir, `${c}.patch`), path.join(pdir, `${c}.patch`));
+    cpSync(path.join(patchDir, `${c}.check`), path.join(pdir, `${c}.check`));
+  }
+  return pdir;
+}
+
+test('(a) paladin.patch anvendes på ren upstream: Ret-model med seals, Judgement og APL', () => {
+  const src = fakeSimc();
+  const pdir = patchDirWith('paladin');
+  try {
+    const r = run(APPLY, [src, path.join(src, 'P')], { PATCH_DIR: pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /paladin: rettelse anvendt/);
+    assert.equal(readFileSync(path.join(src, 'P'), 'utf8'), 'paladin applied\n');
+    const mod = read(src, PALADIN);
+    assert.match(mod, /AULA-RETTELSE/);
+    assert.match(mod, /parse_all_class_passives\(\);\s*\n[\s\S]*parse_all_passive_talents\(\);/);
+    assert.match(mod, /deregister_passive_spell\( talent\.two_handed_weapon_specialization \)/);
+    assert.match(mod, /set_spell\( 20375 \)\.set_attack\( 20467 \)/); // Seal of Command -> Judgement of Command
+    assert.match(mod, /set_spell\( 20271 \)/); // Judgement
+    const apl = read(src, PALADIN_APL);
+    assert.match(apl, /add_action\( "auto_attack" \)[\s\S]*add_action\( "seal_of_command,if=buff\.seal_of_command\.remains<1\.5" \)[\s\S]*add_action\( "judgement" \)[\s\S]*add_action\( "hammer_of_wrath,if=target\.health\.pct<20" \)[\s\S]*add_action\( "holy_strike" \)/);
+    assert.match(apl, /add_action\( "consecration,if=active_enemies>1&mana\.pct>50" \)/);
+    assert.match(read(src, PALADIN_HPP), /void paladin\( player_t\* \);/);
+    assert.doesNotMatch(read(src, MAGE), /AULA-RETTELSE/); // mage-filerne er urørte
+  } finally { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); }
+});
+
+test('mage.patch og paladin.patch kan anvendes i vilkårlig rækkefølge med samme resultat', () => {
+  const files = [MAGE, MAGE_APL, 'engine/class_modules/apl/mage.hpp', PALADIN, PALADIN_APL, PALADIN_HPP];
+  const results = [];
+  for (const order of [['mage', 'paladin'], ['paladin', 'mage']]) {
+    const src = fakeSimc();
+    try {
+      for (const cls of order) {
+        const pdir = patchDirWith(cls);
+        try {
+          const r = run(APPLY, [src], { PATCH_DIR: pdir });
+          assert.equal(r.code, 0, `${order}: ${r.err}`);
+          assert.match(r.out, new RegExp(`${cls}: rettelse anvendt`));
+        } finally { rmSync(pdir, { recursive: true, force: true }); }
+      }
+      results.push(files.map((f) => read(src, f)));
+    } finally { rmSync(src, { recursive: true, force: true }); }
+  }
+  assert.deepEqual(results[0], results[1]);
+  assert.match(results[0][0], /AULA-RETTELSE/);
+  assert.match(results[0][3], /AULA-RETTELSE/);
+});
+
+test('(b) upstream har selv implementeret paladin: paladin droppes, mage anvendes stadig', () => {
+  const src = fakeSimc();
+  const out = path.join(src, 'PATCHES_APPLIED');
+  try {
+    const impl = `// upstream paladin\n${'// linje\n'.repeat(200)}`;
+    writeFileSync(path.join(src, PALADIN), impl);
+    writeFileSync(path.join(src, PALADIN_APL), 'void paladin( player_t* p ) { p->get_action_priority_list( "default" )->add_action( "judgement" ); }\n');
+    const r = run(APPLY, [src, out]);
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /UPSTREAM HAR paladin — vores rettelse droppes/);
+    assert.match(r.out, /mage: rettelse anvendt/);
+    assert.equal(readFileSync(out, 'utf8'), 'mage applied\npaladin dropped-upstream\n');
+    assert.equal(read(src, PALADIN), impl);
+    assert.match(run(APPLY, ['--dry-run', src]).out, /^paladin: DROP \(upstream har den nu\)$/m);
+  } finally { rmSync(src, { recursive: true, force: true }); }
+});
+
+test('(c) konflikt i paladin.patch: bygget fejler, og heller ikke mage anvendes', () => {
+  const src = fakeSimc();
+  const out = path.join(src, 'PATCHES_APPLIED');
+  try {
+    const orig = read(src, PALADIN);
+    const changed = orig.replace('struct paladin_t final : public player_t', 'struct paladin_t final : public player_t // upstream-ændring');
+    assert.notEqual(changed, orig);
+    writeFileSync(path.join(src, PALADIN), changed);
+    const r = run(APPLY, [src, out]);
+    assert.equal(r.code, 1);
+    assert.match(r.err, /FEJL: Aulas rettelse for klassen 'paladin' passer ikke/);
+    assert.doesNotMatch(r.err, /klassen 'mage'/);
+    assert.equal(existsSync(out), false);
+    assert.equal(read(src, PALADIN), changed);
+    assert.doesNotMatch(read(src, MAGE), /AULA-RETTELSE/);
+    const dry = run(APPLY, ['--dry-run', src]);
+    assert.equal(dry.code, 1);
+    assert.match(dry.out, /^mage: OK \(kan anvendes\)$/m);
+    assert.match(dry.out, /^paladin: KONFLIKT \(skal flettes: .*sc_paladin\.cpp/m);
+  } finally { rmSync(src, { recursive: true, force: true }); }
 });
