@@ -44,17 +44,30 @@ describe('modelGap (ren logik)', () => {
     }
     const ele = modelGap({ className: 'shaman', spec: 'Elemental Combat' }, [GROV_FIX]);
     expect(ele).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Shaman (Elemental Combat) fuldt ud' });
-    expect(ele?.missing).toMatch(/Mana Spring/);
+    expect(ele?.missing).toMatch(/Under level 26 \(før Mana Spring Totem\)/);
+    expect(ele?.missing).not.toMatch(/^Mana Spring/);
     expect(modelGap({ className: 'shaman', spec: 'Enhancement' }, [GROV_FIX])?.missing).toMatch(/Windfury Weapon/);
     expect(modelGap({ className: 'shaman', spec: 'Restoration' }, [GROV_FIX])?.missing).toMatch(/healing/);
+    expect(modelGap({ className: 'shaman', spec: 'Restoration' }, [GROV_FIX])?.missing).toMatch(/med Mana Spring og Mana Tide Totem/);
     // Uden rettelsen er det stadig den røde upstream-advarsel.
     expect(modelGap({ className: 'warlock', spec: 'Demonology' }, [])?.kind).toBe('upstream');
   });
   it('specs vores rettelse ikke dækker: delvis advarsel kun sammen med «Grov model»', () => {
     const holy = modelGap({ className: 'paladin', spec: 'Holy' }, [GROV]);
     expect(holy).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Paladin (Holy) fuldt ud' });
-    expect(holy?.missing).toMatch(/Holy Shock/);
-    expect(modelGap({ className: 'rogue', spec: 'Subtlety' }, [GROV])?.missing).toMatch(/Hemorrhage/);
+    // Holy Shock er nu med i rettelsen; advarslen nævner kun, hvordan den bruges.
+    expect(holy?.missing).toMatch(/^healing \(kun skade simuleres\)/);
+    expect(holy?.missing).toMatch(/Holy Shock bruges kun over halv mana/);
+    const prot = modelGap({ className: 'paladin', spec: 'Protection' }, [GROV]);
+    expect(prot?.missing).toMatch(/^Reckoning/);
+    expect(prot?.missing).toMatch(/Shieldsworn/);
+    // Rogue Combat/Subtlety: Backstab, Hemorrhage og Ghostly Strike er nu med; resten står i advarslen.
+    const sub = modelGap({ className: 'rogue', spec: 'Subtlety' }, [GROV]);
+    expect(sub).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Rogue (Subtlety) fuldt ud' });
+    expect(sub?.missing).toMatch(/^Death Mark/);
+    expect(sub?.missing).not.toMatch(/Hemorrhage|Ghostly Strike/);
+    expect(modelGap({ className: 'rogue', spec: 'Combat' }, [GROV])?.missing).toMatch(/^Riposte/);
+    expect(modelGap({ className: 'rogue', spec: 'Combat' }, [GROV])?.missing).not.toMatch(/Hack and Slash/);
     expect(modelGap({ className: 'druid', spec: 'Feral Combat' }, [GROV])?.missing).toMatch(/kat/);
     // Dækket spec, mage og ukendt spec: ingen advarsel.
     expect(modelGap({ className: 'paladin', spec: 'Retribution' }, [GROV])).toBeNull();
@@ -118,7 +131,7 @@ describe('SimCard: advarsel om modellens huller', () => {
   it('paladin Holy med vores rettelse: både «Grov model» og den delvise advarsel', () => {
     const html = render(sim({ className: 'paladin', warnings: [GROV] }), 'Holy');
     expect(html).toContain('sim-gap sim-gap-partial');
-    expect(html).toContain('Holy Shock');
+    expect(html).toContain('Holy Shock bruges kun over halv mana');
     expect(html).toContain('Grov model');
   });
   it('ingen advarsel før resultatet er færdigt', () => {

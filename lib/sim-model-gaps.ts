@@ -32,15 +32,15 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
     '*': { upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock' },
     elemental: {
       upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock',
-      withFix: 'Mana Spring-, Magma- og Fire Nova Totem, mana-drikke og Call of Flame. Når manaen er brugt, venter shamanen på den (ingen wand)',
+      withFix: 'Magma- og Fire Nova Totem, mana-drikke og Call of Flame. Under level 26 (før Mana Spring Totem) og i lange kampe løber manaen tør, og shamanen venter på den (ingen wand)',
     },
     enhancement: {
       upstream: 'Stormstrike, Windfury, Lightning Shield, Maelstrom Weapon og Flurry',
-      withFix: 'Windfury Weapon, Lightning Shield og andre totems end Searing, Strength of Earth og Windfury. Maelstrom Weapons proc-rate er et skøn',
+      withFix: 'Windfury Weapon, Lightning Shield og andre totems end Searing, Strength of Earth, Windfury og Mana Spring. Maelstrom Weapons proc-rate er et skøn',
     },
     restoration: {
       upstream: 'Lightning Bolt og Chain Lightning. Shamanen simuleres som nærkæmper med Flame Shock og Earth Shock',
-      withFix: 'healing (kun skade simuleres), Mana Spring- og Mana Tide Totem. Shamanen simuleres som Elemental uden dens talenter',
+      withFix: 'healing (kun skade simuleres), Healing Stream Totem og mana-drikke. Shamanen simuleres som en Elemental-caster med Mana Spring og Mana Tide Totem',
     },
   },
   druid: {
@@ -74,12 +74,12 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
     },
   },
   paladin: {
-    holy: { withFix: 'Holy Shock. Paladinen simuleres med Retribution-rotationen og Seal of Righteousness' },
-    protection: { withFix: 'Holy Shield og Swift Judgement. Paladinen simuleres med Retribution-rotationen og Seal of Righteousness' },
+    holy: { withFix: 'healing (kun skade simuleres), Exorcism og Consecrated Ground. Holy Shock bruges kun over halv mana, og under level 30 er rotationen Retributions med Seal of Righteousness' },
+    protection: { withFix: 'Reckoning og Holy Shields skade ved blok: målet slår ikke i simuleringen, så Holy Shield giver kun skade via Shieldsworn på Holy Strike. Holy Shield og Consecration på ét mål koster mana' },
   },
   rogue: {
-    combat: { withFix: 'Backstab, Hack and Slash-ekstraslag og Riposte. Rogue simuleres med Assassination-rotationen plus Blade Flurry og Adrenaline Rush' },
-    subtlety: { withFix: 'Hemorrhage, Ghostly Strike, Backstab, Premeditation og Boot Knife. Rogue simuleres med Sinister Strike-rotationen' },
+    combat: { withFix: 'Riposte (målet slår ikke i simuleringen), Expose Armor og Kidney Shot. Backstab antager, at du står bag målet' },
+    subtlety: { withFix: 'Death Mark, Setup og Vanish med ny åbning. Backstab og Ambush antager, at du står bag målet' },
   },
 };
 
