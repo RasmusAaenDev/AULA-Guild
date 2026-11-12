@@ -57,7 +57,7 @@ Filerne ligger allerede i simcs byggelister, så intet andet skal røres.
 
 **Upstream-tjek (`mage.check`):** `sc_mage.cpp` har flere end 150 linjer, `apl/mage.cpp` indeholder `add_action`,
 og `sc_mage.cpp` indeholder ikke vores markør `AULA-RETTELSE`. Ved `SIMC_REF` 3c1d319 er `sc_mage.cpp` 47 linjer og
-APL'en tom; med rettelsen er modulet 343 linjer.
+APL'en tom; med rettelsen er modulet 549 linjer.
 
 ### Spells (alle tal fra spildata, intet opfundet)
 
@@ -72,6 +72,8 @@ Kun spells en mage lærer hos træneren; id'er og levels er slået op i `engine/
 | Arcane Missiles | 5143/7268:8, 5144/7269:16, 5145/7270:24, 8416/8419:32, 8417/8418:40, 10211/10273:48, 10212/10274:56, 25345/25346:56-60 | kanaliseret driver; hvert tick udløser spildataens Arcane Missile. Ranken vælges efter missilets level |
 | Shoot (wand) | 5019:1 | skud med wanden i ranged-pladsen; se nedenfor |
 | Evocation | 12051:20 | kanaliseret 8 s på magen selv, 480 s nedkøling, 1,5 s GCD; se nedenfor |
+| Ice Lance (talent) | 1312002:20, 400640:28, 1240044:34, 1240045:42, 1240046:48, 1240047:56 | kun med talentet; se «Frost-pakken» |
+| Ice Barrier (talent) | 11426:40, 13031:46, 13032:52, 13033:58 | kun med talentet; se «Frost-pakken» |
 
 **Shoot (5019)** ifølge spildataen: «Requires weapon: Wand», «Uses Ranged Slot», «Auto Repeat», Spell Type Magic,
 effekt *Weapon Damage NoSchool* (17), 30 yards, 20 yards/s. Skaden er altså wandens våbenskade, som simc allerede
@@ -104,7 +106,7 @@ item-opslag og en delt nedkøling. Det er ikke enkelt at gøre rigtigt, så `def
 
 Udeladt med vilje:
 
-- **Talent-spells og -procs** (se «Talenter» nedenfor): kun de passive talenter virker.
+- **Talent-spells og -procs** ud over Frost-pakken (se «Talenter» og «Frost-pakken» nedenfor).
 - **Fire Blast 400616-400623** (15 s nedkøling, ingen GCD) findes også i spildataen, men ser ud til at stamme fra en
   rune-/sæsonvariant; vi bruger trænerens Fire Blast (2136-familien).
 - **Kanal-afbrydelse ved skade** (Evocation, «Channel Interrupt: Damage») modelleres ikke; magen tager ingen
@@ -131,13 +133,15 @@ også, men påvirker ikke DPS.
 weapon: Wand», som simc ikke ser: registreret ville den give Frostbolt og alle andre spells +25 %. Den afregistreres
 derfor (`deregister_passive_spell`, samme mønster som priest-modulet) og lægges i stedet kun på Shoot (+13/25 %).
 
-**Mangler stadig (kræver håndskrevet kode):** talent-spells **Ice Lance**, **Arcane Blast**, **Arcane Wrath**,
-**Pyroblast** og Blast Wave (ingen handlinger); procs og tilstande **Fingers of Frost**, **Shatter**, **Frostbite**
-(frossent mål), Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage, Heating Up, Ignite, Improved
-Scorch, Master of Elements, Fire Power; aktive buffs Arcane Power, Presence of Mind, Combustion, Ice Barrier og Cold
-Snap; Arcane Subtlety (aura 123, uden for simcs passivliste). Rotationen vælger stadig ikke efter talenter.
+**Med via håndskrevet kode:** Frost-pakken (Ice Lance, Frostbite/frossent mål, Fingers of Frost, Shatter, Ice
+Barrier); se næste afsnit.
 
-**Målt** (ezzek, level 35 Frost: Wand Spec 2, Improved Frostbolt 5, Precision 2, Ice Shards 5, Frostbite 3, Frost
+**Mangler stadig (kræver håndskrevet kode):** talent-spells **Arcane Blast**, **Arcane Wrath**, **Pyroblast** og
+Blast Wave (ingen handlinger); procs og tilstande Winter's Chill, Arcane Concentration/Clearcasting, Missile Barrage,
+Heating Up, Ignite, Improved Scorch, Master of Elements, Fire Power; aktive buffs Arcane Power, Presence of Mind,
+Combustion og Cold Snap; Arcane Subtlety (aura 123, uden for simcs passivliste).
+
+**Målt før Frost-pakken** (ezzek, level 35 Frost: Wand Spec 2, Improved Frostbolt 5, Precision 2, Ice Shards 5, Frostbite 3, Frost
 Channeling 1, Ice Lance, Ice Block, Shatter 3, Cold Snap, Fingers of Frost 2; samme indstillinger og seed 42 som
 ovenfor): Patchwerk **35,3 → 44,1** DPS (+25 %), DungeonSlice **30,9 → 38,3** (+24 %). Uden `talents=` er tallene
 uændrede (35,3 / 30,9). Alle 53 mage-talenter på én gang (level 60) kører uden fejl.
@@ -155,10 +159,47 @@ uændrede (35,3 / 30,9). Alle 53 mage-talenter på én gang (level 60) kører ud
 Regression: warrior, shaman, warlock, priest og hunter fra guildens armory (med og uden `talents=`) giver
 bit-for-bit samme DPS med den nye og den forrige mage-rettelse.
 
+### Frost-pakken (håndskrevet; alle tal fra spildata, antagelser markeret)
+
+Kun DPS-relevante Frost-talenter. Talenternes rank-værdier læses som `talent->effectN( n )`, som simc allerede har
+overskrevet med talentkurvens værdi for den valgte rank (`player.cpp`, «talent effect overrides»).
+
+- **Frossent mål («frozen»)**: debuff på målet = Frostbite 12494 (Root, 5 s, tooltip «Frozen»). Udløses kun af
+  **Frostbite** (11071: «Gives your Chill effects a 5/10/15 % chance to Freeze the target»). Eneste Chill i modellen er
+  Frostbolts effekt 1 (Decrease Movement Speed), og den lander kun ved hit, så rullet sker i Frostbolts `impact` ved
+  hit/crit (ikke miss).
+- **Fingers of Frost** (400647): effekt 2 = 15 % chance pr. Chill (fast), effekt 1 = antal ladninger (rank 1/2 →
+  1/2). Buffen 400669 varer 15 s og får fulde ladninger ved proc. «Treats your next N spells cast as if the target
+  were Frozen»: hver kastet skadesspell (Frostbolt, Ice Lance, Fire Blast, Fireball, Arcane Missiles-kanalen)
+  bruger én ladning, også når målet allerede er frosset.
+- **Frossen-tjek pr. cast**: afgøres ved `execute`, hvor simc ruller crit og beregner skaden: målet har «frozen»,
+  eller Fingers of Frost er oppe. **Antagelse:** Shoot (wand, auto-repeat) og spells på magen selv er ikke omfattet
+  og bruger ingen ladning; Arcane Missiles' enkelte missiler ser kun ægte frys.
+- **Shatter** (11170): +17/33/50 % crit-chance for alle spells mod frosne mål (talentkurven; effekt 1 er «Dummy»).
+- **Ice Lance** (talent; rank 1 = talentet, højere ranks kræver det, som paladinens Seal of Command): instant, 8 s
+  nedkøling, 1,5 s GCD, effekt 2: **+300 %** skade mod frosne mål. Spildataen har **ingen spell power-koefficient**
+  på skadeeffekten (alle seks ranks), så skaden er kun rankens niveau-skalerede basisværdi; vi opfinder ingen
+  koefficient. Effekt 3 og 4 (Dummy 20 og 5) er ubeskrevne og bruges ikke.
+- **Ice Barrier** (talent): effekt 2 (+5 % direkte Frost-skade, mens skjoldet holder) og, ifølge beskrivelsen,
+  **Frigid Power** 1326891 (+15 % Frost-skade i 60 s) lægges som buffs og læses med `parse_effects` pr. handling
+  (multiplikativt: × 1,05 × 1,15 = 1,2075). **Antagelse:** Frigid Power udløses af Ice Barrier (står kun i
+  beskrivelsen, ikke som trigger-effekt). Absorberingen modelleres ikke; magen tager ingen skade, så skjoldet
+  holder de 60 s.
+
+**Udeladt med begrundelse:** Frost Nova (nærkamps-AoE på 10 yards, «damage may interrupt», bosser var klassisk immune;
+ikke ligetil at gøre rigtigt), Winter's Chill og Improved Cone of Cold (gavner kun Cone of Cold, som ikke er i
+rotationen), Cold Snap (600 s nedkøling; nulstiller kun Ice Lance/Ice Barrier, højst én gang pr. kamp), Arctic
+Reach/Permafrost/Frost Warding/Ice Block (utility). **Icy Veins og Piercing Ice findes ikke** som talenter i
+Forevers `trait_data.inc` (Piercing Ice 11151 findes kun som spell), så der er intet at modellere.
+**Uafklaret:** om Forever-bosser kan fryses. Modellen lader Frostbite fryse alle fjender (også Patchwerk-målet);
+Fingers of Frost virker uanset.
+
 ### Rotation (Frost, standard)
 
 ```
 evocation,if=mana.pct<10   # lav mana og Evocation klar (480 s nedkøling: højst én gang i en kamp på 5 min.)
+ice_barrier,if=!buff.ice_barrier.up                     # kun med talentet
+ice_lance,if=buff.fingers_of_frost.up|debuff.frozen.up  # kun med talentet
 fire_blast                 # på nedkøling, når manaen rækker
 frostbolt                  # spam
 fireball                   # kun før Frostbolt er lært (level 1-3)
@@ -168,8 +209,15 @@ shoot                      # wand, når der ikke er mana til nogen spell
 Begrundelse og kilder (brugerens guides: Icy Veins «WoW Forever Mage/Frost Mage Leveling», Mobalytics' Frost-,
 Fire- og Arcane Mage-guides, Skycoach' Mage-guide):
 
-- **Frostbolt-spam med Fire Blast på nedkøling** er den simple Frost-leveling-rotation fra guiderne; Ice Lance og
-  Fingers of Frost er talenter, der kræver egen kode, og udelades (se «Talenter»).
+- **Frostbolt-spam med Fire Blast på nedkøling** er den simple Frost-leveling-rotation fra guiderne.
+- **Ice Lance på Fingers of Frost eller frossent mål, Ice Barrier oppe hele tiden**: Warcraft Tavern (Forever Frost
+  Mage, læst 12.11.2026: «Maintain … Ice Barrier at all times», «Use Ice Lance when Fingers of Frost procs», «Cast
+  Frostbolt + Ice Lance when Frostbite triggers») og wowtbc.gg (Warcraft Forever Frost Mage: «Maintain Ice Barrier»,
+  «Cast Ice Lance with Fingers of Frost procs», «Cast Frostbolt»). Icy Veins' og Mobalytics' Forever-sider gav 403;
+  kun søgeuddrag (Icy Veins: Ice Lance sammen med næste Frostbolt ved sidste Fingers of Frost-ladning). Uden
+  talenterne er de to linjer aldrig klar, så rotationen er uændret for andre opbygninger.
+- **Begrænsning:** ved lav mana kaster magen Frostbolt (billigere), så snart manaen rækker, og når sjældent de 259+
+  mana til at genkaste Ice Barrier (målt oppetid ca. 40 % i Patchwerk). Pooling af mana er ikke modelleret.
 - **Evocation ved lav mana:** Icy Veins' Forever-guide beskriver Evocation som en 8 s kanal, der giver det meste af
   manaen tilbage. Tærsklen 10 % er **vores antagelse** (ikke et tal fra guiderne): lav nok til at Evocation næsten
   ikke spilder mana (mage 35: 228 + 2160 ≈ puljen på 2289), og høj nok til at den bruges, før magen står tør.
@@ -180,6 +228,41 @@ Fire- og Arcane Mage-guides, Skycoach' Mage-guide):
 - Kilderne kunne ikke hentes maskinelt herfra (Icy Veins og Mobalytics svarer 403); rækkefølgen bygger derfor på
   søgeresuméer og almindelig classic-praksis. Arcane Missiles er implementeret som handling, men er ikke i
   standardrotationen (den kan ikke vælges via workeren, som ikke tillader `actions=`).
+
+### Frost-pakken: målt og håndregnet (SIMC_REF 3c1d319 + alle tre rettelser, native bygning, 1000 iterationer, seed 42, threads=1)
+
+Ezzek (armory 12.11.2026 via `getSimProfile` + `buildSimProfile`, level 35, samme 11 talenter som ovenfor) og en
+konstrueret level 45-Frost (36 point: Imp. Frostbolt 5, Precision 3, Ice Shards 5, Frostbite 3, Frost Channeling 3,
+Ice Lance, Shatter 3, Cold Snap, Fingers of Frost 2, Ice Barrier, Wand Spec 2, Ice Block, Imp. Frost Nova 2, Arctic
+Reach 2, Permafrost 2). DPS før = forrige mage.patch, efter = denne.
+
+| Profil | Patchwerk før → efter | DungeonSlice før → efter |
+|---|---|---|
+| ezzek 35 | 44,07 → **49,42** (+12 %) | 38,31 → **42,71** (+11 %) |
+| ezzek uden `talents=` | 35,30 → 35,30 | 30,94 → 30,94 |
+| Frost 45 | 58,62 → **68,19** | 50,92 → **58,71** |
+| Frost 45 uden Ice Lance og Fingers of Frost | 58,62 → 61,80 | 50,92 → 53,19 |
+
+Håndregning (ezzek, Patchwerk):
+
+- **Ice Lance** rank 3 (1240044, level 34): 45 + 0,5 × (35 − 34) = 45,5 → simc 46 (log: `base=46 s_power=0`);
+  frossen × (1 + 3,00) = **184**; crit × 2,0 (Ice Shards 5) = **368**; mana 70 × 0,95 = **66,5**. Alle Ice Lance-hits
+  i 1000 iterationer er 184/368, dvs. altid frosne.
+- **Shatter 3**: crit mod frosne = 8,79 % + 50 % = **58,8 %**; observeret Ice Lance 3,82 / 6,45 landede = **59,2 %**.
+  Frostbolt-crit stiger fra 8,6 % til 14,3 % (de Frostbolts, der bruger en ladning eller rammer frossent mål).
+- **Proc-rater** (forventet 15 % pr. landet Frostbolt for både Frostbite 3 og Fingers of Frost): 31,57 landede
+  Frostbolts pr. kamp; Fingers of Frost 4,76 udløsninger = **15,1 %**, frozen 4,76 = **15,1 %** (DungeonSlice:
+  15,1 % / 15,1 %). Fingers of Frost udløber ubrugt 0,56 gange pr. kamp (Ice Lance på nedkøling).
+- **Ice Lance-skade**: 6,45 landede × (184 × 0,41 + 368 × 0,59) ≈ **1890** pr. kamp (simc 1889).
+- **Ice Barrier** (Frost 45): Frostbolt 10179 263,09 → × 1,2075 = **317,69** (log), Ice Lance 81 × 4 × 1,2075 =
+  **391,2** (log 391,23).
+- **Log-tjek** (8 enkeltkørsler, Patchwerk/DungeonSlice, seed 42/1/2/3): 68 Ice Lance-casts, ingen uden Fingers of
+  Frost eller frossent mål; alle 51 med Fingers of Frost brugte en ladning.
+
+Regression (samme indstillinger, binær med forrige mod ny mage.patch): hunter-11, warrior-11, shaman-20, warlock-10,
+warlock-25, paladin-39 (holy og ret), rogue-33, mage-20, mage-35, ezzek uden talenter og en level 45-mage med kun
+passive Frost-talenter giver bit-for-bit samme DPS i Patchwerk og DungeonSlice. `check-upstream.sh` giver OK mod
+3c1d319 og main (1b8e01d); de tre rettelser kan anvendes i alle seks rækkefølger.
 
 ### Målt og håndregnet (SIMC_REF 3c1d319, 1000 iterationer, seed 42)
 
