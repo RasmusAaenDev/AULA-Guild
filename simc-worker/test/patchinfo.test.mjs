@@ -1,0 +1,31 @@
+// Workerens læsning af /opt/simc/PATCHES_APPLIED (skrevet af patches/apply.sh) og markering af resultater.
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { readPatchesApplied, parsePatchesApplied, modelInfo } from '../patchinfo.mjs';
+
+test('parsePatchesApplied læser kendte klasser og statusser, ignorerer resten', () => {
+  assert.deepEqual(parsePatchesApplied('mage applied\nwarrior dropped-upstream\n\nfoo applied\nmage bogus\n# x\n'), [
+    { class: 'mage', status: 'applied' },
+    { class: 'warrior', status: 'dropped-upstream' },
+  ]);
+  assert.deepEqual(parsePatchesApplied(''), []);
+});
+test('readPatchesApplied: manglende fil giver []', async () => {
+  assert.deepEqual(await readPatchesApplied('/findes/ikke/PATCHES_APPLIED'), []);
+  const d = mkdtempSync(path.join(tmpdir(), 'pa-'));
+  try {
+    writeFileSync(path.join(d, 'P'), 'mage applied\n');
+    assert.deepEqual(await readPatchesApplied(path.join(d, 'P')), [{ class: 'mage', status: 'applied' }]);
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+test('modelInfo: kun klasser med anvendt rettelse får aula-rettelse', () => {
+  const p = [{ class: 'mage', status: 'applied' }, { class: 'warrior', status: 'dropped-upstream' }];
+  assert.equal(modelInfo(p, 'mage').model, 'aula-rettelse');
+  assert.match(modelInfo(p, 'mage').warning, /^Grov model/);
+  assert.equal(modelInfo(p, 'warrior'), null);
+  assert.equal(modelInfo(p, 'hunter'), null);
+  assert.equal(modelInfo([], 'mage'), null);
+});

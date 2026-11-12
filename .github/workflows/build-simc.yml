@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "simc-worker/**"
+      - "simc-worker/patches/**"
       - ".github/workflows/build-simc.yml"
   workflow_dispatch:
 
@@ -21,6 +22,17 @@ jobs:
         with:
           node-version: 22
       - run: node --test "simc-worker/test/*.test.mjs"
+      # Kun information: passer Aulas rettelser (simc-worker/patches) stadig på nyeste simc-forever main?
+      - name: Rettelser mod simc-forever main
+        continue-on-error: true
+        run: |
+          {
+            echo "## Aulas simc-rettelser mod simc-forever main"
+            echo '```'
+            sh simc-worker/patches/check-upstream.sh main 2>&1 || echo "(check-upstream.sh exit $?)"
+            echo '```'
+            echo "OK = kan anvendes, DROP = upstream har klassen nu (slet rettelsen), KONFLIKT = skal flettes. Se simc-worker/README.md «Opdatér simc»."
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:

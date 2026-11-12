@@ -10,8 +10,11 @@ import {
   validateRunOptions, equippedFromLines, buildProfilesets, profilesetIterations,
   parseProfilesetResults, buildItemResults, badProfilesetIndex,
 } from './profilesets.mjs';
+import { readPatchesApplied, modelInfo } from './patchinfo.mjs';
 
 const SIMC_BIN = process.env.SIMC_BIN || '/opt/simc/simc';
+// Skrevet af patches/apply.sh i bygget: hvilke klasser kører på Aulas rettelse. Env kun til tests.
+const PATCHES_FILE = process.env.SIMC_PATCHES_FILE || '/opt/simc/PATCHES_APPLIED';
 const PORT = Number(process.env.PORT) || 8080;
 const MAX_BODY = 64 * 1024;
 const MAX_PENDING = 10;
@@ -23,6 +26,7 @@ const LOG_FLUSH_MS = Number(process.env.SIMC_LOG_FLUSH_MS) || 500;
 const QUEUE_NOTE_MS = Number(process.env.SIMC_QUEUE_NOTE_MS) || 1000;
 
 let simcVersion = 'ukendt';
+let patches = [];
 let shuttingDown = false;
 
 function detectVersion() {
@@ -156,9 +160,13 @@ async function simulate(lines, className, iterations, fightStyles, bagItems, ctx
     const good = results.find((x) => !x.error);
     if (!good) return { fail: anyTimeout ? 'Simulationen tog for lang tid og blev afbrudt.' : null };
     const p = firstPlayer;
+    const aula = modelInfo(patches, className);
+    if (aula) warnings.unshift(aula.warning);
     const result = {
       apiVersion: 2,
       simc: simcVersion,
+      patches,
+      ...(aula ? { model: aula.model } : {}),
       player: { name: str(p.name), className, spec: str(p.specialization), level: num(p.level), race: str(p.race) },
       iterations,
       dps: good.dps,
@@ -208,7 +216,7 @@ const server = http.createServer(async (req, res) => {
   try {
     const url = (req.url || '').split('?')[0];
     if (req.method === 'GET' && url === '/health') {
-      return send(res, 200, { ok: true, simc: simcVersion });
+      return send(res, 200, { ok: true, simc: simcVersion, patches });
     }
     if (req.method === 'POST' && url === '/run') {
       if (shuttingDown) return send(res, 503, { ok: false, error: 'Tjenesten lukker ned.' });
@@ -299,4 +307,5 @@ process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
 simcVersion = await detectVersion();
+patches = await readPatchesApplied(PATCHES_FILE);
 server.listen(PORT, '0.0.0.0', () => console.error(`simc-worker lytter på ${PORT} (simc: ${simcVersion})`));

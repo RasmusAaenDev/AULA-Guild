@@ -9,6 +9,7 @@ import { sanitizeProfile } from '../sanitize.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const hunter = readFileSync(path.join(here, 'fixtures/hunter-11.simc'), 'utf8');
+const PATCHES = [{ class: 'mage', status: 'applied' }, { class: 'warrior', status: 'dropped-upstream' }];
 const P = 'hunter="Abe"\nlevel=11\n';
 
 test('godkender eksempelprofilen', () => {
@@ -64,7 +65,8 @@ before(async () => {
   const port = 18000 + Math.floor(Math.random() * 1000);
   base = `http://127.0.0.1:${port}`;
   proc = spawn(process.execPath, [path.join(here, '../server.mjs')], {
-    env: { ...process.env, PORT: String(port), SIMC_BIN: path.join(here, 'fake-simc.sh'), FAKE_SIMC_PID: pidFile },
+    env: { ...process.env, PORT: String(port), SIMC_BIN: path.join(here, 'fake-simc.sh'), FAKE_SIMC_PID: pidFile,
+      SIMC_PATCHES_FILE: path.join(here, 'fixtures/patches-applied.txt') },
     stdio: ['ignore', 'ignore', 'pipe'],
   });
   for (let i = 0; i < 50; i++) {
@@ -80,7 +82,7 @@ const post = (body, headers = { 'content-type': 'application/json' }) =>
 
 test('GET /health', async () => {
   const j = await (await fetch(`${base}/health`)).json();
-  assert.deepEqual(j, { ok: true, simc: 'SimulationCraft FAKE-1' });
+  assert.deepEqual(j, { ok: true, simc: 'SimulationCraft FAKE-1', patches: PATCHES });
 });
 test('POST /run ok', async () => {
   const res = await post({ input: hunter, iterations: 500 });
@@ -93,6 +95,22 @@ test('POST /run ok', async () => {
   assert.equal(j.result.player.className, 'hunter');
   assert.equal(j.result.player.spec, 'Beast Mastery');
   assert.equal(j.result.scaleFactors, null);
+  assert.equal(j.warnings, undefined);
+  assert.deepEqual(j.result.patches, PATCHES);
+  assert.equal('model' in j.result, false);
+});
+test('klasse med Aulas rettelse får model og dansk advarsel', async () => {
+  const j = await (await post({ input: 'mage="Testmage"\nlevel=35\nrace=gnome\n', iterations: 500 })).json();
+  assert.equal(j.ok, true);
+  assert.equal(j.result.player.className, 'mage');
+  assert.equal(j.result.model, 'aula-rettelse');
+  assert.deepEqual(j.result.patches, PATCHES);
+  assert.deepEqual(j.warnings, ['Grov model: klassen er implementeret af Aula, ikke af SimulationCraft. Tallene er vejledende.']);
+});
+test('klasse hvis rettelse er droppet (upstream har den) er uændret', async () => {
+  const j = await (await post({ input: 'warrior="A"\nlevel=36\n', iterations: 500 })).json();
+  assert.equal(j.ok, true);
+  assert.equal('model' in j.result, false);
   assert.equal(j.warnings, undefined);
 });
 test('DPS 0 giver advarsel', async () => {

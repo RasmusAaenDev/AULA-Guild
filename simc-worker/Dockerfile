@@ -7,6 +7,10 @@ RUN apk --no-cache add g++ make curl-dev git
 WORKDIR /src
 RUN git clone --filter=blob:none https://github.com/simulationcraft/simc-forever.git . \
  && git checkout "$SIMC_REF"
+# Aulas rettelser (patches/, se PATCHES.md): anvendes, droppes hvis upstream selv har klassen,
+# og en rettelse der ikke passer stopper bygget. Resultatet følger med til runtime-imaget.
+COPY patches/ /patches/
+RUN sh /patches/apply.sh /src /opt/simc/PATCHES_APPLIED && cat /opt/simc/PATCHES_APPLIED
 RUN make -C engine release -j"$JOBS" OPTS="-O2" && strip engine/simc
 RUN test -x /src/engine/simc
 
@@ -15,7 +19,8 @@ FROM node:22-alpine
 RUN apk --no-cache add libcurl libgcc libstdc++ \
  && adduser -D -u 10001 worker
 COPY --from=build /src/engine/simc /opt/simc/simc
-COPY server.mjs sanitize.mjs profilesets.mjs logsanitize.mjs /app/
+COPY --from=build /opt/simc/PATCHES_APPLIED /opt/simc/PATCHES_APPLIED
+COPY server.mjs sanitize.mjs profilesets.mjs logsanitize.mjs patchinfo.mjs /app/
 ENV NODE_ENV=production
 USER 10001
 WORKDIR /app
