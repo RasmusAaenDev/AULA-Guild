@@ -252,6 +252,9 @@ describe('GET /api/chat for egne kanaler', () => {
     expect(JSON.stringify(body)).not.toContain('discord');
     const off = await (await get({ isMember: true, id: String(b.id), isOfficer: true }, `egen-${c.id}`)).json();
     expect(off.messages.every((m: { canDelete: boolean }) => m.canDelete)).toBe(true);
+    // «mine» følger forfatteren, ikke sletteretten (officeren ejer ikke a's besked).
+    expect(body.messages.map((m: { mine: boolean }) => m.mine)).toEqual([true, false]);
+    expect(off.messages.map((m: { mine: boolean }) => m.mine)).toEqual([false, true]);
     expect((await get({ isMember: true, id: '1' }, 'egen-abc')).status).toBe(404);
     expect((await get({ isMember: true, id: '1' }, 'egen-99999999999')).status).toBe(404);
     await deleteChannel(db, act(a), c.id);

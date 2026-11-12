@@ -52,3 +52,67 @@ export function pickChannel(channels: ChatChannel[], requested: unknown, default
   const id = typeof requested === 'string' ? requested : Array.isArray(requested) && typeof requested[0] === 'string' ? requested[0] : '';
   return channels.find((c) => c.id === id) ?? channels.find((c) => c.id === defaultId) ?? channels[0] ?? null;
 }
+
+/** Kun `HH.mm` i dansk tid (dagen står i dagsskillelinjen); tom tekst for ugyldigt tidspunkt. */
+export function formatClock(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const m = dk(d);
+  return `${m.hour}.${m.minute}`;
+}
+
+/** Den danske kalenderdag som `ÅÅÅÅ-MM-DD`; null for ugyldigt tidspunkt. */
+export function dayKey(iso: string | Date): string | null {
+  const d = typeof iso === 'string' ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return null;
+  const m = dk(d);
+  return `${m.year}-${m.month}-${m.day}`;
+}
+
+const longDay = new Intl.DateTimeFormat('da-DK', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' });
+const longDayYear = new Intl.DateTimeFormat('da-DK', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+/** «I dag», «I går» eller fx «Mandag den 9. november» (med år, hvis det ikke er i år). */
+export function dayLabel(key: string, now: Date): string {
+  const today = dayKey(now)!;
+  if (key === today) return 'I dag';
+  const [y, mo, d] = key.split('-').map(Number);
+  const [ty, tm, td] = today.split('-').map(Number);
+  const yesterday = new Date(Date.UTC(ty, tm - 1, td - 1)).toISOString().slice(0, 10);
+  if (key === yesterday) return 'I går';
+  const date = new Date(Date.UTC(y, mo - 1, d, 12));
+  const s = (y === ty ? longDay : longDayYear).format(date);
+  return s.charAt(0).toLocaleUpperCase('da-DK') + s.slice(1);
+}
+
+/** Beskeder fra samme afsender inden for så mange minutter vises som én gruppe (avatar og navn kun på den første). */
+export const GROUP_GAP_MS = 5 * 60_000;
+
+export type ThreadItem<T> =
+  | { kind: 'day'; key: string; label: string }
+  | { kind: 'msg'; msg: T; first: boolean };
+
+/**
+ * Lægger dagsskillelinjer ind før hver ny dansk kalenderdag og markerer, hvilke beskeder der starter en ny gruppe.
+ * En gruppe brydes af en anden afsender, en anden bot-status, en ny dag, mere end GROUP_GAP_MS mellem beskederne
+ * (eller et ugyldigt/baglæns tidspunkt). Beskederne forventes ældste først.
+ */
+export function buildThread<T extends { author: string; timestamp: string; bot?: boolean }>(messages: T[], now: Date): ThreadItem<T>[] {
+  const out: ThreadItem<T>[] = [];
+  let lastDay: string | null = null;
+  let prev: T | null = null;
+  for (const m of messages) {
+    const day = dayKey(m.timestamp);
+    if (day !== null && day !== lastDay) {
+      out.push({ kind: 'day', key: day, label: dayLabel(day, now) });
+      lastDay = day;
+      prev = null;
+    }
+    const gap = prev ? new Date(m.timestamp).getTime() - new Date(prev.timestamp).getTime() : NaN;
+    const grouped = prev !== null && day !== null && prev.author === m.author && Boolean(prev.bot) === Boolean(m.bot)
+      && gap >= 0 && gap <= GROUP_GAP_MS;
+    out.push({ kind: 'msg', msg: m, first: !grouped });
+    prev = m;
+  }
+  return out;
+}

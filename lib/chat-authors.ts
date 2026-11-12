@@ -1,7 +1,7 @@
 // Gør Discord-forfattere om til WoW-karakternavne på serveren, pr. request (ingen cache). Klienten får kun visningsnavne,
 // karakter-slug og armory-link: aldrig Discord-id'er.
 
-import { inArray, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db';
 import { characters, users } from '@/lib/db/schema';
 import { armoryUrl } from '@/lib/armory';
@@ -100,4 +100,10 @@ export async function resolveAuthors(db: Db, messages: ChatMessage[]): Promise<P
 
 export async function resolveChatResult(db: Db, result: ChatResult): Promise<PublicChatResult> {
   return { ...result, messages: await resolveAuthors(db, result.messages) };
+}
+
+/** Sluggene på brugerens egne karakterer: bruges kun til at fremhæve brugerens egne beskeder i visningen. */
+export async function ownCharacterSlugs(db: Db, userId: number): Promise<string[]> {
+  const rows = await db.select({ slug: characters.slug }).from(characters).where(eq(characters.userId, userId));
+  return rows.map((r) => r.slug);
 }

@@ -110,6 +110,23 @@ for (const [name, t] of Object.entries(themes)) {
       ['satire-kommentar: «Vis flere» --heading på --sat-bg', t.heading, t['sat-bg'], 4.5],
       ['satire-kommentar: venstre kant mod --card', t['sat-border'], t.card, 3],
     );
+    for (const bg of ['chat-bubble', 'chat-mine'] as const) {
+      pairs.push(
+        [`chat: --text på --${bg}`, t.text, t[bg], 4.5],
+        [`chat: afsender/link --heading på --${bg}`, t.heading, t[bg], 4.5],
+        [`chat: tidspunkt --muted på --${bg}`, t.muted, t[bg], 4.5],
+        [`chat: «Slet» --danger på --${bg}`, t.danger, t[bg], 4.5],
+        [`chat: bot-badge --text på --border (i --${bg})`, t.text, t.border, 4.5],
+      );
+    }
+    pairs.push(
+      ['chat: valgt kanal (hvid) på --nav-active', '#ffffff', t['nav-active'], 4.5],
+      ['chat: kanalikon --heading på --bg', t.heading, t.bg, 4.5],
+      ['chat: mobil-kanalpille --text på --bg', t.text, t.bg, 4.5],
+      ['chat: skrivefelt-kant --muted mod --card', t.muted, t.card, 3],
+      ['chat: pladsholder --muted på --bg', t.muted, t.bg, 4.5],
+      ['chat: send-knap (hvid) på --topbar', '#ffffff', t.topbar, 4.5],
+    );
     for (let i = 0; i < 6; i++) {
       pairs.push([`satire-kommentar: initial (--sat-av-fg) på --sat-av-${i}`, t['sat-av-fg'], t[`sat-av-${i}`], 4.5]);
     }

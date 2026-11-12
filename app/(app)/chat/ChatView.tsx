@@ -3,15 +3,17 @@
 import { useActionState, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
 import type { PublicChatResult } from '@/lib/chat-authors';
-import { chatErrorMessage, chatHintMessage, formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
-import { LinkedText } from './LinkedText';
+import { Icon } from '@/components/icons';
+import { chatErrorMessage, chatHintMessage, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+import { ChatComposer } from './ChatComposer';
+import { ChatThread } from './ChatThread';
 import { sendChatMessageAction, type FormState } from './actions';
 
 function isChatResult(v: unknown): v is PublicChatResult {
   return typeof v === 'object' && v !== null && Array.isArray((v as PublicChatResult).messages);
 }
 
-export function ChatView({ channelId, canWrite }: { channelId: string; canWrite: boolean }) {
+export function ChatView({ channelId, canWrite, name, mySlugs }: { channelId: string; canWrite: boolean; name: string; mySlugs: string[] }) {
   const [data, setData] = useState<PublicChatResult | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [now, setNow] = useState<Date>(() => new Date());
@@ -157,41 +159,36 @@ export function ChatView({ channelId, canWrite }: { channelId: string; canWrite:
 
   return (
     <section className="card chat">
+      <div className="chat-head">
+        <div className="chat-head-text">
+          <h2 className="chat-title">
+            <span className="chat-title-icon" aria-hidden="true">{canWrite ? '#' : <Icon name="laas" size={16} />}</span>
+            {name}
+          </h2>
+          <span className="chat-source">{canWrite ? 'Discord' : 'Discord · kun læsning'}</span>
+        </div>
+      </div>
       {failed && <p className="error" role="alert">{failed}</p>}
       {error && <p className="error" role="alert">{error}</p>}
       {hint && <p className="muted">{hint}</p>}
       {data?.stale && <p className="muted"><span className="badge">forældet</span> Viser sidst hentede beskeder.</p>}
-      <div className="chat-list" ref={listRef} onScroll={onScroll} tabIndex={0} role="log" aria-live="off" aria-label="Chatbeskeder fra Discord">
-        {data === null && !failed && <p className="muted">Henter beskeder…</p>}
-        {data !== null && data.messages.length === 0 && !error && <p className="muted">Der er ingen beskeder endnu.</p>}
-        {data?.messages.map((m) => (
-          <div key={m.id} className="chat-msg">
-            <div className="chat-meta">
-              {m.armoryUrl
-                ? <strong><a className="chat-link" href={m.armoryUrl} target="_blank" rel="noopener noreferrer">{m.author}</a></strong>
-                : <strong>{m.author}</strong>}
-              {m.bot && <span className="badge">bot</span>}
-              <span className="muted">{formatMessageTime(m.timestamp, now)}</span>
-            </div>
-            <div className="chat-text"><LinkedText text={m.content} /></div>
-          </div>
-        ))}
+      <div className="chat-list" ref={listRef} onScroll={onScroll} tabIndex={0} role="log" aria-live="off" aria-label={`Beskeder i ${name} fra Discord`}>
+        {data === null && !failed && <p className="muted chat-empty">Henter beskeder…</p>}
+        {data !== null && data.messages.length === 0 && !error && <p className="muted chat-empty">Der er ingen beskeder endnu.</p>}
+        {data && (
+          <ChatThread
+            now={now}
+            messages={data.messages.map((m) => ({ ...m, mine: m.characterSlug !== null && mySlugs.includes(m.characterSlug) }))}
+          />
+        )}
       </div>
       {newBelow && (
         <button type="button" className="btn chat-new" onClick={scrollToBottom}>Nye beskeder ↓</button>
       )}
       {canWrite ? (
-      <form className="chat-form" onSubmit={submitHandler(sendAction)}>
-        <input type="hidden" name="channelId" value={channelId} />
-        <div className="field">
-          <label htmlFor="chat-message">Skriv en besked</label>
-          <textarea id="chat-message" {...bind('message')} rows={2} maxLength={500} required autoComplete="off" />
-        </div>
-        {sendState.error && <p className="error" role="alert">{sendState.error}</p>}
-        <button type="submit" className="btn chat-send" disabled={sending || values.message.trim() === ''}>Send</button>
-      </form>
+      <ChatComposer channelId={channelId} bind={bind('message')} error={sendState.error} disabled={sending || values.message.trim() === ''} onSubmit={submitHandler(sendAction)} />
       ) : (
-        <p className="muted chat-readonly">Du kan kun læse i denne kanal.</p>
+        <p className="muted chat-readonly"><Icon name="laas" size={16} /> Du kan kun læse i denne kanal.</p>
       )}
     </section>
   );

@@ -3,12 +3,13 @@
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { ConfirmForm } from '@/components/ConfirmForm';
 import { submitHandler, useFormValues } from '@/components/useFormValues';
-import { formatMessageTime, isNearBottom, nextPollDelay } from '@/lib/chat-ui';
-import { LinkedText } from './LinkedText';
+import { isNearBottom, nextPollDelay } from '@/lib/chat-ui';
+import { ChatComposer } from './ChatComposer';
+import { ChatThread } from './ChatThread';
 import { deleteSiteChannelAction, deleteSiteMessageAction, sendSiteMessageAction } from './site-actions';
 import type { FormState } from './actions';
 
-type SiteMsg = { id: number; author: string; content: string; timestamp: string; canDelete: boolean };
+type SiteMsg = { id: number; author: string; content: string; timestamp: string; canDelete: boolean; mine?: boolean };
 
 function isMessages(v: unknown): v is { messages: SiteMsg[] } {
   return typeof v === 'object' && v !== null && Array.isArray((v as { messages?: unknown }).messages);
@@ -103,7 +104,13 @@ export function SiteChatView({ channelId, name, canDeleteChannel }: { channelId:
   return (
     <section className="card chat">
       <div className="chat-head">
-        <h2 className="chat-title"># {name} <span className="badge">kun her</span></h2>
+        <div className="chat-head-text">
+          <h2 className="chat-title">
+            <span className="chat-title-icon" aria-hidden="true">#</span>
+            {name}
+          </h2>
+          <span className="chat-source">Kun her på siden</span>
+        </div>
         {canDeleteChannel && (
           <ConfirmForm action={deleteSiteChannelAction} fields={{ channelId }} label="Slet kanal" confirmText={`Slet kanalen «${name}» og alle dens beskeder?`} />
         )}
@@ -113,30 +120,21 @@ export function SiteChatView({ channelId, name, canDeleteChannel }: { channelId:
         className="chat-list" ref={listRef} tabIndex={0} role="log" aria-live="off" aria-label={`Beskeder i ${name}`}
         onScroll={() => { if (listRef.current) follow.current = isNearBottom(listRef.current); }}
       >
-        {messages === null && !failed && <p className="muted">Henter beskeder…</p>}
-        {messages !== null && messages.length === 0 && <p className="muted">Der er ingen beskeder endnu.</p>}
-        {messages?.map((m) => (
-          <div key={m.id} className="chat-msg">
-            <div className="chat-meta">
-              <strong>{m.author}</strong>
-              <span className="muted">{formatMessageTime(m.timestamp, now)}</span>
-              {m.canDelete && (
-                <ConfirmForm action={deleteSiteMessageAction} fields={{ messageId: m.id }} label="Slet" confirmText="Slet denne besked?" />
-              )}
-            </div>
-            <div className="chat-text"><LinkedText text={m.content} /></div>
-          </div>
-        ))}
+        {messages === null && !failed && <p className="muted chat-empty">Henter beskeder…</p>}
+        {messages !== null && messages.length === 0 && <p className="muted chat-empty">Der er ingen beskeder endnu.</p>}
+        {messages && (
+          <ChatThread
+            now={now}
+            messages={messages.map((m) => ({
+              ...m,
+              actions: m.canDelete
+                ? <ConfirmForm action={deleteSiteMessageAction} fields={{ messageId: m.id }} label="Slet" confirmText="Slet denne besked?" />
+                : undefined,
+            }))}
+          />
+        )}
       </div>
-      <form className="chat-form" onSubmit={submitHandler(sendAction)}>
-        <input type="hidden" name="channelId" value={channelId} />
-        <div className="field">
-          <label htmlFor="chat-message">Skriv en besked</label>
-          <textarea id="chat-message" {...bind('message')} rows={2} maxLength={500} required autoComplete="off" />
-        </div>
-        {sendState.error && <p className="error" role="alert">{sendState.error}</p>}
-        <button type="submit" className="btn chat-send" disabled={sending || values.message.trim() === ''}>Send</button>
-      </form>
+      <ChatComposer channelId={channelId} bind={bind('message')} error={sendState.error} disabled={sending || values.message.trim() === ''} onSubmit={submitHandler(sendAction)} />
     </section>
   );
 }

@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Icon } from '@/components/icons';
+import { ownCharacterSlugs } from '@/lib/chat-authors';
 import { chatConfig } from '@/lib/chat-config';
 import { parseSiteChannel } from '@/lib/chat-http';
 import { pickChannel } from '@/lib/chat-ui';
@@ -20,6 +22,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   const requested = typeof kanal === 'string' ? kanal : Array.isArray(kanal) ? kanal[0] : undefined;
   const own = await listChannels(getDb());
   const list = chat ? await chat.listChannels() : null;
+  const mySlugs = list ? await ownCharacterSlugs(getDb(), member.userId) : [];
 
   const ownId = parseSiteChannel(requested);
   let selectedOwn = ownId !== null ? own.find((c) => c.id === ownId) ?? null : null;
@@ -39,22 +42,23 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
               <ul>
                 {list.channels.map((c) => (
                   <li key={c.id}>
-                    <Link href={`/chat?kanal=${c.id}`} aria-current={selected?.id === c.id ? 'page' : undefined}>
-                      <span># {c.name}</span>
-                      {!c.canWrite && <span className="badge">kun læsning</span>}
+                    <Link className="chat-chan" href={`/chat?kanal=${c.id}`} aria-current={selected?.id === c.id ? 'page' : undefined} title={c.canWrite ? undefined : 'Kun læsning'}>
+                      <span className="chat-chan-icon" aria-hidden="true">{c.canWrite ? '#' : <Icon name="laas" size={14} />}</span>
+                      <span className="chat-chan-name">{c.name}</span>
+                      {!c.canWrite && <span className="sr-only">(kun læsning)</span>}
                     </Link>
                   </li>
                 ))}
               </ul>
             </>
           )}
-          <h2 className="chat-channels-title">Egne kanaler</h2>
+          <h2 className="chat-channels-title">Egne kanaler <span className="chat-channels-sub">kun her på siden</span></h2>
           <ul>
             {own.map((c) => (
               <li key={c.id}>
-                <Link href={`/chat?kanal=egen-${c.id}`} aria-current={selectedOwn?.id === c.id ? 'page' : undefined}>
-                  <span># {c.name}</span>
-                  <span className="badge">kun her</span>
+                <Link className="chat-chan" href={`/chat?kanal=egen-${c.id}`} aria-current={selectedOwn?.id === c.id ? 'page' : undefined}>
+                  <span className="chat-chan-icon" aria-hidden="true">#</span>
+                  <span className="chat-chan-name">{c.name}</span>
                 </Link>
               </li>
             ))}
@@ -70,7 +74,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
             canDeleteChannel={canDeleteChannel(member, selectedOwn)}
           />
         ) : selected ? (
-          <ChatView key={selected.id} channelId={selected.id} canWrite={selected.canWrite} />
+          <ChatView key={selected.id} channelId={selected.id} canWrite={selected.canWrite} name={selected.name} mySlugs={mySlugs} />
         ) : (
           <section className="card"><p className="muted">Vælg eller opret en kanal for at begynde.</p></section>
         )}

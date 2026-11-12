@@ -1,4 +1,6 @@
 import { Icon } from '@/components/icons';
+import { InitialAvatar } from '@/components/InitialAvatar';
+import { AVATAR_COLORS, avatarColor } from '@/lib/avatar';
 import { formatAbsolute, formatRelativeDay } from '@/lib/posts-ui';
 import type { DatedSatire, SatireComment } from '@/lib/satire';
 
@@ -7,13 +9,11 @@ const displayName = (name: string) => name.replace(/\s*\(fiktiv\)\s*$/i, '');
 /** Antal kommentarer der vises direkte; resten ligger bag en lukket <details>. */
 export const SATIRE_COMMENTS_SHOWN = 3;
 /** Antal farver til initial-avatarerne (`--sat-av-0` … i globals.css). */
-export const SATIRE_AVATAR_COLORS = 6;
+export const SATIRE_AVATAR_COLORS = AVATAR_COLORS;
 
-/** Deterministisk farveindeks ud fra afsenderens navn, så samme person altid har samme farve. */
+/** Deterministisk farveindeks ud fra afsenderens navn (uden «(fiktiv)»), så samme person altid har samme farve. */
 export function avatarIndex(name: string): number {
-  let h = 0;
-  for (const ch of displayName(name)) h = (h * 31 + ch.codePointAt(0)!) >>> 0;
-  return h % SATIRE_AVATAR_COLORS;
+  return avatarColor(displayName(name));
 }
 
 /** Svar til en bestemt («Til Oscars far: …») indrykkes lidt. */
@@ -23,9 +23,7 @@ function Comment({ c }: { c: SatireComment }) {
   const name = displayName(c.author);
   return (
     <li className={isReply(c.body) ? 'satire-comment is-reply' : 'satire-comment'}>
-      <span className={`satire-avatar sat-av-${avatarIndex(c.author)}`} aria-hidden="true">
-        {name.charAt(0).toUpperCase()}
-      </span>
+      <InitialAvatar name={name} className="satire-avatar" />
       <div className="satire-bubble">
         <strong className="satire-comment-name">{name}</strong>
         <p>{c.body}</p>

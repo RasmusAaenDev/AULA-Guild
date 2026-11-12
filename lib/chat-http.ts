@@ -29,7 +29,7 @@ export async function chatResponse(
     if (!messages) return NextResponse.json({ error: 'Kanalen findes ikke.' }, { status: 404, headers: NO_STORE });
     const actor = { userId: Number(user.id), isOfficer: user.isOfficer === true };
     return NextResponse.json(
-      { messages: messages.map((m) => ({ id: m.id, author: m.authorName, content: m.content, timestamp: m.createdAt, canDelete: canDeleteMessage(actor, m) })) },
+      { messages: messages.map((m) => ({ id: m.id, author: m.authorName, content: m.content, timestamp: m.createdAt, canDelete: canDeleteMessage(actor, m), mine: m.userId !== null && m.userId === actor.userId })) },
       { headers: NO_STORE },
     );
   }
