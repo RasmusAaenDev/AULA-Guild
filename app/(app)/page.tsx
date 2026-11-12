@@ -2,13 +2,12 @@ import { GuildStar } from '@/components/GuildStar';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
-import { deletePostAction } from '@/app/(app)/opslag/actions';
-import { BookmarkButton } from '@/app/(app)/opslag/BookmarkButton';
 import { ChatItemCard } from '@/components/ChatItemCard';
 import { GalleryItemCard } from '@/components/GalleryItemCard';
 import { SatireCard } from '@/components/SatireCard';
 import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
-import { ConfirmForm } from '@/components/ConfirmForm';
+import { PostCard } from '@/components/PostCard';
+import { PostFeedMore } from '@/components/PostFeedMore';
 import { armoryUrl } from '@/lib/armory';
 import { FirstCharacterCard } from '@/components/FirstCharacterCard';
 import { QuickSim } from '@/components/QuickSim';
@@ -22,10 +21,10 @@ import { characters, highlights, users } from '@/lib/db/schema';
 import { countUnansweredUpcoming, listUpcomingEvents } from '@/lib/events';
 import { roleLabel } from '@/lib/messages';
 import { fullName } from '@/lib/names';
-import { countUnread, listPosts } from '@/lib/posts';
+import { POSTS_PAGE_SIZE, countUnread, listPosts } from '@/lib/posts';
 import type { PostTab } from '@/lib/posts';
 import type { OverviewTab } from '@/lib/posts-ui';
-import { authorLabel, excerptText, formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
+import { formatAbsolute, formatRelativeDay, parsePage, parseTab, tabLabels } from '@/lib/posts-ui';
 import { statusClass } from '@/lib/rsvp-ui';
 import { recentChatItems } from '@/lib/overview-chat';
 import { recentGalleryItems } from '@/lib/overview-gallery';
@@ -168,49 +167,20 @@ export default async function OverviewPage({
             if (entry.kind === 'satire') return <SatireCard key={`satire-${entry.item.id}`} post={entry.item} now={now} />;
             if (entry.kind === 'chat') return <ChatItemCard key={`chat-${entry.item.id}`} item={entry.item} now={now} />;
             if (entry.kind === 'gallery') return <GalleryItemCard key={`gallery-${entry.item.id}`} item={entry.item} now={now} />;
-            const p = entry.item;
             return (
-              <article key={p.id} className={p.unread ? 'card post-card unread' : 'card post-card'}>
-                {(p.pinned || p.unread) && (
-                  <p className="post-badges">
-                    {p.pinned && <span className="badge">Vigtig</span>}
-                    {p.unread && <span className="badge new">Ny</span>}
-                  </p>
-                )}
-                <div className="post-head">
-                  <p className="post-meta">
-                    <strong>{authorLabel(p.authorName, p.authorCharacterFullName)}</strong>
-                    <span className="muted">Delt med hele guilden</span>
-                    <time className="muted" dateTime={p.createdAt.toISOString()} title={formatAbsolute(p.createdAt)}>
-                      {formatRelativeDay(p.createdAt, now)}
-                    </time>
-                  </p>
-                  <BookmarkButton postId={p.id} bookmarked={p.bookmarked} />
-                </div>
-                <h3><Link href={`/opslag/${p.id}`}>{p.title}</Link></h3>
-                <p className="excerpt">{excerptText(p.excerpt)}</p>
-                <p className="muted">{p.commentCount === 1 ? '1 kommentar' : `${p.commentCount} kommentarer`}</p>
-                {(member.isOfficer || p.authorId === member.userId) && (
-                  <div className="actions">
-                    <ConfirmForm
-                      action={deletePostAction}
-                      fields={{ postId: p.id }}
-                      label="Slet opslag"
-                      confirmText="Slet opslaget og dets kommentarer? Det kan ikke fortrydes."
-                    />
-                  </div>
-                )}
-              </article>
+              <PostCard key={entry.item.id} post={entry.item} now={now} canDelete={member.isOfficer || entry.item.authorId === member.userId} />
             );
           })}
-          {(page > 1 || hasMore) && (
-            <nav className="actions" aria-label="Sider med opslag">
-              {page > 1 && (
-                <Link href={page === 2 ? `/?fane=${tab}` : `/?fane=${tab}&side=${page - 1}`} className="btn secondary">Nyere opslag</Link>
-              )}
-              {hasMore && <Link href={`/?fane=${tab}&side=${page + 1}`} className="btn secondary">Ældre opslag</Link>}
-              <span className="muted">Side {page}</span>
-            </nav>
+          {tab !== 'satire' && (
+            <PostFeedMore
+              key={`${tab}-${page}`}
+              tab={tab}
+              page={page}
+              hasMore={hasMore}
+              startOffset={(page - 1) * POSTS_PAGE_SIZE + items.length}
+              initialIds={items.map((p) => p.id)}
+              renderedAt={now.getTime()}
+            />
           )}
         </div>
         <aside className="overview-aside" aria-label="Næste begivenheder og karakterer">

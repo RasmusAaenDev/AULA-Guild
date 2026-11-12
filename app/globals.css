@@ -163,6 +163,10 @@ h3 { color: var(--heading); margin: 12px 0 6px; font-size: 16px; }
 .post-card h3 { margin: 6px 0; }
 .post-card .excerpt { margin: 0 0 6px; overflow-wrap: anywhere; }
 .post-card.unread { border-left: 4px solid var(--badge); }
+.feed-status { margin: 0 0 12px; min-height: 1.5em; text-align: center; }
+.feed-status:empty { margin: 0; min-height: 0; }
+.feed-error { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.feed-error .error { margin: 0; }
 .badge.new { background: var(--badge); color: #fff; }
 .comment { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
 .comment p { margin: 4px 0; }
@@ -492,3 +496,4 @@ details.create .menu a:hover { background: var(--border); }
 .first-character h2 { margin: 6px 0 10px; font-size: 26px; color: var(--heading); }
 .first-character p { max-width: 60ch; }
 .first-character-cta { min-height: 52px; padding: 12px 28px; font-size: 18px; font-weight: 800; display: inline-flex; align-items: center; }
+.btn[aria-disabled='true'] { cursor: progress; }

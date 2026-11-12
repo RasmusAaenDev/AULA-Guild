@@ -47,7 +47,9 @@ export type PostDetail = {
 
 /** Uddraget hentes med ét tegn mere end vist, så UI kan se, om teksten blev afkortet (se `excerptText`). */
 const EXCERPT_LENGTH = 200;
-const DEFAULT_PAGE_SIZE = 20;
+/** Opslag pr. side i Overblik (`?side=N`). */
+export const POSTS_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = POSTS_PAGE_SIZE;
 
 const validId = (id: number) => Number.isInteger(id) && id > 0 && id <= 2147483647;
 
@@ -199,7 +201,22 @@ export async function listPosts(
 ): Promise<{ items: PostListItem[]; hasMore: boolean }> {
   const size = Number.isFinite(pageSize) && pageSize >= 1 ? Math.min(100, Math.floor(pageSize)) : DEFAULT_PAGE_SIZE;
   const pageNo = Number.isFinite(page) ? Math.min(1_000_000, Math.max(1, Math.floor(page))) : 1;
-  const offset = (pageNo - 1) * size;
+  return listPostsSlice(db, userId, tab, (pageNo - 1) * size, size);
+}
+
+/**
+ * Samme liste og rækkefølge som `listPosts`, men fra et vilkårligt offset: `size` opslag efter de første `offset`.
+ * Bruges af «Vis flere beskeder», der henter få ad gangen. Kalderen validerer; værdierne afkortes for en sikkerheds skyld.
+ */
+export async function listPostsSlice(
+  db: Db,
+  userId: number,
+  tab: PostTab,
+  offsetIn: number,
+  sizeIn: number,
+): Promise<{ items: PostListItem[]; hasMore: boolean }> {
+  const size = Number.isFinite(sizeIn) && sizeIn >= 1 ? Math.min(100, Math.floor(sizeIn)) : DEFAULT_PAGE_SIZE;
+  const offset = Number.isFinite(offsetIn) && offsetIn >= 0 ? Math.min(100_000_000, Math.floor(offsetIn)) : 0;
   const where = and(
     isNull(posts.deletedAt),
     tab === 'vigtige' ? eq(posts.pinned, true) : undefined,
