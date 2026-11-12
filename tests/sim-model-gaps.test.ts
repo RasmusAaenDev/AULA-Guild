@@ -38,10 +38,18 @@ describe('modelGap (ren logik)', () => {
   it('warlock og shaman med vores rettelse: gul advarsel med det, rettelsen ikke dækker', () => {
     const demo = modelGap({ className: 'warlock', spec: 'Demonology' }, [GROV_FIX]);
     expect(demo).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Warlock (Demonology) fuldt ud' });
-    expect(demo?.missing).toMatch(/Voidwalker/);
-    for (const spec of ['Affliction', 'Destruction']) {
-      expect(modelGap({ className: 'warlock', spec }, [GROV_FIX])?.missing, spec).toMatch(/Life Tap koster ikke liv/);
+    // Dæmonerne og Demonic Sacrifice er nu med: advarslen siger, hvilken dæmon der simuleres, og hvad der mangler.
+    expect(demo?.missing).toMatch(/^Fel Domination, Demonic Brand og Felhunterens evner/);
+    expect(demo?.missing).toMatch(/Med Demonic Sacrifice og Demonic Pact ofres Imp'en før kampen \(\+15 % Shadow\); uden Pact beholdes dæmonen/);
+    expect(demo?.missing).not.toMatch(/kun Imp|level 3-10/);
+    for (const spec of ['Affliction', 'Demonology', 'Destruction']) {
+      const m = modelGap({ className: 'warlock', spec }, [GROV_FIX])?.missing;
+      expect(m, spec).toMatch(/Life Tap koster ikke liv/);
+      expect(m, spec).toMatch(/Dæmonen er Succubus fra level 20 \(Voidwalker på level 10-19, Imp under 10\)/);
+      expect(m, spec).toMatch(/dæmonernes mana er et skøn/);
     }
+    // Uden rettelsen (upstream) nævner Demonology stadig, at kun Imp findes.
+    expect(modelGap({ className: 'warlock', spec: 'Demonology' }, [])?.missing).toMatch(/kun Imp/);
     const ele = modelGap({ className: 'shaman', spec: 'Elemental Combat' }, [GROV_FIX]);
     expect(ele).toMatchObject({ kind: 'partial', title: 'Aulas model dækker ikke Shaman (Elemental Combat) fuldt ud' });
     expect(ele?.missing).toMatch(/Under level 26 \(før Mana Spring Totem\)/);

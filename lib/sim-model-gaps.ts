@@ -5,7 +5,7 @@
 // - `upstream`: klassen kører på SimulationCraft's egen grundmodel (ingen Aula-rettelse). Teksten vises kun, når
 //   resultatet IKKE er markeret «Grov model» (workerens advarsel for vores rettelser). Får klassen en rettelse
 //   (druid, priest, warlock, shaman), falder advarslen væk af sig selv, så snart workeren melder «Grov model».
-// - `withFix`: vores egen rettelse dækker ikke denne spec (fx paladin Holy, rogue Subtlety, warlock-pets,
+// - `withFix`: vores egen rettelse dækker ikke denne spec (fx paladin Holy, rogue Subtlety, warlock-dæmonvalget,
 //   shaman-totems). Vises kun sammen med «Grov model», fordi det er vores model, der mangler noget.
 // Uden kendt spec bruges klassens fælles tekst (`*`), hvis der er en.
 
@@ -62,15 +62,15 @@ export const MODEL_GAPS: Readonly<Record<string, Readonly<Record<string, Gap>>>>
     '*': { upstream: 'Life Tap og wand, så warlocken går tom for mana og står stille. Heller ingen Bane of Agony, Drain Life eller Siphon Life' },
     affliction: {
       upstream: 'Life Tap og wand, så warlocken går tom for mana og står stille. Heller ingen Bane of Agony, Drain Life eller Siphon Life',
-      withFix: 'Drain Life, Drain Soul, Nightfall og Amplify Curse, og Life Tap koster ikke liv (simuleringen antager en healer)',
+      withFix: 'Drain Life, Drain Soul, Nightfall og Amplify Curse, og Life Tap koster ikke liv (simuleringen antager en healer). Dæmonen er Succubus fra level 20 (Voidwalker på level 10-19, Imp under 10), uanset hvilken du selv bruger, og dæmonernes mana er et skøn',
     },
     demonology: {
       upstream: 'Life Tap og wand, og kun Imp (ingen Voidwalker, Felhunter, Succubus eller Demonic Sacrifice)',
-      withFix: 'Voidwalker, Felhunter, Succubus og Demonic Sacrifice: kun Imp, med stats tilpasset level 3-10. Life Tap koster ikke liv (simuleringen antager en healer)',
+      withFix: 'Fel Domination, Demonic Brand og Felhunterens evner (Felhunterens skade er et skøn). Dæmonen er Succubus fra level 20 (Voidwalker på level 10-19, Imp under 10), uanset hvilken du selv bruger, og dæmonernes mana er et skøn. Med Demonic Sacrifice og Demonic Pact ofres Imp\'en før kampen (+15 % Shadow); uden Pact beholdes dæmonen. Life Tap koster ikke liv (simuleringen antager en healer)',
     },
     destruction: {
       upstream: 'Life Tap og wand, og ingen Conflagrate, Shadowburn, Searing Pain eller Incinerate',
-      withFix: 'Searing Pain, Soul Fire og Curse of the Elements, og Life Tap koster ikke liv (simuleringen antager en healer)',
+      withFix: 'Searing Pain, Soul Fire og Curse of the Elements, og Life Tap koster ikke liv (simuleringen antager en healer). Dæmonen er Succubus fra level 20 (Voidwalker på level 10-19, Imp under 10), uanset hvilken du selv bruger, og dæmonernes mana er et skøn',
     },
   },
   paladin: {
