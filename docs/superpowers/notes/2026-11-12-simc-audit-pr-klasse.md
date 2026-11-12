@@ -639,3 +639,65 @@ skade-simulering (leveling-guider bruger ofte Voidwalker solo). Ingen tal er sam
 pets, og byg den ellers som upstream-klar `hunter_pet_t` på `aula/hunter-pet` med samme `expected_stat`-grundlag.
 For warlock: Drain Life som alternativ til gratis Life Tap, Searing Pain/Demonic Brand og evt. `default_pet=` i
 appens hvidliste, hvis addonet en dag kan sende den aktive dæmon.
+
+## 16. Opfølgning: hunter-petten, nærkamp og flere skud
+
+Punkt 2 i pet-researchens anbefaling (`2026-11-12-pets-i-simc-forever.md`): en ny rettelse `hunter.patch`
+(fork-branch `aula/hunter`, commits `4663e42` og `0b72e8c` oven på `3c1d319`). Den er skrevet i upstream-stil og
+tænkt som en upstream-PR (udkast i `simc-worker/patches/upstream-hunter-pet.md`, ikke sendt; issue #41 er ikke
+spurgt). Detaljer og alle tal: PATCHES.md, afsnit «hunter».
+
+1. **Petten** (`hunter_pet_t`): nærkamp ud fra simcs `creature_auto_attack_dps` for pettens level, egen AP = 4,2 ×
+   creature-dps (passer med wowsims' målte pet-ark på level 11/17/30: 36/61/103), 10 % af jægerens højeste AP,
+   jægerens crit og hit, Focus 10/s med Bite og Claw efter level, altid glad (× 1,25) og familiens skade. Standard er
+   en kat; med Lone Wolf ingen pet. Talenterne Focused Fire, Unleashed Fury, Ferocity, Frenzy, Bestial Discipline,
+   Bestial Wrath og orc-racialen Command.
+2. **Jægeren:** Hunter's Mark, Rapid Fire, Multi-Shot, Aimed Shot, Sniper Shot, Trueshot Aura og nærkamp (auto-attack,
+   Raptor Strike på næste slag, Strider Kick, Mongoose Bite via Expose Prey, Lacerating Strikes). En jæger med
+   Survival-nærkamp-talenter står i nærkamp; alle andre skyder. Kill Command findes ikke i Forever og er ikke bygget.
+3. **Mana:** jægeren er tom for mana efter ca. 40-110 s. Manaen går til Serpent Sting og Arcane Shot (mest skade pr.
+   mana) og spares op til Bestial Wrath. Aimed Shot og Sniper Shot er bygget, men står ikke i standardrotationen:
+   målt gav de mindre i alle profiler.
+4. **`.check`:** kræver en pet-klasse og handlingerne `summon_pet`, `auto_attack`, `raptor_strike`, `multi_shot`,
+   `hunters_mark` og `bestial_wrath` i både modul og APL, så en upstream med kun en pet ikke får rettelsen droppet
+   (testet). `check-upstream.sh` giver OK for alle otte rettelser på `3c1d319` og `main` `c4c9b16`.
+
+**Før/efter** (samme profiler og indstillinger som §1: native bygning, 1000 iterationer, seed 42; kontrolleret i et
+lokalt bygget worker-image):
+
+| Spec | DPS L20 før → efter | DPS L40 før → efter | Pettens andel L40 | DungeonSlice L20 / L40 (efter) |
+|---|---|---|---|---|
+| Beast Mastery | 16,5 → **38,2** | 36,6 → **89,1** | 55 % | 34,1 / 78,0 |
+| Marksmanship | 19,8 → **21,3** | 49,6 → **58,9** | ingen pet (Lone Wolf) | 18,0 / 46,6 |
+| Survival | 16,5 → **38,2** | 36,7 → **84,0** | 44 % | 34,1 / 72,9 |
+
+- **BM og Survival stiger 2,3-2,4 gange.** Researchens skøn var × 1,8-2,3; petten er halvdelen af skaden, og BM 40's
+  talenter (Unleashed Fury, Bestial Wrath) løfter den yderligere. BM 40 ligger nu over Frost-mage (51) og
+  Shadow-priest (64) og på niveau med Ret-paladin (84) på samme udstyr.
+- **Marksmanship stiger kun 7-19 %**, fordi auditens MM-profiler har Lone Wolf (ingen pet). Med en kat i stedet giver
+  MM 40 88,8. Modellen siger altså, at Lone Wolf koster ca. en tredjedel af skaden; det er ikke målt i spillet.
+- **Survival 20** har ingen nærkamp-talenter og skyder derfor præcis som BM 20. Survival 40 står i nærkamp: jægerens
+  nærkamp, Strider Kick og Raptor Strike er 56 % af skaden.
+- «Venter» er stadig ca. 80 %: det er tid, hvor Auto Shot (eller nærkampen) kører, og jægeren ikke har mana til andet.
+- Øvrige klasser er uændrede (rettelsen rører kun hunter-filerne).
+
+**Advarslen nu** (gul «Aulas model dækker ikke … fuldt ud» sammen med «Grov model: SimulationCraft's grundmodel med
+Aulas rettelser»; den røde «mangler pet» falder væk):
+
+- Beast Mastery: «Intimidation, Summon Hawk, fælder og melee-weaving (Raptor Strike mellem skuddene). Petten er en kat
+  med Bite og Claw, altid glad og dør aldrig, og dens skade bygger på wowsims' målinger. Aimed Shot bruges ikke: med
+  jægerens mana giver Arcane Shot mere.»
+- Marksmanship: «Scatter Shot, Volley, fælder og melee-weaving. Med Lone Wolf simuleres ingen pet; uden Lone Wolf er
+  petten en kat. Aimed Shot og Sniper Shot bruges ikke: med jægerens mana giver Arcane Shot mere.»
+- Survival: «Counterattack, Wing Clip, fælder og Mongoose Bite efter en dodge (målet slår ikke i simuleringen, så kun
+  via Expose Prey). Med nærkamp-talenter står jægeren i nærkamp hele kampen uden at skyde; uden dem skyder den som
+  Beast Mastery. Petten er en kat …» (som BM).
+
+**Antagelser og forbehold:** petten er altid glad, dør aldrig og står i nærkamp fra start; familien er en kat, uanset
+hvad spilleren bruger (`summon_pet=` er ikke i appens hvidliste); familiens skade er håndkodet fra spildataen (mangler i
+simc, issue #5); pettens liv, crit ved lav våbenskill og hit er ikke målt; Arcane Shot og Serpent Sting beholder
+upstreams AP-andele (0,10/0,03; wowsims bruger 0,15/0,05); Multi-Shots 0,5 s cast og at et cast holder Auto Shot
+tilbage er wowsims' observationer; ingen melee-weaving. Ingen tal er sammenlignet med Forever-logs.
+
+**Næste trin:** spørg på upstream #41, før PR'en sendes (brugerens beslutning). For hunter selv: melee-weaving,
+Summon Hawk og evt. `summon_pet=` i appens hvidliste, hvis addonet en dag kan sende pettens familie.
