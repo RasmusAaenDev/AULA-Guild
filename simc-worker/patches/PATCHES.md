@@ -38,10 +38,27 @@ simc-kildens rod.
 | `min_lines <fil> <N>` | filen findes og har flere end N linjer |
 | `contains <fil> <tekst>` | filen indeholder teksten (fast streng, resten af linjen) |
 | `not_contains <fil> <tekst>` | filen findes ikke eller indeholder ikke teksten |
+| `contains_re <fil> <ERE>` | en linje i filen matcher det udvidede regulære udtryk (`grep -E`, resten af linjen) |
+| `not_contains_re <fil> <ERE>` | filen findes ikke, eller ingen linje matcher udtrykket |
+| `has_action <fil> <navn>` | klassemodulet opretter handlingen `<navn>`: en linje med `name == "<navn>"` (simcs `create_action`); navnet er `a-z`, `0-9`, `_` |
 
-Heuristikken er bevidst simpel. Har upstream kun delvist implementeret klassen (fx flere linjer, men ingen
+Et ugyldigt regulært udtryk eller handlingsnavn giver exit 2 (aldrig «findes ikke»).
+
+**Tomme klasser (mage, paladin, rogue):** heuristikken er bevidst simpel (`min_lines` + `contains add_action` +
+`not_contains AULA-RETTELSE`). Har upstream kun delvist implementeret klassen (fx flere linjer, men ingen
 rotation), holder betingelserne ikke, rettelsen passer heller ikke, og bygget stopper som en konflikt. Det er
 meningen: så skal et menneske se på, om vores eller upstreams version skal bruges.
+
+**Klasser upstream allerede har en grundmodel af (druid, priest, og senere warlock, shaman …):** her holder
+linjeantal og `add_action` fra dag ét, så den heuristik ville droppe rettelsen med det samme. `.check` skal i stedet
+liste præcis det, rettelsen tilføjer, som konkrete spells/handlinger eller kodestumper, fx
+`has_action engine/class_modules/sc_priest.cpp shoot`. Rettelsen droppes kun, når upstream har **alle** dele. Har
+upstream kun nogle af dem, passer rettelsen typisk ikke længere (konflikt), og et menneske må flette. Alle
+betingelser skal være falske på den rene upstream-kilde ved `SIMC_REF` (testet i `test/patches.test.mjs`).
+
+En rettelse i ren upstream-stil (uden `AULA-RETTELSE`-markør, fx druid, der også er foreslået upstream) kan ikke
+skelnes fra upstreams egen kode, når den er anvendt: kører man `apply.sh` igen på en arbejdskopi, hvor den allerede
+er anvendt, melder den `DROP`. I Docker-bygget er kilden altid ren, så det sker ikke dér.
 
 ## mage
 

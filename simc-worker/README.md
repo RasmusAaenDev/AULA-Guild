@@ -44,7 +44,7 @@ Oven på simc ligger Aulas rettelser i `patches/` (én pr. klasse; se `patches/P
    ```
    Kør `check-upstream.sh <ny-sha>` igen (skal give OK) og opdatér målingerne i `PATCHES.md`.
 4. **DROP – upstream har klassen:** slet `patches/<klasse>.patch` og `patches/<klasse>.check` (og klassens afsnit i `PATCHES.md` samt `test/fixtures/simc-upstream/` hvis ingen rettelse bruger dem). Indtil da gør bygget det selv: rettelsen springes over, og workeren melder `dropped-upstream` uden `model`/advarsel.
-5. **Ny klasse:** ret i en arbejdskopi som i 3, gem `git diff` som `patches/<klasse>.patch`, skriv `patches/<klasse>.check` (kun betingelser der er falske på den rene upstream-kilde) og et afsnit i `PATCHES.md`.
+5. **Ny klasse:** ret i en arbejdskopi som i 3, gem `git diff` som `patches/<klasse>.patch`, skriv `patches/<klasse>.check` (kun betingelser der er falske på den rene upstream-kilde) og et afsnit i `PATCHES.md`. Har upstream allerede en grundmodel af klassen (druid, priest, warlock …), skal `.check` teste på det konkrete, rettelsen tilføjer (`has_action <fil> <navn>`, `contains_re <fil> <udtryk>`), ikke på linjeantal; se «`.check`-format» i `PATCHES.md`.
 
 Test: `node --test "simc-worker/test/*.test.mjs"` (kræver `git` og `sh`; bygger ikke simc).
 

@@ -3,7 +3,8 @@
 #
 # Brug:  check-upstream.sh <SIMC_REF>      (commit-sha, tag eller branch, fx main)
 #
-# Henter kun de mapper rettelserne og .check-filerne rører (partial clone + sparse checkout),
+# Henter kun de mapper rettelserne og .check-filerne rører (partial clone + sparse checkout; for .check er
+# filen 2. felt i hver betingelse, så også has_action/contains_re er dækket),
 # kører samme tjek som bygget (apply.sh --dry-run) og skriver en linje pr. klasse:
 #   <klasse>: OK (kan anvendes) | DROP (upstream har den nu) | KONFLIKT (skal flettes: ...)
 # Bygger ikke simc. Exit: 0 = ingen konflikter, 1 = mindst én konflikt, 2 = brugs-/hentefejl.

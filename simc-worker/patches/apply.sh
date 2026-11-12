@@ -30,9 +30,15 @@ fail_check() {
 
 # upstream_done <check-fil>: exit 0 når ALLE betingelser i filen holder paa $SRC.
 # Betingelser (en pr. linje, # = kommentar):
-#   min_lines <fil> <N>        filen findes og har flere end N linjer
-#   contains <fil> <tekst>     filen indeholder teksten (fast streng, resten af linjen)
-#   not_contains <fil> <tekst> filen findes ikke eller indeholder ikke teksten
+#   min_lines <fil> <N>          filen findes og har flere end N linjer
+#   contains <fil> <tekst>       filen indeholder teksten (fast streng, resten af linjen)
+#   not_contains <fil> <tekst>   filen findes ikke eller indeholder ikke teksten
+#   contains_re <fil> <ERE>      filen har en linje der matcher det udvidede regulære udtryk (grep -E)
+#   not_contains_re <fil> <ERE>  filen findes ikke eller har ingen linje der matcher udtrykket
+#   has_action <fil> <navn>      klassemodulet opretter handlingen: en linje med  name == "<navn>"
+#                                (simcs create_action), fx  has_action engine/class_modules/sc_priest.cpp shoot
+# Til klasser upstream allerede har en grundmodel af: list netop det, rettelsen tilføjer (spells/handlinger),
+# så rettelsen kun droppes, når upstream selv har dem alle.
 upstream_done() {
   check=$1
   n=0
@@ -57,6 +63,19 @@ upstream_done() {
         ;;
       not_contains)
         if [ -f "$SRC/$file" ] && grep -qF -- "$arg" "$SRC/$file"; then done_all=1; fi
+        ;;
+      contains_re | not_contains_re)
+        # Et ugyldigt udtryk (grep exit 2) må aldrig tælle som «findes ikke».
+        rc=0; grep -qE -- "$arg" /dev/null 2> /dev/null || rc=$?
+        [ "$rc" -le 1 ] || fail_check "ugyldigt regulært udtryk i $(basename "$check"): '$line'"
+        hit=1
+        if [ -f "$SRC/$file" ] && grep -qE -- "$arg" "$SRC/$file"; then hit=0; fi
+        if [ "$op" = contains_re ] && [ $hit -ne 0 ]; then done_all=1; fi
+        if [ "$op" = not_contains_re ] && [ $hit -eq 0 ]; then done_all=1; fi
+        ;;
+      has_action)
+        case $arg in '' | *[!a-z0-9_]*) fail_check "has_action kræver et handlingsnavn (a-z, 0-9, _) i $(basename "$check"): '$line'" ;; esac
+        if [ ! -f "$SRC/$file" ] || ! grep -qE -- "name[[:space:]]*==[[:space:]]*\"$arg\"" "$SRC/$file"; then done_all=1; fi
         ;;
       *) fail_check "ukendt betingelse '$op' i $(basename "$check")" ;;
     esac

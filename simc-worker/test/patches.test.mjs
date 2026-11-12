@@ -417,3 +417,77 @@ test('(c) konflikt i paladin.patch: bygget fejler, og heller ikke mage eller rog
     assert.match(dry.out, /^paladin: KONFLIKT \(skal flettes: .*sc_paladin\.cpp/m);
   } finally { rmSync(src, { recursive: true, force: true }); }
 });
+
+// --- .check: konkrete spells/handlinger (til klasser, upstream allerede har en grundmodel af) -----------------------
+
+/** En falsk «priest»-rettelse mod engine/fake/sc_x.cpp, så .check-betingelserne kan prøves isoleret. */
+function fakeClassSetup(upstreamText, checkText) {
+  const src = tmp('fake-src-');
+  const pdir = tmp('patches-');
+  const F = 'engine/fake/sc_x.cpp';
+  execFileSync('mkdir', ['-p', path.join(src, 'engine/fake')]);
+  writeFileSync(path.join(src, F), upstreamText);
+  // Rettelsen tilføjer en linje sidst i filen.
+  const lines = upstreamText.split('\n');
+  const n = lines.length - 1;
+  writeFileSync(path.join(pdir, 'priest.patch'), [
+    `diff --git a/${F} b/${F}`, `--- a/${F}`, `+++ b/${F}`,
+    `@@ -${n},1 +${n},2 @@`, ` ${lines[n - 1]}`, '+// rettelse: shoot', '',
+  ].join('\n'));
+  writeFileSync(path.join(pdir, 'priest.check'), checkText);
+  return { src, pdir, F, cleanup: () => { rmSync(src, { recursive: true, force: true }); rmSync(pdir, { recursive: true, force: true }); } };
+}
+const UP = (body) => `struct priest_t {\n${body}\n};\n`;
+
+test('.check has_action: droppes kun når upstream selv opretter handlingen (name == "shoot")', () => {
+  const check = '# upstream har wand + Holy Fire i APL\nhas_action engine/fake/sc_x.cpp shoot\nhas_action engine/fake/sc_x.cpp holy_fire\n';
+  // Upstream-grundmodel: mange linjer og en APL, men ingen shoot -> anvendes (den gamle heuristik ville droppe).
+  let s = fakeClassSetup(UP(`${'  // linje\n'.repeat(200)}  if ( name == "holy_fire" ) return x;`), check);
+  try {
+    const r = run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /^priest: OK \(kan anvendes\)$/m);
+  } finally { s.cleanup(); }
+  // «shoot» kun i en kommentar eller en anden streng tæller ikke.
+  s = fakeClassSetup(UP('  // TODO: shoot (wand)\n  add_action( "shoot" );\n  if ( name == "holy_fire" ) return x;'), check);
+  try {
+    assert.match(run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir }).out, /^priest: OK/m);
+  } finally { s.cleanup(); }
+  // Upstream har begge handlinger -> droppes.
+  s = fakeClassSetup(UP('  if ( name == "holy_fire" ) return x;\n  if (name=="shoot") return y;'), check);
+  try {
+    const out = path.join(s.src, 'P');
+    const r = run(APPLY, [s.src, out], { PATCH_DIR: s.pdir });
+    assert.equal(r.code, 0, r.err);
+    assert.match(r.out, /UPSTREAM HAR priest — vores rettelse droppes/);
+    assert.equal(readFileSync(out, 'utf8'), 'priest dropped-upstream\n');
+  } finally { s.cleanup(); }
+});
+
+test('.check contains_re / not_contains_re: udvidede regulære udtryk på linjeniveau', () => {
+  const check = 'contains_re engine/fake/sc_x.cpp flags\\( *spell_attribute::SX_ALLOW_WHILE_NOT_SHAPESHIFTED *\\)\nnot_contains_re engine/fake/sc_x.cpp AULA-RETTELSE|aula_fix\n';
+  let s = fakeClassSetup(UP('  if ( data().flags( spell_attribute::SX_ALLOW_WHILE_NOT_SHAPESHIFTED ) ) mask |= CASTER;'), check);
+  try {
+    assert.match(run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir }).out, /^priest: DROP/m);
+  } finally { s.cleanup(); }
+  s = fakeClassSetup(UP('  if ( data().flags( spell_attribute::SX_ALLOW_WHILE_NOT_SHAPESHIFTED ) ) mask |= CASTER; // aula_fix'), check);
+  try {
+    assert.match(run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir }).out, /^priest: OK/m);
+  } finally { s.cleanup(); }
+  s = fakeClassSetup(UP('  mask = stance_mask();'), check);
+  try {
+    assert.match(run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir }).out, /^priest: OK/m);
+  } finally { s.cleanup(); }
+});
+
+test('.check: ugyldigt regulært udtryk eller handlingsnavn afviser kørslen (exit 2)', () => {
+  for (const bad of ['contains_re engine/fake/sc_x.cpp (ufærdig\n', 'not_contains_re engine/fake/sc_x.cpp a{2,1}\n', 'has_action engine/fake/sc_x.cpp Shoot\n', 'has_action engine/fake/sc_x.cpp shoot"; x\n']) {
+    const s = fakeClassSetup(UP('  if ( name == "shoot" ) return y;'), bad);
+    try {
+      const r = run(APPLY, ['--dry-run', s.src], { PATCH_DIR: s.pdir });
+      assert.equal(r.code, 2, `${JSON.stringify(bad)}: ${r.out} ${r.err}`);
+      assert.match(r.err, /FEJL\/ERROR/);
+    } finally { s.cleanup(); }
+  }
+});
+
