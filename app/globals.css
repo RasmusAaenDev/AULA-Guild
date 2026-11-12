@@ -15,6 +15,7 @@
   --ok: #1b6e38; --maybe: #7d5200; --no: #b3261e; --on-status: #ffffff;
   --focus-inverse: #ffffff;
   --sat-bg: #fff4d6; --sat-border: #7a4f00; --sat-badge: #4a1d7a; --sat-badge-fg: #ffffff; --sat-ink: #5b3a00;
+  --star: #8a5a00;
   --on-cls: #ffffff; --check-bg: #ffffff; --check-fg: #005b6b;
   --cls-death-knight: #a8123a; --cls-demon-hunter: #7a1fa2; --cls-druid: #a14a00; --cls-evoker: #1b6e5c;
   --cls-hunter: #3d7a1c; --cls-mage: #1a6aa6; --cls-monk: #00755a; --cls-paladin: #b0306f;
@@ -25,7 +26,7 @@
   :root:not([data-theme='light']) {
     --bg: #0f1a1f; --card: #172830; --text: #e3edf1; --heading: #7fd0e0;
     --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
-    --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
+    --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
     --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
     --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
   }
@@ -33,7 +34,7 @@
 :root[data-theme='dark'] {
   --bg: #0f1a1f; --card: #172830; --text: #e3edf1; --heading: #7fd0e0;
   --muted: #92a8b3; --border: #26414c; --nav: #2b4650; --nav-active: #00788c;
-  --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0;
+  --badge: #d6246e; --danger: #ff8fb5; --focus: #7fd0e0; --star: #f0b84a;
   --ok: #5fd38a; --maybe: #f0b84a; --no: #ff8a80; --on-status: #0f1a1f;
   --sat-bg: #2b2412; --sat-border: #f0b84a; --sat-badge: #e4ccff; --sat-badge-fg: #2a0e4d; --sat-ink: #f6d98a;
 }
@@ -99,7 +100,9 @@ details.profile summary > span:last-child { max-width: 160px; overflow: hidden; 
 table { width: 100%; border-collapse: collapse; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); }
 th { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
-tr.left-guild td { opacity: 0.55; }
+.cs-star { position: absolute; top: -4px; right: -4px; font-size: 12px; line-height: 1; background: var(--card); border-radius: 50%; width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.cs-star .guild-star { margin: 0; }
+.guild-star { color: var(--star); margin-left: 0.25em; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--border); color: var(--text); font-size: 12px; }
 
 details.profile { position: relative; }

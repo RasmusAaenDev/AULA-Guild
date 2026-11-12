@@ -59,12 +59,12 @@ export async function addCharacter(
   try {
     const looked = await lookup(deps, slug, input.name);
     found = looked.found;
-    surname = found.guildId === deps.guildId ? await resolveSurname(deps, looked) : null;
+    surname = found.guildId === deps.guildId ? await resolveSurname(deps, looked) : found.surname;
   } catch (e) {
     if (e instanceof BlizzardError) return { ok: false, reason: e.kind === 'not_found' ? 'not_found' : 'unavailable' };
     throw e;
   }
-  if (found.guildId !== deps.guildId) return { ok: false, reason: 'wrong_guild' };
+  const inGuild = found.guildId === deps.guildId;
 
   const values = {
     blizzardId: found.blizzardId,
@@ -76,7 +76,7 @@ export async function addCharacter(
     role: input.role,
     level: found.level,
     itemLevel: found.itemLevel,
-    inGuild: true,
+    inGuild,
     lastLogin: found.lastLogin,
     lastSynced: new Date(),
     userId: input.userId,
@@ -169,13 +169,14 @@ export type MyCharacter = {
   className: string;
   spec: string | null;
   role: Role;
+  inGuild: boolean;
 };
 
 export async function listMyCharacters(db: Db, userId: number): Promise<MyCharacter[]> {
   const rows = await db
     .select({
       id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug,
-      className: characters.className, spec: characters.spec, role: characters.role,
+      className: characters.className, spec: characters.spec, role: characters.role, inGuild: characters.inGuild,
     })
     .from(characters)
     .where(eq(characters.userId, userId));

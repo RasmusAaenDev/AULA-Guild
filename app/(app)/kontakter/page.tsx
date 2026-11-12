@@ -7,6 +7,7 @@ import { armoryUrl } from '@/lib/armory';
 import { QuickSim } from '@/components/QuickSim';
 import { isSimConfigured } from '@/lib/services';
 import { requireMember } from '@/lib/session';
+import { GuildStar } from '@/components/GuildStar';
 import { RefreshButton } from './RefreshButton';
 
 export const dynamic = 'force-dynamic';
@@ -21,6 +22,7 @@ export default async function ContactsPage() {
         <h1>Kontakter</h1>
         <RefreshButton />
       </div>
+      <p className="muted"><GuildStar /> = i guilden</p>
       <div className="card table-wrap">
         {contacts.length === 0 ? (
           <p>Ingen karakterer endnu.</p>
@@ -36,10 +38,10 @@ export default async function ContactsPage() {
             </thead>
             <tbody>
               {contacts.map((c) => (
-                <tr key={c.id} className={c.inGuild ? undefined : 'left-guild'}>
+                <tr key={c.id}>
                   <td>
                     <strong>{armoryUrl(c.slug) ? <a href={armoryUrl(c.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{c.fullName}</a> : c.fullName}</strong>
-                    {!c.inGuild && <> <span className="badge">forladt guild</span></>}
+                    {c.inGuild && <GuildStar />}
                   </td>
                   <td>{c.ownerName}</td>
                   <td>{c.className}{c.spec ? ` (${c.spec})` : ''}</td>

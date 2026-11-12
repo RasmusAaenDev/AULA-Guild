@@ -1,3 +1,4 @@
+import { GuildStar } from '@/components/GuildStar';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { eq } from 'drizzle-orm';
@@ -90,7 +91,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
               <ul>
                 {list.map((a) => (
                   <li key={a.userId}>
-                    <strong>{a.characterFullName}</strong> · {a.className} · {roleLabel(a.role)}
+                    <strong>{a.characterFullName}</strong>{a.inGuild && <GuildStar />} · {a.className} · {roleLabel(a.role)}
                     <span className="muted"> ({a.userName})</span>
                   </li>
                 ))}

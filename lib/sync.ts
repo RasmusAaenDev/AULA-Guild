@@ -100,15 +100,17 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
   const byId = new Map(roster.map((m) => [m.blizzardId, m]));
 
   const registered = await deps.db
-    .select({ id: characters.id, blizzardId: characters.blizzardId })
+    .select({ id: characters.id, blizzardId: characters.blizzardId, slug: characters.slug, surname: characters.surname })
     .from(characters)
     .where(isNotNull(characters.userId));
 
   const present: { id: number; blizzardId: number; slug: string; surname: string | null }[] = [];
+  const outside: typeof present = [];
   for (const c of registered) {
     const m = byId.get(c.blizzardId);
     if (!m) {
-      await deps.db.update(characters).set({ inGuild: false }).where(eq(characters.id, c.id));
+      await deps.db.update(characters).set({ inGuild: false, guildRank: null }).where(eq(characters.id, c.id));
+      outside.push({ id: c.id, blizzardId: c.blizzardId, slug: c.slug, surname: c.surname });
     } else {
       await deps.db.update(characters).set({ inGuild: true, guildRank: m.rank }).where(eq(characters.id, c.id));
       present.push({ id: c.id, blizzardId: c.blizzardId, slug: m.slug, surname: m.surname });
@@ -150,6 +152,33 @@ export async function syncRoster(deps: SyncDeps): Promise<SyncResult> {
       } catch {
         // ignoreres bevidst
       }
+    } catch {
+      failed++;
+    }
+  });
+
+  // Karakterer uden for guilden: kun profilen opdateres (ingen achievements/highlights).
+  await mapLimit(outside, deps.concurrency ?? 3, async (c) => {
+    try {
+      const p = await fetchProfile(deps.blizzard, c.slug, sleep);
+      if (p.blizzardId !== c.blizzardId) {
+        failed++;
+        return;
+      }
+      await deps.db
+        .update(characters)
+        .set({
+          name: p.name,
+          ...((p.surname ?? c.surname) !== null ? { surname: p.surname ?? c.surname } : {}),
+          className: p.className,
+          ...(p.spec !== undefined ? { spec: p.spec } : {}),
+          ...(p.level !== null ? { level: p.level } : {}),
+          itemLevel: p.itemLevel,
+          lastLogin: p.lastLogin,
+          lastSynced: now(),
+        })
+        .where(eq(characters.id, c.id));
+      updated++;
     } catch {
       failed++;
     }

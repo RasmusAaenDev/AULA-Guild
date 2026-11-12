@@ -34,6 +34,7 @@ export type Attendee = {
   characterFullName: string;
   className: string;
   role: Role;
+  inGuild: boolean;
   status: RsvpStatus;
 };
 export type EventDetail = {
@@ -174,6 +175,7 @@ export async function getEvent(db: Db, eventId: number): Promise<EventDetail | n
       characterSlug: characters.slug,
       className: characters.className,
       role: characters.role,
+      inGuild: characters.inGuild,
       status: rsvps.status,
     })
     .from(rsvps)

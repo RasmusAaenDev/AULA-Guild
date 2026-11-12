@@ -61,6 +61,8 @@ for (const [name, t] of Object.entries(themes)) {
       ['--danger på --card', t.danger, t.card, 4.5],
       ['hvid tekst på --badge', '#ffffff', t.badge, 4.5],
       ['--badge som kant mod --card', t.badge, t.card, 3],
+      ['guild-stjerne: --star på --card', t.star, t.card, 4.5],
+      ['guild-stjerne: --star på --bg', t.star, t.bg, 4.5],
       ['--ok på --card', t.ok, t.card, 4.5],
       ['--maybe på --card', t.maybe, t.card, 4.5],
       ['--no på --card', t.no, t.card, 4.5],

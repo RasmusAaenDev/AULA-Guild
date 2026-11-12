@@ -97,13 +97,48 @@ describe('syncRoster', () => {
     expect(await row(2)).toMatchObject({ spec: null, itemLevel: 43 });
   });
 
-  it('markerer karakterer, der ikke står i rosteren, som forladt og beholder deres data', async () => {
+  it('opdaterer også profilen for karakterer uden for rosteren (inGuild=false, guildRank=null), uden highlights-kald', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { highlightsBaselineAt: OLD });
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })],
+      characters: { alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha', surname: 'Ny', level: 50, itemLevel: 60, spec: 'Frost', guildId: 5 }) },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 1, failed: 0 });
+    expect(await row(1)).toMatchObject({ inGuild: false, guildRank: null, level: 50, itemLevel: 60, spec: 'Frost', surname: 'Ny', lastSynced: NOW });
+    expect(blizzard.calls).toEqual(['roster', 'character:alpha']);
+    expect(await db.select().from(highlights)).toHaveLength(0);
+  });
+
+  it('tæller en fejlet ikke-guild-profil som failed og beholder dens gamle data', async () => {
     const u = await seedUser(db);
     await seed(1, 'Alpha', u);
-    const blizzard = fakeBlizzard({ roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })] });
-    expect(await run(blizzard)).toEqual({ skipped: false, updated: 0, failed: 0 });
-    expect(await row(1)).toMatchObject({ inGuild: false, itemLevel: 5, spec: 'Fire', lastSynced: OLD });
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 99, slug: 'andre', name: 'Andre' })],
+      characters: { alpha: new BlizzardError('not_found', 'alpha') },
+    });
+    expect(await run(blizzard)).toEqual({ skipped: false, updated: 0, failed: 1 });
+    expect(await row(1)).toMatchObject({ inGuild: false, guildRank: null, itemLevel: 5, spec: 'Fire', lastSynced: OLD });
+  });
+
+  it('tom roster springer over uden at ændre eller markere nogen', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u);
+    const blizzard = fakeBlizzard({ roster: [] });
+    expect(await run(blizzard)).toEqual({ skipped: true, updated: 0, failed: 0 });
+    expect(await row(1)).toMatchObject({ inGuild: true, guildRank: 9, lastSynced: OLD });
     expect(blizzard.calls).toEqual(['roster']);
+  });
+
+  it('en karakter, der kommer tilbage i rosteren, får inGuild og rang igen', async () => {
+    const u = await seedUser(db);
+    await seed(1, 'Alpha', u, { inGuild: false, guildRank: null });
+    const blizzard = fakeBlizzard({
+      roster: [member({ blizzardId: 1, slug: 'alpha', name: 'Alpha', rank: 4 })],
+      characters: { alpha: armory({ blizzardId: 1, slug: 'alpha', name: 'Alpha' }) },
+    });
+    await run(blizzard);
+    expect(await row(1)).toMatchObject({ inGuild: true, guildRank: 4 });
   });
 
   it('sætter forladt karakter tilbage i guilden, når den står i rosteren igen', async () => {

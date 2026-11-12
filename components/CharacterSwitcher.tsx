@@ -3,6 +3,7 @@ import { setActiveAction } from '@/app/(app)/actions';
 import { classKey, sortForSwitcher, switcherLabel } from '@/lib/character-switcher';
 import { initials } from '@/lib/names';
 import type { MyCharacter } from '@/lib/characters';
+import { GuildStar } from './GuildStar';
 import { Icon } from './icons';
 
 /**
@@ -22,11 +23,12 @@ export function CharacterSwitcher({ characters, activeId }: { characters: MyChar
       <ul className="cs-list">
         {sortForSwitcher(characters).map((c) => {
           const primary = c.id === activeId;
-          const label = switcherLabel(c.fullName, primary);
+          const label = switcherLabel(c.fullName, primary) + (c.inGuild ? ', i guilden' : '');
           const cls = `cs-avatar cs-cls-${classKey(c.className)}`;
           const inner = (
             <>
               <span aria-hidden="true">{initials(c.fullName)}</span>
+              {c.inGuild && <span className="cs-star"><GuildStar decorative /></span>}
               {primary && (
                 <span className="cs-check" aria-hidden="true">
                   <Icon name="deltager" size={12} />

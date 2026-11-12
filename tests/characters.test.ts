@@ -62,13 +62,35 @@ describe('addCharacter', () => {
     expect(await db.select().from(characters)).toHaveLength(0);
   });
 
-  it('afviser karakter i en anden guild eller uden guild', async () => {
+  it('tilføjer en karakter uden for guilden (anden guild eller ingen guild) med inGuild=false', async () => {
     const userId = await seedUser(db);
     const other = fakeBlizzard({ characters: { 'magi-far': armory({ guildId: 999 }) } });
-    expect(await addCharacter(deps(other), { userId, name: 'Magi Far', role: 'dps' })).toEqual({ ok: false, reason: 'wrong_guild' });
-    const none = fakeBlizzard({ characters: { 'magi-far': armory({ guildId: null, guildName: null }) } });
-    expect(await addCharacter(deps(none), { userId, name: 'Magi Far', role: 'dps' })).toEqual({ ok: false, reason: 'wrong_guild' });
-    expect(await db.select().from(characters)).toHaveLength(0);
+    const res = await addCharacter(deps(other), { userId, name: 'Magi Far', role: 'dps' });
+    expect(res.ok).toBe(true);
+    const none = fakeBlizzard({ characters: { 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Svumpukkel', guildId: null, guildName: null }) } });
+    expect((await addCharacter(deps(none), { userId, name: 'Ezzek Svumpukkel', role: 'dps' })).ok).toBe(true);
+    const rows = await db.select().from(characters);
+    expect(rows).toHaveLength(2);
+    expect(rows.every((r) => r.inGuild === false)).toBe(true);
+    expect((await listMyCharacters(db, userId)).map((c) => c.inGuild)).toEqual([false, false]);
+  });
+
+  it('sætter inGuild=true for en guild-karakter', async () => {
+    const userId = await seedUser(db);
+    await addCharacter(deps(fakeBlizzard({ characters: { 'magi-far': armory() } })), { userId, name: 'Magi Far', role: 'dps' });
+    expect((await listMyCharacters(db, userId))[0].inGuild).toBe(true);
+  });
+
+  it('efternavn uden for guilden: profilens, ellers null (rosterens bruges ikke)', async () => {
+    const userId = await seedUser(db);
+    const withSurname = fakeBlizzard({ characters: { 'magi-far': armory({ guildId: 999, surname: 'Profil' }) }, roster: [member({ surname: 'Roster' })] });
+    await addCharacter(deps(withSurname), { userId, name: 'Magi Far', role: 'dps' });
+    const without = fakeBlizzard({ characters: { 'ezzek-svumpukkel': armory({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: null, guildId: 999 }) }, roster: [member({ blizzardId: 1002, slug: 'ezzek-svumpukkel', name: 'Ezzek', surname: 'Roster' })] });
+    await addCharacter(deps(without), { userId, name: 'Ezzek Svumpukkel', role: 'dps' });
+    const rows = await db.select().from(characters);
+    expect(rows.find((r) => r.blizzardId === 1001)?.surname).toBe('Profil');
+    expect(rows.find((r) => r.blizzardId === 1002)?.surname).toBeNull();
+    expect((await listMyCharacters(db, userId)).map((c) => c.fullName).sort()).toEqual(['Ezzek Svumpukkel', 'Magi Profil']);
   });
 
   it('giver unavailable og gemmer intet, når armory er nede eller rate-limiter', async () => {

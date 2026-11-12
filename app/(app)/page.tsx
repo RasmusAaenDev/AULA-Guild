@@ -1,3 +1,4 @@
+import { GuildStar } from '@/components/GuildStar';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
@@ -72,7 +73,7 @@ export default async function OverviewPage({
   const pinned = pinnedEvent(upcoming, now);
   const [{ n: characterCount }] = await db.select({ n: count() }).from(characters).where(eq(characters.userId, member.userId));
   const [row] = await db
-    .select({ id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel })
+    .select({ id: characters.id, name: characters.name, surname: characters.surname, slug: characters.slug, className: characters.className, spec: characters.spec, role: characters.role, level: characters.level, itemLevel: characters.itemLevel, inGuild: characters.inGuild })
     .from(users)
     .innerJoin(characters, and(eq(characters.id, users.activeCharacterId), eq(characters.userId, users.id)))
     .where(eq(users.id, member.userId));
@@ -274,7 +275,7 @@ export default async function OverviewPage({
             {row ? (
               <>
               <p>
-                <strong>{armoryUrl(row.slug) ? <a href={armoryUrl(row.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{fullName(row)}</a> : fullName(row)}</strong> · {row.className}
+                <strong>{armoryUrl(row.slug) ? <a href={armoryUrl(row.slug)!} target="_blank" rel="noopener noreferrer" title="Åbn i WoW-armory">{fullName(row)}</a> : fullName(row)}</strong>{row.inGuild && <GuildStar />} · {row.className}
                 {row.spec ? ` (${row.spec})` : ''}
                 <br />
                 <span className="muted">
