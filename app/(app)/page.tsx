@@ -33,7 +33,7 @@ import { statusClass } from '@/lib/rsvp-ui';
 import { recentChatItems } from '@/lib/overview-chat';
 import { recentGalleryItems } from '@/lib/overview-gallery';
 import { mergeTimeline } from '@/lib/overview-feed';
-import { SATIRE_COOKIE, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode } from '@/lib/satire';
+import { SATIRE_COOKIE, SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, SATIRE_WINDOW_DAYS, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode, timelineSatire } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
 import { isSimConfigured } from '@/lib/services';
 import { requireUser } from '@/lib/session';
@@ -104,7 +104,8 @@ export default async function OverviewPage({
             real: items.map((item) => ({ item, at: item.createdAt, pinned: item.pinned })),
             chat: chatItems.map((item) => ({ item, at: item.at })),
             gallery: galleryItems.map((item) => ({ item, at: item.at })),
-            satire: mode === 'timeline' ? datedSatire(dateKey, now).map((item) => ({ item, at: item.at })) : [],
+            // Kun de seneste dages satire (nyeste først), så den ikke fylder side 1; Satire-fanen viser hele vinduet.
+            satire: mode === 'timeline' ? timelineSatire(dateKey, now).map((item) => ({ item, at: item.at })) : [],
             hasOlder: hasMore,
             now,
           })
@@ -158,8 +159,9 @@ export default async function OverviewPage({
             <section className="card satire-explain">
               <h2>Satire</h2>
               <p>
-                Her er alle de fiktive opslag samlet. De er opdigtede for sjov, efterligner genren fra skolebeskeder og
-                handler ikke om rigtige personer. I Alle-fanen er de flettet ind mellem de ægte opslag efter dato.
+                Her er de fiktive opslag samlet. De er opdigtede for sjov, efterligner genren fra skolebeskeder og
+                handler ikke om rigtige personer. Der kommer {SATIRE_PER_DAY} nye hver dag, og her ser du dem fra de seneste {SATIRE_WINDOW_DAYS} dage.
+                I Alle-fanen er dem fra de seneste {SATIRE_TIMELINE_DAYS} dage flettet ind mellem de ægte opslag efter tidspunkt.
                 De tæller ikke som ulæste, kan ikke gemmes og kan ikke kommenteres. Du kan skjule dem med knappen ovenfor.
               </p>
             </section>

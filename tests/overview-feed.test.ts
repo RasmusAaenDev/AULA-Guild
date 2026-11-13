@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mergeTimeline } from '@/lib/overview-feed';
+import { SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, datedSatire, timelineSatire } from '@/lib/satire';
 
 const now = new Date('2026-11-10T12:00:00Z');
 const t = (h: number) => new Date(now.getTime() - h * 3_600_000);
@@ -71,5 +72,18 @@ describe('mergeTimeline', () => {
     });
     expect(show(out)).toBe('r1 r2 c g s r3');
     expect(out.map((e) => e.kind)).toEqual(['real', 'real', 'chat', 'gallery', 'satire', 'real']);
+  });
+  it('fletter højst de seneste 2 dages satire (10 opslag) ind, selv med få ægte opslag og 14 dages vindue', () => {
+    const pool = datedSatire('2026-11-10', now);
+    expect(pool.length).toBeGreaterThan(10);
+    const out = mergeTimeline({
+      ...base,
+      real: [real('a', 1)],
+      satire: timelineSatire('2026-11-10', now).map((item) => ({ item: item.id, at: item.at })),
+      hasOlder: false,
+    });
+    const sat = out.filter((e) => e.kind === 'satire');
+    expect(sat).toHaveLength(SATIRE_TIMELINE_DAYS * SATIRE_PER_DAY);
+    expect(sat.map((e) => e.item)).toEqual(pool.slice(-10).reverse().map((p) => p.id));
   });
 });
