@@ -8,10 +8,10 @@ import { parseTab } from '@/lib/posts-ui';
 
 describe('satire-data', () => {
   const N = satirePosts.length;
-  it('har 90 opslag med unikke id\'er satire-01..satire-90 og alle felter', () => {
-    expect(N).toBe(90);
-    expect(SATIRE_CYCLE_DAYS).toBe(18);
-    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 90 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
+  it('har 150 opslag med unikke id\'er satire-01..satire-150 og alle felter', () => {
+    expect(N).toBe(150);
+    expect(SATIRE_CYCLE_DAYS).toBe(30);
+    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 150 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
     expect(new Set(satirePosts.map((p) => p.id)).size).toBe(N);
     for (const p of satirePosts) {
       expect(p.title.trim()).not.toBe('');
@@ -34,10 +34,10 @@ describe('satire-data', () => {
       }
     }
   });
-  it('har 16 vigtige, 65 med kommentarer og 25 uden', () => {
-    expect(satirePosts.filter((p) => p.important)).toHaveLength(16);
-    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(65);
-    expect(satirePosts.filter((p) => p.comments.length === 0)).toHaveLength(25);
+  it('har 27 vigtige, 107 med kommentarer og 43 uden', () => {
+    expect(satirePosts.filter((p) => p.important)).toHaveLength(27);
+    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(107);
+    expect(satirePosts.filter((p) => p.comments.length === 0)).toHaveLength(43);
   });
   it('har unikke titler', () => {
     expect(new Set(satirePosts.map((p) => p.title)).size).toBe(N);
@@ -52,7 +52,7 @@ describe('satire-data', () => {
       'Storms mor', 'Storms far', 'Valdemars mor', 'Valdemars far', 'Majas mor', 'Majas far', 'Sofies mor',
       'Alberts mor', "Lucas' far", 'Frejas mormor', 'Noahs mor', 'Karls mor', 'Wilmas far', 'Malthes far',
       'Naboen Preben', 'Klasselærer Anja', 'SFO-personalet', 'Pædagog Bent', 'Skolelederen', 'Skolens pedel',
-      'Skolens bibliotekar', 'Kageudvalget', 'Klasseforældrerådet', 'Skolekøkkenet', 'Vikaren',
+      'Skolens bibliotekar', 'Kageudvalget', 'Klasseforældrerådet', 'Skolekøkkenet', 'Vikaren', 'Skolesekretæren',
     ].map((n) => `${n} (fiktiv)`));
     for (const p of satirePosts) for (const c of p.comments) expect(gallery).toContain(c.author);
   });
