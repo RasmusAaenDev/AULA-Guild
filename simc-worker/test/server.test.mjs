@@ -152,7 +152,8 @@ async function readNdjson(res) {
   const text = await res.text();
   return text.split('\n').filter(Boolean).map((l) => JSON.parse(l));
 }
-const simcDirs = () => readdirSync(tmpdir()).filter((n) => n.startsWith('simc-'));
+// Workerens egne temp-mapper er `simc-` + 6 tegn (mkdtemp). patches.test.mjs kører samtidigt og laver `simc-repo-…`/`simc-upstream.…`.
+const simcDirs = () => readdirSync(tmpdir()).filter((n) => /^simc-[A-Za-z0-9]{6}$/.test(n));
 
 test('ndjson: log-linjer og præcis én slutlinje med samme krop som før', async () => {
   const res = await post({ input: 'hunter="A"\nrace=logs\n', iterations: 500 }, NDJSON);
