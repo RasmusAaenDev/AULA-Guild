@@ -53,7 +53,7 @@ describe('satire-data', () => {
       'Alberts mor', "Lucas' far", 'Frejas mormor', 'Noahs mor', 'Karls mor', 'Wilmas far', 'Malthes far',
       'Naboen Preben', 'Klasselærer Anja', 'SFO-personalet', 'Pædagog Bent', 'Skolelederen', 'Skolens pedel',
       'Skolens bibliotekar', 'Kageudvalget', 'Klasseforældrerådet', 'Skolekøkkenet', 'Vikaren', 'Skolesekretæren',
-      'Ebbas mor', 'Lærer Klausen', 'Tvillingernes mor', 'Mathildes forældre',
+      'Ebbas mor', 'Lærer Klausen', 'Prinsesse Josephines mor', 'Mathildes forældre',
     ].map((n) => `${n} (fiktiv)`));
     for (const p of satirePosts) for (const c of p.comments) expect(gallery).toContain(c.author);
   });
