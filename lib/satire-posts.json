@@ -22,6 +22,10 @@
         "body": "Til Storms mor: Jeg spurgte bare. Ketchup er også en sauce."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba må ikke få remulade, ketchup eller sennep. Eller dressinger. Eller mad. Se vedhæftet liste."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Vi har gode erfaringer med hjemmelavet rødbedeketchup. Jeg deler gerne opskriften."
       },
@@ -64,12 +68,20 @@
         "body": "Til Valdemars far: Det er mig, der har pakket dem. Rækkefølgen er tilfældig."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sokker er uld, bomuld og farvestof. Ebba har kun sokker af tanke. De er aldrig våde."
+      },
+      {
         "author": "Valdemars far (fiktiv)",
         "body": "Til Valdemars mor: Så er den ikke tilfældig længere. Jeg har nummereret dem."
       },
       {
         "author": "SFO-personalet (fiktiv)",
         "body": "Vi gør vores bedste. Sok nummer tre er dog allerede væk."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sender fem par med. Jeg henter dem kl. 12.10, før de bliver våde."
       },
       {
         "author": "Alberts mor (fiktiv)",
@@ -99,12 +111,20 @@
         "body": "Er det det samme pindsvin som i går?"
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Pindsvin har pels, mider og lopper. Ebba reagerer på alle tre. Må det vente udenfor?"
+      },
+      {
         "author": "Majas mor (fiktiv)",
         "body": "Til Idas mormor: Ja. Det har fået et navn nu, og det gør det ikke nemmere."
       },
       {
         "author": "Emils far (fiktiv)",
         "body": "Hvad hedder det? Emil spørger, og han giver sig ikke."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Pindsvin er charmerende. Ligesom Majas mor, der tydeligvis har lært hende noget."
       },
       {
         "author": "Majas mor (fiktiv)",
@@ -160,8 +180,16 @@
         "body": "Det er vist ikke vores. Vores er mere røde."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Vanter er uld og latex. Ebba har aldrig mistet en. Hun har aldrig haft en."
+      },
+      {
         "author": "Alberts mor (fiktiv)",
         "body": "Er den blå? Så er det nok min."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg leder gerne efter den anden vante. Sammen med en forælder, selvfølgelig."
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -184,7 +212,28 @@
     "tags": [
       "aflevering"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har noteret 7.52. Duen er informeret."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar har aldrig vist duer interesse hjemme. Rart at vide, hvor det sker."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Godmorgen, Oscars bonusfar. Du lyder som en mand, der kender sine duer."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Skolens åbningstid er 7.45. Vi gør opmærksom på, at 7.52 er inden for rammerne."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Til SFO-personalet: Det er alt for tidligt. Mine kommer 8.41, når duen er fløjet."
+      }
+    ],
     "inspiration": "Meget specifikt tidspunkt med uforklaret begrundelse.",
     "sources": []
   },
@@ -204,8 +253,16 @@
         "body": "Valdemar tog den på alligevel, han havde det godt."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Pyjamas er bomuld, polyester og dyne. Ebba kom i sin hud. Den er også et allergen."
+      },
+      {
         "author": "Lucas' far (fiktiv)",
         "body": "Til Klasselærer Anja: Er torsdag så den efter onsdag? Vi har haft en hård uge."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kom til pyjamasdag torsdag. Det var onsdag. Så var jeg alene."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -288,8 +345,16 @@
         "body": "Emil har lånt den. Han siger, den var blå på en måde, der føltes som en invitation."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kuglepenne har blæk, plast og metal. Ebba skriver med et fingeraftryk."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Til Emils far: Den er ikke en invitation. Den er en kuglepen."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Må jeg også låne en blyant? Jeg sidder med, og jeg har ikke fået en."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -314,8 +379,16 @@
         "body": "Storm har allerede købt gave. Kan den bruges til næste år?"
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Fødselsdag er kage, balloner og gæster. Ebba fejrer hver dag sin ikke-fødselsdag."
+      },
+      {
         "author": "Oscars mor (fiktiv)",
         "body": "Til Storms mor: Ja, hvis den ikke er levende."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Oscar har ikke fødselsdag, men jeg har lyst til at fejre ham. Og hans far."
       },
       {
         "author": "Storms mor (fiktiv)",
@@ -349,6 +422,10 @@
         "body": "Til Storms far: Æbler er OK."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Bananer er latex-krydsallergi. Ebba er glad for forbuddet. Må der også blive et appelsinforbud?"
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Bananer er ellers en af de få søde ting, Ida må få. Hvad skal hun så have?"
       },
@@ -377,7 +454,36 @@
     "tags": [
       "kost"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Hvad hvis Valdemar kun spiser skorpen? Tæller det som at have spist rugbrød?"
+      },
+      {
+        "author": "Valdemars mor (fiktiv)",
+        "body": "Til Valdemars far: Vi har ikke snakket med ham derhjemme. Du har snakket. Han har lyttet."
+      },
+      {
+        "author": "Valdemars far (fiktiv)",
+        "body": "Til Valdemars mor: Det er det samme, når han nikker."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Valdemar spiser sin rugbrød hver dag. Det tager bare lidt tid at komme i gang."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Indeholder rugbrødet surdej, kerner eller hørfrø? Ebba er allergisk over for alle tre."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Valdemars far, du har tydeligvis en stærk hånd med opdragelsen. Imponerende."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Reglerne for frokostpausen siger, at der ikke må stilles betingelser for leg. Vi skriver et notat."
+      }
+    ],
     "inspiration": "Ønske om at få personalet til at håndhæve hjemmeregler.",
     "sources": []
   },
@@ -398,6 +504,10 @@
       {
         "author": "Kageudvalget (fiktiv)",
         "body": "Du er sat på fredag. Det er også bedre."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har skrevet mig på fredag. Jeg kommer kl. 10.30 med kagen. Så er alle gået."
       },
       {
         "author": "Storms mor (fiktiv)",
@@ -428,7 +538,36 @@
     "tags": [
       "tøj"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis det regner indendørs? Vi har haft en utæt rude på anden sal."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Ruden er repareret. Men det er rart, at nogen holder øje med den."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Er hjemmeskoene af gummi, filt eller skind? Ebba er allergisk over for alle tre."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Børn kan sagtens gå i strømpesokker. Det plejer at gå fint."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Ordensreglerne kræver hjemmesko. Strømpesokker er ikke nævnt i regelsættet."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Anja, du får selv gummistøvler indendørs til at lyde som poesi."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Gummistøvler kan tørres. Skolens gulv kan ikke. Det står jeg ved."
+      }
+    ],
     "inspiration": "Logisk regel, der alligevel ender uforståelig.",
     "sources": []
   },
@@ -445,6 +584,10 @@
       {
         "author": "Naboen Preben (fiktiv)",
         "body": "Jeg har set Maja med posen. Hun brugte den til kastanjer. Det virkede."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hundeposer er plast og lugt. Ebba bærer en tanke med sig i stedet."
       },
       {
         "author": "Idas mormor (fiktiv)",
@@ -481,6 +624,10 @@
         "body": "Til Oscars far: Det var heller ikke meningen."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sad med på turen. Jeg forstod ikke forskellen på en bæk og en å."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Telefonen fik en naturlig afslutning. Den er nu en del af økosystemet."
       },
@@ -505,7 +652,36 @@
     "tags": [
       "hjelm"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Må hjelmen være på hele dagen? Storm sover i sin."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Storms far: Han sover ikke i den. Han har den bare på, når han sover."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Hvad er øvelsen? Er det noget med balance? Det var for avanceret, da jeg sad med sidst."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Tvillingernes mor: Det er en hjelm. Man tager den på. Det er hele øvelsen."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hjelmen har skum og polstring. Ebba reagerer på begge. Må hun øve med en sigte?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Hjelme skal være godkendt. En sigte er ikke omfattet af reglerne."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Skolelederen: Så får hun hjelm på. Skummet finder vi ud af bagefter."
+      }
+    ],
     "inspiration": "Dagens påmindelse om en aktivitet, ingen forstår.",
     "sources": []
   },
@@ -522,6 +698,10 @@
       {
         "author": "Idas far (fiktiv)",
         "body": "Kan vi få den uden lugt?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Den lille sok lugter ikke, men Ebba kan alligevel mærke den. Må den flyttes til fløj C?"
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -555,12 +735,20 @@
         "body": "Til Emils far: Vi vil ikke sige mere."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ost er mælk og skimmel. Må ost forbydes i hele skolen, også uden for madpakker?"
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Ost er vigtigt for calcium. Jeg foreslår, at vi drøfter alternativer."
       },
       {
         "author": "Oscars far (fiktiv)",
         "body": "Til Idas mor: Mælk. Det er bare ost, der ikke er blevet til noget endnu."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Reglen om ost er indført efter hændelsen. Vi har ikke skrevet hændelsen ned, men den er dokumenteret."
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -593,12 +781,24 @@
         "body": "Vi har en lineal. Den er ikke særlig præcis."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Regn er vand, kulde og ting, der falder. Ebba må ikke komme ud. Hun vil gerne se på det."
+      },
+      {
         "author": "Valdemars far (fiktiv)",
         "body": "Til SFO-personalet: Jeg sender en regnmåler med. Grænsen er 4 mm i timen."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg måler ikke regn. Jeg tager bare børnene ind, når de bliver våde."
+      },
+      {
         "author": "Pædagog Bent (fiktiv)",
         "body": "Vi har modtaget regnmåleren. Valdemar holder den selv og er meget glad."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Regn er romantisk, men Valdemar skal selvfølgelig have en paraply. Hej, Valdemars mor."
       }
     ],
     "inspiration": "Urealistisk krav til personalet.",
@@ -618,6 +818,10 @@
       {
         "author": "Kageudvalget (fiktiv)",
         "body": "Noteret med glæde. Det gør vores arbejde meget lettere."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Nej til kage er også et allergen. Ebba har sagt nej til alt siden børnehaven."
       }
     ],
     "inspiration": "Mærkelig men afdæmpet aftale.",
@@ -649,6 +853,10 @@
       {
         "author": "SFO-personalet (fiktiv)",
         "body": "Til Storms mor: Nummer 7 er en meget stabil plads."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Nummer 7 er et godt nummer. Jeg har altid haft held med det."
       },
       {
         "author": "Storms mor (fiktiv)",
@@ -697,6 +905,10 @@
         "body": "Til Storms mor: Hvem fører listen? Jeg vil gerne skrives korrekt."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Jeg har fået at vide, at alle kagestykker indeholder mel, æg og smør. Det er et problem."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Det gør jeg. Ufrivilligt, men grundigt."
       },
@@ -725,7 +937,28 @@
     "tags": [
       "kost"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Jeg har en dunk med to rum. Må vand og saft stå på hver sin side?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Idas mor: Det er et rum for meget. Men vi kigger på den."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Vi mistede låget sidste gang. Er det okay, hvis dunken bare er meget tung?"
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Jeg var med sidste torsdag. Der var vand i garderoben. Og et sted, jeg ikke turde gå hen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Vandhanerne er ikke certificeret til direkte drikning fra dunk. Vi undersøger det."
+      }
+    ],
     "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
@@ -738,7 +971,36 @@
     "tags": [
       "personale"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Valdemars far (fiktiv)",
+        "body": "Til Klasselærer Anja: Min svigermor mener det godt. Valdemar har det fint."
+      },
+      {
+        "author": "Valdemars mor (fiktiv)",
+        "body": "Det er min mor. Hun ringer også til skolen om vejret."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Jeg har spurgt Valdemar. Han har det fint. Han bad mig sige hej til mormor."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Valdemars mormor er altid velkommen. Jeg elsker en kvinde, der bekymrer sig."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Må jeg også låne en støttelærer? Jeg sidder med i matematik, og det går ikke godt."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Tvillingernes mor: Det er ikke en mulighed. Du er ikke indskrevet i klassen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Støttelærer kræver en skriftlig rekvisition. Vi sender en blanket til mormor."
+      }
+    ],
     "inspiration": "Rotationspulje (skole-AULA).",
     "sources": []
   },
@@ -759,6 +1021,10 @@
       {
         "author": "Klasselærer Anja (fiktiv)",
         "body": "Til Idas mor: Tak. Bare almindeligt kridt, ikke det til kunstprojekter."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kridt er kalk, støv og farvestof. Ebba er lettet. Må der gerne mangle mere?"
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -787,12 +1053,24 @@
         "body": "Storms rygsæk vejer fire kilo tom. Jeg har vejet den. Måske er det mærket."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Rygsække er nylon, lim og skum. Ebba bærer sine ting i en kurv af flet."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Til Storms mor: Det er samme mærke. Så er vi to med en tung rygsæk."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Ryggen er tung. Det er min også. Jeg sidder med børnene hele dagen."
+      },
+      {
         "author": "Valdemars far (fiktiv)",
         "body": "Valdemars vejer 3,2 kilo tom. Jeg deler gerne mit skema."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg bærer gerne Idas rygsæk. Så kan vi tale om resten af dagen, Idas mor."
       }
     ],
     "inspiration": "Forklaring, der ikke forklarer.",
@@ -807,7 +1085,32 @@
     "tags": [
       "cykel"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Storms far: Hvem har lovet det? Han eller cyklen?"
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Storms mor: Begge. De har skrevet under."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Cyklen må stå ved mit værksted. Så kan jeg holde øje med, om den kører."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Cykler indendørs er ikke aftalt. Men Storm må gerne tage hjelmen med ind."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Hjelme indendørs er heller ikke omfattet af reglerne."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Cyklen har gummidæk, lak og smøremiddel. Ebba kan ikke være i samme rum som den."
+      }
+    ],
     "inspiration": "Løfte om noget, der ikke skal ske.",
     "sources": []
   },
@@ -832,6 +1135,10 @@
       {
         "author": "Oscars far (fiktiv)",
         "body": "Til Klasselærer Anja: Og hvad sker der så?"
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg tager gerne med og holder forældre med selskab i bussen. Der er plads ved siden af mig."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -866,7 +1173,36 @@
     "tags": [
       "afhentning"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Til Majas bonusfar: Kagen uden flødeskum står ikke på listen. Vi skriver den på."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Hvorfor er det ikke bare kagen med flødeskum? Det er den, børnene vil have."
+      },
+      {
+        "author": "Majas far (fiktiv)",
+        "body": "Til Storms mor: Maja siger, at hun kun vil have den, hun ikke må få."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kan kagen være uden mælk, æg, mel, nødder og sukker? Så kan Ebba være i nærheden."
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Til Ebbas mor: Så er det ikke en kage. Det er en idé."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Til Kageudvalget: Jeg bager gerne. Jeg husker, hvem der kunne lide det sidste gang. Hej, Majas mor."
+      },
+      {
+        "author": "Majas mor (fiktiv)",
+        "body": "Til Lærer Klausen: Tak, men Maja tager selv kagen med."
+      }
+    ],
     "inspiration": "Aftale, der kun delvist er aftalt.",
     "sources": []
   },
@@ -879,7 +1215,40 @@
     "tags": [
       "kost"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må skeen bruges til alt? Vi overvejer at lade Oscar spise suppe med gaffel."
+      },
+      {
+        "author": "Sofies mor (fiktiv)",
+        "body": "Til Oscars far: Det er op til jer. Gaflen er ikke berørt."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Gaflen hviler på skabet. Skeen er på vagt. Jeg holder øje."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Spaghetti er hvede og æg. Ebba er allergisk over for begge. Må hun få ske til en tom tallerken?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan få ris og lidt grønt. Det plejer at gå."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Ris og grønt kræver en skriftlig allergierklæring. Vi har ikke modtaget en."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Skolelederen: Den er vedhæftet fire gange. Den fylder 37 sider."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Sofies mor, du har en meget moderne tilgang til bestik. Jeg er imponeret."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -896,6 +1265,10 @@
       {
         "author": "Emils far (fiktiv)",
         "body": "Det er mig der ikke snakker om torsdag."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Juice er frugt, sukker og pulp. Ebba drikker kun filtreret luftfugtighed."
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -929,6 +1302,10 @@
         "body": "Til Sofies mor: Vi tror det. Den har det samme blik."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Snegle har slim, skimmel og jord. Må Ebba komme ind ad bagdøren, uden om hylde 7?"
+      },
+      {
         "author": "Alberts mor (fiktiv)",
         "body": "Er den blå? Så er det nok min."
       },
@@ -949,7 +1326,36 @@
     "tags": [
       "tøj"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Så er de samme sko ikke de samme sko, når man er ude? Lucas er forvirret."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Lucas' far: Nej. De er de samme sko, men udenfor ændrer det dem."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Emil har tre par. Ét er indesko, ét er udesko, og ét er en sag, vi ikke taler om."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Indeskoenes såler skal være uden latex, gummi og lim. Ebba går i en hjemmestrikket sok."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Ebbas mor: Strømpesokker er helt i orden. Hun bliver bare kold."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til SFO-personalet: Strømpesokker er ikke dækket af ordensreglerne. Vi har bedt om en vurdering."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Hvorfor skal vi forklare, hvad indesko er? Det er et skridt for langt."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -968,8 +1374,16 @@
         "body": "Det er en hest. Hun er meget stolt af den."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Hest eller hund? Jeg sad med og tegnede. Jeg endte med en kasse."
+      },
+      {
         "author": "Sofies mor (fiktiv)",
         "body": "Sofie siger, at den er hendes, og at det er en hund. Kan de deles om den?"
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg ved, hvem der kan tegne begge. Hej, Majas mor."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -988,7 +1402,32 @@
     "tags": [
       "mandag"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Vi har gjort det samme med Oscar. Han tror, torsdag er en slags fest."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, Lucas må selv finde ud af det. Det er også en del af læringen."
+      },
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Til Storms mor: Det er derfor, jeg skriver det. Vi kan ikke have flere uenigheder om kalenderen."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi modsiger ikke Lucas. Vi nikker bare og går videre til onsdag."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Mine tror, at lørdag er et sted. Jeg kan ikke følge med i, hvad de lærer."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Ugedagenes rækkefølge er fastlagt i læreplanen. Vi kan tilbyde et orienteringsmøde."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1006,6 +1445,10 @@
       {
         "author": "Storms mor (fiktiv)",
         "body": "Jeg tror, det var vores. Storm har savnet sin købmandsbutik."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Boller indeholder hvede, æg, gær og forventninger. Ebba tåler ingen af dem."
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -1043,6 +1486,10 @@
         "body": "Til Storms mor: Nedbrydeligt glimmer er ikke det samme. Det forsvinder af sig selv."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Glimmer er plast og aluminium. Ebba har haft udslæt siden mandag. Hvem tog det med?"
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Til Idas mor: Det sidder i min bil, og den er ikke blevet nedbrudt endnu."
       },
@@ -1077,8 +1524,16 @@
         "body": "Hun vinkede til mig i går. Jeg vinkede tilbage. Vi er venner nu."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Cykler er gummi, lak og luft. Ebba går, men reagerer på fortovet."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Til Naboen Preben: Tak. Hun spørger, om du også vinker til cykler."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Cykler hjem selv? Jeg følger efter. Jeg cykler foran. Det er også en regel."
       },
       {
         "author": "Naboen Preben (fiktiv)",
@@ -1097,7 +1552,32 @@
     "tags": [
       "tand"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Er det den samme tandfé som med Idas tand? Hun var meget forsinket."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Til Idas mormor: Det er en ny. Den gamle gik på pension."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har fundet en tand i sandkassen. Den er lille og ligner Alberts, men jeg er ikke sikker."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Til Skolens pedel: Den er nok hans. Vi tager den med hjem og prøver den under puden."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Tanden er lagt i en lille æske. Den hedder Hylde 8. Den har det godt."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Tandfeen er en klog kvinde, Alberts mor. Ligesom dig, åbenbart."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1110,7 +1590,40 @@
     "tags": [
       "foto"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Må børn have deres bedste ansigt, eller skal det være deres eget? Det er ikke altid det samme."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Storms mor: Det er deres eget. Det ser vi, når billederne kommer."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man medbringe en grimasse til søskendefoto? Oscar har en god en."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Fotografens lys indeholder UV. Ebba får udslæt af alt over 40 watt. Kan hun tages i mørke?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Skolefoto skal tages i belysning, der opfylder retningslinjerne. Mørke er ikke en mulighed."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Fotografen kommer kun for børnene. Men jeg gætter på, at han ville tage dig, Idas mor."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Til Lærer Klausen: Tak, men det er børnene, der skal på billedet."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Skal begge mine med på samme billede? Så skal jeg sidde med og pege."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1123,7 +1636,32 @@
     "tags": [
       "kost"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Det er jo ikke en overraskelse, hvis den er den samme hver dag."
+      },
+      {
+        "author": "Wilmas far (fiktiv)",
+        "body": "Til Storms mor: Det er derfor, vi beder hende om at tie stille."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Vi er også en pastafamilie. Wilma og Oscar kunne starte en klub."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Wilmas far: Wilma har fortalt os, at det er pasta. Vi lader som ingenting."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Wilmas far, en mand der kan lave en overraskelse af pasta, har jeg kun respekt for."
+      },
+      {
+        "author": "Wilmas far (fiktiv)",
+        "body": "Til Lærer Klausen: Tak. Det er den eneste ret, jeg kan lave."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1149,6 +1687,10 @@
       {
         "author": "Emils far (fiktiv)",
         "body": "Til Idas mor: Det er jo det, der er det spændende ved madpakkedag."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Skal Ebba spise en andens madpakke? Det er en risiko, vi ikke kan tage. Må hun bytte med sig selv?"
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -1189,6 +1731,10 @@
         "body": "Den passer til mit kosteskab. Tak til Noah, vi har ledt længe."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Er nøglen af nikkel? Ebba er allergisk. Må den bæres i en handske?"
+      },
+      {
         "author": "Noahs mor (fiktiv)",
         "body": "Til Skolens pedel: Det forklarer, hvorfor han kom hjem med en kost."
       },
@@ -1215,8 +1761,16 @@
         "body": "Er den blå? Så er det nok min."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Handsker er uld og latex. Ebba bærer en lille handske af luft."
+      },
+      {
         "author": "SFO-personalet (fiktiv)",
         "body": "Til Alberts mor: Den er grøn. Og meget lille."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "En meget lille handske. Det minder mig om nogen med små hænder. Hej, Alberts mor."
       },
       {
         "author": "Alberts mor (fiktiv)",
@@ -1236,7 +1790,36 @@
       "kost",
       "is"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Kold is, ja. Jeg har prøvet den anden slags. Den var varm og kom i en gryde."
+      },
+      {
+        "author": "Frejas mormor (fiktiv)",
+        "body": "Til Idas mormor: Så har du haft en god dag."
+      },
+      {
+        "author": "Oscars mormor (fiktiv)",
+        "body": "Er det den, hvor man leder efter en ske? Det var vores problem i sommer."
+      },
+      {
+        "author": "Skolekøkkenet (fiktiv)",
+        "body": "Til Frejas mormor: Vi serverer is fredag. Den er kold, men vi kan ikke garantere farven."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Is er mælk, æg og kulde. Ebba tåler ingen af dem, men hun ser gerne på den."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan sidde ved siden af og se på. Det er fint."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Børn med allergier må ikke sidde ved siden af allergener. Det står i reglerne."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1249,7 +1832,32 @@
     "tags": [
       "skrald"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Skraldespanden er min. Den er blå. Villads må godt låne den i frikvarteret."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må Oscar også have en? Han er meget optaget af den røde."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Den røde er til papir. Den er ikke til følelser."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Skraldespande er fastmonteret efter brandreglerne. Vi bedes om en forklaring."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Skolelederen: Den er løs. Det er derfor, den er blevet hans."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Villads' far er en mand, der forstår at give sine børn frihed. Jeg beundrer det."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1266,6 +1874,10 @@
       {
         "author": "Lucas' far (fiktiv)",
         "body": "Tak for info. Så er den om dagen?"
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sad med til den almindelige. Den var svær nok. Måneskin ville have været for meget."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -1292,6 +1904,10 @@
       {
         "author": "Storms mor (fiktiv)",
         "body": "Med al respekt, så har Storm også en mening om stole. Han har bare ikke sagt den."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Oscar har en egen stol. Ebba har også brug for en. Af ren stål og uden lak."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -1325,6 +1941,10 @@
         "body": "Emil har tilbudt at gynge på den, så den får lysten igen."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Gyngen er af jern, gummi og maling. Ebba kan kun se på den. Måske derfor har den mistet interessen."
+      },
+      {
         "author": "Skolelederen (fiktiv)",
         "body": "Gyngen er sat på dagsordenen. Vi følger udviklingen nøje."
       },
@@ -1345,7 +1965,36 @@
     "tags": [
       "tøj"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Hvorfor skal hun tænke over det? Hun cykler vel bare forkert."
+      },
+      {
+        "author": "Sofies mor (fiktiv)",
+        "body": "Vi har det samme. Sofie cykler baglæns i kjole. Det er meget konsekvent."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Til Sofies mor: Du ser ud som en kvinde, der kan klare en cykel i kjole. Det kan jeg godt lide."
+      },
+      {
+        "author": "Sofies mor (fiktiv)",
+        "body": "Til Lærer Klausen: Tak. Jeg cykler i bukser."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kjolens stof, farve og knapper er allergener. Ebba går i en hjemmesyet sæk af linned."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: En sæk er helt fint. Børn bærer så meget."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: En sæk er ikke omfattet af skolens påklædningsregler. Vi tager den på mødet."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1362,6 +2011,10 @@
       {
         "author": "Lucas' far (fiktiv)",
         "body": "Nu forstår jeg hvorfor mandag føltes underligt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kalenderen er papir og blæk. Ebba kender sin dag ud fra sin allergiliste."
       }
     ],
     "inspiration": "Rotationspulje (runde 2).",
@@ -1376,7 +2029,36 @@
     "tags": [
       "morgen"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Min morgen er rolig. Den starter kl. 9.30. Så er alle børn allerede i gang."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Tvillingernes mor: Det er netop derfor, vi har brug for en rolig morgen."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man have en mening, hvis man holder den indendørs? Emil har mange."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Vinduet har lak, støv og en ramme af fyr. Må Ebba kigge på væggen?"
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Ebbas mor: Hun må kigge på det, hun har lyst til. Det er pointen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til SFO-personalet: Meninger før 8.15 er ikke direkte forbudt. Vi tager det på personalemødet."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Rolig morgen betyder, at jeg må hviske til jer. Det er jeg god til, især til de voksne."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1389,7 +2071,28 @@
     "tags": [
       "frikvarter"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Svaret er nej, men Malthe spørger igen i morgen. Han er meget udholdende."
+      },
+      {
+        "author": "Malthes far (fiktiv)",
+        "body": "Til Storms mor: Han bliver jurist. Eller sælger."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må vi få et frikvarter, hvis vi går sammen? Vi er mange."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Nej. Men tak for initiativet. Det er et godt forsøg."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har hørt spørgsmålet fire gange i dag. Det er et godt spørgsmål."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1402,7 +2105,28 @@
     "tags": [
       "dyr"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Min papegøje hedder Gunnar. Han siger ikke piiip. Han siger Preben."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Siger pennen noget, når den løber tør? Vi har brug for at vide det."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Idas mor: Så siger den ikke noget. Det er fint."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Pennen er blevet spurgt. Den vil ikke udtale sig."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Skolens regler forbyder at tillægge skriveredskaber egenskaber. Vi tager det op."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1416,7 +2140,36 @@
       "svømning",
       "tøj"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar tog to overdele med sidste gang. Han mente, det var det bedste valg."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Det var Storm. Han troede, det var en heldragt. Vi har talt om det."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba tåler hverken klor eller elastan. Må hun svømme i en balje i omklædningsrummet?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan sidde på kanten. Det plejer at gå."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Børn ved bassinkanten uden badetøj er ikke i overensstemmelse med reglerne."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg står gerne klar med håndklæder. Også til jer forældre."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Skal vi forældre også have noget med? Jeg sidder med ved bassinkanten, og jeg fryser."
+      }
+    ],
     "inspiration": "Rotationspulje (runde 2).",
     "sources": []
   },
@@ -1435,12 +2188,28 @@
         "body": "Han mente at have fået dem med hjem, fordi de var gode."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Papirsider er støv. Må dinosaurerne læses højt fra en kasse uden låg?"
+      },
+      {
         "author": "Skolens bibliotekar (fiktiv)",
         "body": "Til Emils far: Det glæder os. Næste gang låner han hele bogen."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Fire sider om dinosaurer? Jeg sad med til fire og forstod ikke den femte."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Ida har læst dem sammen med ham. Hun siger, at det ender godt for kometen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Biblioteket er mit yndlingssted. Der er stille, og man kan hviske. Hej, bibliotekar."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Lærer Klausen: Biblioteket er stille. Det er pointen."
       }
     ],
     "inspiration": "Rotationspulje (skole-AULA).",
@@ -1459,6 +2228,10 @@
       {
         "author": "Oscars mormor (fiktiv)",
         "body": "Det er måske Oscar. Han har en meget bestemt mening om stole."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Stolen var af spånplade og lim. Ebba er lettet over, at den er væk. Må vi undlade at lede?"
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -1492,6 +2265,10 @@
         "body": "Til Lucas' far: Ja. Før frikvarter."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Rullesko og hjelm før frikvarter? Jeg skal skrive det ned. Jeg forstår ikke rækkefølgen."
+      },
+      {
         "author": "Valdemars far (fiktiv)",
         "body": "Hvor længe før frikvarter? Fem minutter eller ti?"
       },
@@ -1518,12 +2295,28 @@
         "body": "Er det den samme kande som i julefrokosten?"
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Termokander har metal, plast og kakao. Ebba er allergisk over for alle tre. Må den stå på gangen?"
+      },
+      {
         "author": "Karls mor (fiktiv)",
         "body": "Til Frejas mormor: Ja. Den har været meget ude."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Kakao kan jeg godt. Det er ikke svært, bare varmt."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Emil spørger, om kakaoen må deles. Han tilbyder sennep til gengæld."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Kakao er min yndlingsdrik. Især sammen med Karls mor."
+      },
+      {
+        "author": "Karls mor (fiktiv)",
+        "body": "Til Lærer Klausen: Karl drikker den alene."
       },
       {
         "author": "Karls mor (fiktiv)",
@@ -1603,12 +2396,24 @@
         "body": "Tak for invitationen. Emil kommer. Han har allerede valgt en brugt gave."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba kan komme, hvis kagen er uden alt. Hun tager sin egen gave af luft."
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Er det en gave, der er brugt, eller en gave, han har brugt?"
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer kl. 15. Den starter kl. 14. Jeg sidder med til sidst."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Til Oscars far: Begge. Det er en bog om dinosaurer. Den mangler fire sider."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg kommer gerne til fødselsdagen. Jeg tager en sukkerfri gave med. Hej, Idas mor."
       },
       {
         "author": "Skolens bibliotekar (fiktiv)",
@@ -1650,6 +2455,10 @@
         "body": "Vores var hvidt udenpå, men mørkt indeni. Det var marmorkage."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hvidt brød er hvede og gær. Ebba bærer ikke nag, men hun bærer sin egen mad."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Til Emils far: Det gør det ikke bedre."
       },
@@ -1688,6 +2497,10 @@
       {
         "author": "Skolelederen (fiktiv)",
         "body": "Til Storms far: Et farvel. Ikke to."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg holder i kys og kør kl. 8.40. Så er der ingen. Så er det en parkering."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -1733,6 +2546,10 @@
         "body": "I min tid brugte vi eddike. Det lugtede, men lusene gik."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Lus, mider, hår og kamme er allergener. Ebba har lov til at blive hjemme hele efteråret."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Til Frejas mormor: Det behøver I virkelig ikke. Tea tree er meget mildere."
       },
@@ -1767,8 +2584,16 @@
         "body": "Tak for info. Vi har booket en halv time i marts. Oscar glæder sig allerede."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Legeaftaler kræver en forhåndsliste. Ebba kommer, hvis huset er lufttæt. Må hun få mandag?"
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Emil spørger, om man kan stå på venteliste. Han er god til at vente."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Legeaftaler? Mine har altid legeaftaler. De ved det bare ikke endnu."
       },
       {
         "author": "Noahs mor (fiktiv)",
@@ -1849,6 +2674,10 @@
         "body": "Til Valdemars far: Vores. Det hænger på væggen."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "17.00 er alt for sent. Jeg henter kl. 13.15. Så sidder jeg med til de sidste to timer."
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Det er mig med snakken ved lågen. Jeg undskylder, men det var en god snak."
       },
@@ -1882,6 +2711,10 @@
       {
         "author": "Emils far (fiktiv)",
         "body": "Til Idas mor: Det er derfor, det hedder en overraskelse."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Lasagne er hvede, æg, mælk og tomat. Ebba spiser kun, hvad vi har medbragt. Må det varmes?"
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -1981,6 +2814,10 @@
         "body": "Havregryn er ikke glutenfrit for alle. Bare så I ved det."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Listen indeholder vand. Ebba er allergisk over for hårdt vand. Må kagen bestå af blødt?"
+      },
+      {
         "author": "Kageudvalget (fiktiv)",
         "body": "Til Storms mor: Så står der kun vand på listen. Det bliver en fin kage."
       },
@@ -2024,8 +2861,16 @@
         "body": "Kan vi give en oplevelse i stedet? For eksempel et kursus i mindfulness."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg giver gerne 50 kroner. Og en lille hilsen til Anja. Hun ved hvilken."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Til Idas mor: Hun har 24 børn. Hun har brug for et kursus i ingenting."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Tak. Jeg ved hvilken. Jeg har den i en skuffe."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -2048,6 +2893,14 @@
       {
         "author": "Klasselærer Anja (fiktiv)",
         "body": "Til vikaren: Hamsteren bestemmer ikke. Der er lektier. Tak fordi du tog dagen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Vikaren er dygtig. Jeg kigger forbi i frikvarteret, bare for at spørge, om alt er godt."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Lærer Klausen: Jeg ser dig. Jeg går en anden vej."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -2079,7 +2932,32 @@
       "tøj",
       "vejr"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Storm siger, at han ikke fryser. Vi har det mindre fint."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Storms far: Det er bare, fordi hans læber er blå, at vi tvivler."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba tåler hverken polyester, uld eller dun. Hun går udenfor i håb."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Så må hun gå indenfor. Det er også et godt valg."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Børn skal gå udenfor i frikvarteret. Klassen kan ikke vælge indenfor."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer også i T-shirt. Jeg fryser, men jeg har ikke tid til en jakke, når jeg løber."
+      }
+    ],
     "inspiration": "Overtøj, som børnene ikke vil have på.",
     "sources": []
   },
@@ -2098,8 +2976,20 @@
         "body": "Tak for info. Hvilket mærke? Vi har en mørkeblå, der kan se sort ud."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Biler er udstødning, støv og gummi. Ebba går ad en anden vej, der er luftet."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Til Oscars far: Den ser sort ud fra der, hvor jeg holder."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Naboen har et godt øje. Jeg ville gerne have en nabo som Preben. Eller en, der kunne lide kaffe."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Til Lærer Klausen: Jeg kan lide kaffe."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -2137,12 +3027,24 @@
         "body": "Maja spørger, om pindsvinet må komme med. Bare for at se de andre dyr."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sad med på zoo-turen. Der var en abe, der forstod mere end mig."
+      },
+      {
         "author": "Klasselærer Anja (fiktiv)",
         "body": "Til Majas mor: Nej. Pindsvinet bliver hjemme."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Zoo betyder pels, støv, hø og dyr. Ebba kan kun se dem fra en bus uden vinduer."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Emil har pakket en kasse med huller i låget. Jeg aner ikke hvorfor."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Busser uden vinduer er ikke godkendt til udflugter. Vi søger om en undtagelse."
       },
       {
         "author": "Klasselærer Anja (fiktiv)",
@@ -2169,7 +3071,36 @@
     "tags": [
       "lektier"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man bruge blyant? Emil blev optaget af skyer. Vi nåede kun version 3."
+      },
+      {
+        "author": "Valdemars mor (fiktiv)",
+        "body": "Til Valdemars far: Vi er nu på 15. Han har tegnet en til."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida siger, at en sky skal ligne en sky. Det er et ret stort krav."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Valdemars far: Skyen må meget gerne være færdig. Version 3 var allerede god."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Papir, blyant og viskelæder er allergener. Må Ebba tegne i luften?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Tegning i luften er ikke dokumenterbar. Vi anbefaler papir fra godkendt leverandør."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "En sky? Det lyder let. Men de tegner skyer i matematik nu. Det forstår jeg ikke."
+      }
+    ],
     "inspiration": "Forældre, der tager lektierne alvorligt.",
     "sources": []
   },
@@ -2188,8 +3119,16 @@
         "body": "Er der noget blåt? Så er det nok vores."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Glemmekasser har støv, skimmel og ting. Ebba kigger kun fra afstand."
+      },
+      {
         "author": "Skolens pedel (fiktiv)",
         "body": "Til Alberts mor: Næsten alt er blåt. Kom og kig."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg har fundet en hue i glemmekassen. Den er meget fin. Hej, Sofies mor."
       },
       {
         "author": "Storms far (fiktiv)",
@@ -2222,12 +3161,20 @@
         "body": "Til Emils far: Nej. Hjerter."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg klipper gerne hjerter sammen med jer. Jeg har allerede klippet nogle til nogen."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Vi tager genbrugspapir med. Det er lidt brunt, men det er hjertet, der tæller."
       },
       {
         "author": "Oscars far (fiktiv)",
         "body": "Jeg kommer, men jeg kan kun klippe lige linjer. Kan jeg lave kanterne?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Saks, papir og lim er allergener. Ebba klipper kun i luften."
       },
       {
         "author": "Klasseforældrerådet (fiktiv)",
@@ -2246,7 +3193,32 @@
     "tags": [
       "sygdom"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Det lyder som Oscar. Han har haft ondt i skrivearmen hele efteråret."
+      },
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Til Oscars far: Det er derfor, vi har valgt at tro på det."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Lucas må gerne tegne i stedet. Det gør han, når fingeren har det godt."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Sygefravær skal anmeldes inden kl. 8. Vi har ikke modtaget en anmeldelse for fingeren."
+      },
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Til Skolelederen: Fingeren har det bedre om torsdagen. Vi anmelder det gerne."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Lucas' far, du er en mand, der tager sig af tingene. Det kan jeg godt lide."
+      }
+    ],
     "inspiration": "Sygemelding med en meget præcis diagnose.",
     "sources": []
   },
@@ -2271,6 +3243,10 @@
       {
         "author": "Storms mor (fiktiv)",
         "body": "Til Klasseforældrerådet: Det står der ikke en eneste gang."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sad i tre timer. Jeg forstod to af punkterne. Det var ikke de vigtige."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -2315,6 +3291,10 @@
         "body": "Til Oscars far: Hvis du slår lyden fra, går du glip af vigtige beskeder."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "47 notifikationer? Jeg har ikke åbnet Aula siden august. Jeg kommer, når jeg kommer."
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Til Storms mor: Det er netop den risiko, jeg gerne vil løbe."
       },
@@ -2354,8 +3334,16 @@
         "body": "Med al respekt, de er otte år. De skal på lejrskole, ikke på retreat."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Dadler er sukker og frugt. Ebba tåler dem ikke. Må børnene få luft i stedet?"
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Til Oscars far: Man kan sagtens have det sjovt uden sukker."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Børnene kan få dadler og luft. Det plejer at gå."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -2383,7 +3371,32 @@
       "tøj",
       "idræt"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Det var Oscar. Han ville være klar. Han var meget klar."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Det var meget sjovt. Han svedte kun lidt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba tåler hverken syntetisk fiber, sved eller bevægelse. Må hun være dommer?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Alle elever deltager i idræt. Dommer er ikke en deltagerrolle."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Skolelederen: Så får hun lov at være tidtager. Det er også en rolle."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Tidtager er ikke en rolle i idrætsplanen. Vi justerer den."
+      }
+    ],
     "inspiration": "Praktisk løsning, der ikke virker.",
     "sources": []
   },
@@ -2405,6 +3418,10 @@
       {
         "author": "Pædagog Bent (fiktiv)",
         "body": "Til Emils far: Han fik lov at lukke kl. 17. Det gik fint."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg kommer som mig selv. Det er det, jeg er bedst til."
       },
       {
         "author": "Storms mor (fiktiv)",
@@ -2433,8 +3450,16 @@
         "body": "Hvem ønskede området til at sidde stille? Jeg har et gæt."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Legepladsen får gynge, rutsjebane og sand. Ebba ser dem fra en bænk af ren luft."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Til Emils far: Det var mig. Og jeg står ved det."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Legepladsen bliver hyggelig. Især området til at sidde stille. Jeg kan lide at sidde stille sammen med nogen."
       },
       {
         "author": "Frejas mormor (fiktiv)",
@@ -2471,6 +3496,10 @@
         "body": "Til Oscars far: Der står ikke økologisk på noget, der ikke er det."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Tøjet skal være vasket i parfumefri sæbe uden duft og uden farve. Og uden vand."
+      },
+      {
         "author": "Alberts mor (fiktiv)",
         "body": "Jeg kommer og kigger efter blå vanter. Bare for en sikkerheds skyld."
       },
@@ -2497,8 +3526,16 @@
         "body": "Min tilføjelse var kun på fire sider. Resten var bilag."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Pakkeliste på én side? Jeg læste to og forstod den første."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Jeg tilføjede dadler. Det er vigtigt, at alle har noget at gribe til."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebbas pakkeliste fylder 12 sider. Den er vedhæftet. Den indeholder ingen ting, hun må have."
       },
       {
         "author": "Emils far (fiktiv)",
@@ -2540,6 +3577,10 @@
         "body": "Til Malthes far: Det er ikke afstanden. Det er princippet."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kører ikke, men jeg sidder gerne med, når I kører. Jeg forstår dog ikke reglerne."
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Vi kan køre, men kun i den sorte bil. Den anden er på værksted."
       },
@@ -2574,12 +3615,24 @@
         "body": "Tak, Anja. Det har været et lærerigt halvår for os alle. Især for mig."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Tak for et halvår. Jeg har noteret 38 allergi-hændelser. Jeg sender listen i morgen."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Tak for tålmodigheden. Emil siger, at du er den bedste. Efter hamsteren."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Tak for et halvår. Jeg forstod to måneder af det."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Tak. Med al respekt, så har du klaret det rigtig godt."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Tak for et godt halvår. Jeg har glædet mig til hver forældrekaffe. Især til jer, der kommer."
       },
       {
         "author": "Oscars far (fiktiv)",
@@ -2617,8 +3670,16 @@
         "body": "Til Valdemars far: Hvis borgen kan bæres af Valdemar selv, så ja."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Legetøj er plast, gummi og lak. Ebba medbringer et stykke luft. Det er meget let."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Emil vil tage sin lillesøster med. Hun er ikke legetøj, har jeg forklaret."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Luft er ikke legetøj i skolens forstand. Vi bedes om en definition."
       },
       {
         "author": "Oscars mor (fiktiv)",
@@ -2679,8 +3740,20 @@
         "body": "Emil troede, det grå var et kunstværk. Det ligner noget fra en udstilling."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Cykelstativer er jern, rust og olie. Ebba parkerer ikke. Hun går."
+      },
+      {
         "author": "Skolens pedel (fiktiv)",
         "body": "Til Emils far: Det er et cykelstativ. Men tak."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "14 cykler foran indgangen? To af dem er mine. Jeg kommer og går."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Cykelparkeringen er et godt sted at mødes. Jeg står der kl. 7.50, hvis nogen vil sige hej."
       }
     ],
     "inspiration": "Pedellen og cykler, der ikke bliver sat i stativet.",
@@ -2695,7 +3768,40 @@
     "tags": [
       "kursus"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man øve sig på en voksen? Jeg melder mig gerne. Jeg er blød."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Oscars far: Vi har dukker. De er meget rolige."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Plastre indeholder lim og latex. Jeg medbringer egne plastre uden indhold."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Ebbas mor: Et plaster uden indhold er egentlig bare et stykke tape."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer. Men jeg sidder ved siden af. Jeg kan ikke følge med i hjertet."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg stiller gerne op som patient. Jeg er meget følsom, så vær blide."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Kurset skal følge de gældende retningslinjer. Vi stiller en tjekliste til rådighed."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi er til stede. Vi har set det hele, også en viskelæder."
+      }
+    ],
     "inspiration": "Kursustilbud til forældre om de mest almindelige ulykker.",
     "sources": []
   },
@@ -2749,6 +3855,10 @@
         "body": "Til Storms far: Børnene selv. Det er en del af læringen."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg melder mig gerne som gårdvagt. Jeg har en gul vest, der klæder mig."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Med al respekt, så er det derfor, det altid ender uafgjort."
       },
@@ -2774,7 +3884,36 @@
       "mistet",
       "skolegrej"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Er det den, der ligner en pind? Oscar har fundet en pind. Den er også gul."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Til Oscars far: Hvis den har tandmærker, er det Alberts."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har fundet en tygget blyant bag radiatoren. Den er gul og meget kort. Er den Alberts?"
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Til Skolens pedel: Står der Albert? Så er det den. Han skriver sit navn i tyggede bogstaver."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Blyanter indeholder lak og træstøv. Må Albert tygge på noget andet, så Ebba kan være i klassen?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Han tygger kun på sine egne. Det plejer at gå."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Tygning på skoleinventar er ikke tilladt. Vi sender en påmindelse."
+      }
+    ],
     "inspiration": "Efterlysning af en næsten opbrugt blyant.",
     "sources": []
   },
@@ -2794,12 +3933,24 @@
         "body": "Jeg sad klar kl. 11.59 og fik en plads på venteliste nummer 17."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Madordningen åbnede kl. 12. Jeg kom kl. 12.15. Så var den lukket."
+      },
+      {
         "author": "Idas mor (fiktiv)",
         "body": "Er der en vegansk fiskefrikadelle? Ida spiser kun mad, der ikke har haft en mor."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Må Ebba bestille mad uden indhold? Hun har en liste med 87 ting, hun ikke tåler."
+      },
+      {
         "author": "Skolekøkkenet (fiktiv)",
         "body": "Til Idas mor: Der er en kikærtefrikadelle. Den har heller ikke haft en mor."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Mad uden indhold kan ikke bestilles. Vi sender en blanket."
       },
       {
         "author": "Wilmas far (fiktiv)",
@@ -2849,7 +4000,32 @@
     "tags": [
       "læsning"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida har læst den to gange. Hun har nu en teori om haletudser."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Hvad sker der med haletudserne til sidst? Emil vil gerne vide det, før han læser."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Emils far: Det er en lykkelig slutning. Det er også en frø."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens bibliotekar: Bogen skal være godkendt af læseudvalget. Er den det?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Skolelederen: Den er godkendt. Det var sidste år."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Læsebånd lyder let, men jeg læser langsomt. De læser hurtigt, og så sidder jeg og venter."
+      }
+    ],
     "inspiration": "Læsebånd med populære bogvalg.",
     "sources": []
   },
@@ -2929,6 +4105,10 @@
         "body": "Hvad gør man, hvis barnet bliver sygt kl. 8.01?"
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba har fravær hver dag. Må det meldes en gang for alle? Det er lidt kompliceret."
+      },
+      {
         "author": "Skolesekretæren (fiktiv)",
         "body": "Til Valdemars far: Så melder man det kl. 8.02."
       },
@@ -2955,6 +4135,10 @@
         "body": "Det var mig. Jeg kunne ikke sove. Beskeden om lus hjalp ikke."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har læst den kl. 2.40. Jeg kunne ikke sove. Det var ikke på grund af opslaget."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Jeg læser altid kl. 6.15. Det synes jeg, man skal vide."
       },
@@ -2976,7 +4160,36 @@
       "kor",
       "jul"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Hvilket sprog? Ida har øvet sig på det i en uge, men ingen ved, hvad hun siger."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Idas mor: Vi ved det heller ikke, men det er meget smukt."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man klappe imellem sangene? Eller skal man vente, til man ved, hvad det var?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Salen har tæpper, støv og gardiner. Ebba hører koncerten gennem et vindue."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Alle forældre skal sidde i salen. Et vindue er ikke et officielt tilhørersted."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Skolelederen: Så sidder hun forrest. Der er ikke langt til udgangen."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sidder med til prøven. Den er for lang. Der er mange vers, og jeg kan ikke finde melodien."
+      }
+    ],
     "inspiration": "Skolekor med en ambitiøs sangliste.",
     "sources": []
   },
@@ -2996,12 +4209,24 @@
         "body": "Hvad er temperaturen udenfor? Valdemar er ikke vant til udendørs idræt."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Gulvet var nylakeret. Jeg gik på det, før jeg læste opslaget."
+      },
+      {
         "author": "Skolens pedel (fiktiv)",
         "body": "Til Valdemars far: Det er vejret. Det plejer at være udenfor."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Lakeret gulv betyder dampe. Ebba må ikke være i salen i tre uger. Er det en regel?"
+      },
+      {
         "author": "Wilmas far (fiktiv)",
         "body": "Wilma gik ind for at hente sin bold. Hun gik på hænderne. Tæller det?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Ja. Reglen står i vejledningen."
       },
       {
         "author": "Skolens pedel (fiktiv)",
@@ -3075,7 +4300,36 @@
     "tags": [
       "plante"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Vi har en plante derhjemme også. Den har det bedre. Vi har det samme problem."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Idas mor: Vi har overvejet at lade den vande sig selv."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Emil vil gerne tage den med hjem. Han siger, den har det dårligt, fordi den er alene."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Planter har pollen, jord og skimmel. Ebba kan ikke være i et rum med noget levende."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Planten er et pædagogisk redskab. Vi har ikke mulighed for at fjerne den."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Klasselærer Anja: Jeg kan tage den. Den kan stå i mit værksted. Der er ingen, der vander der."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Planter har brug for kærlighed og lidt lys. Det har jeg også, ærligt talt."
+      }
+    ],
     "inspiration": "Overpasset klasseplante.",
     "sources": []
   },
@@ -3092,6 +4346,10 @@
       {
         "author": "Valdemars far (fiktiv)",
         "body": "Valdemar er inspektør. Han har lavet et skema med smileys."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Rengøringsmidler er allergener. Må klassen gøre rent uden midler? Ebba er hjemme fredag."
       },
       {
         "author": "Storms far (fiktiv)",
@@ -3121,6 +4379,10 @@
         "body": "Til Emils far: Han har haft tre. Resten var klokken."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Ringeklokken ringer hvert 12. minut. Det passer fint. Jeg kommer og går efter den."
+      },
+      {
         "author": "Naboen Preben (fiktiv)",
         "body": "Kan den ikke ringe lidt sjældnere om eftermiddagen? Jeg sover til middag."
       },
@@ -3145,7 +4407,36 @@
     "tags": [
       "morgensang"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg ville gerne kunne høre, hvem der synger forkert. Det er mit barn."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Storms mor: Det er netop pointen. Vi beskytter børnene mod at blive hørt."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Vi synger altid for højt derhjemme. Det er et familiedrag."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Gummigulv og lak giver Ebba udslæt. Kan hun synge ude i skolegården?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Morgensang foregår indendørs. Det står i dagsordenen."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg spiller guitar. Den er af træ og lak. Ebba må gerne stå tæt på, hvis hun tør."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Morgensang er mit yndlingsfag. Især med en flot sangstemme i rækken. Hej, Idas mor."
+      }
+    ],
     "inspiration": "Morgensang med praktiske grunde til at flytte.",
     "sources": []
   },
@@ -3169,8 +4460,16 @@
         "body": "Til Oscars far: Det er mig med termokanden. Jeg har altid termokande med."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Forældrekaffe er mit yndlingsarrangement. Jeg tager gerne en ekstra kop med nogen."
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Til Storms mor: Det havde jeg gættet."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kaffe, te og boller. Ebba bliver i bilen. Må hun få en kop luft?"
       },
       {
         "author": "Karls mor (fiktiv)",
@@ -3250,6 +4549,10 @@
         "body": "Maja er ked af det. Hun siger, at græskarret hedder Søren og ikke er færdig endnu."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Græskar har skimmel, frø og lugt. Ebba holder sig væk. Må det vandes udenfor?"
+      },
+      {
         "author": "Klasselærer Anja (fiktiv)",
         "body": "Til Majas mor: Søren er meget færdig. Søren har fået pels."
       },
@@ -3272,7 +4575,28 @@
       "kost",
       "morgen"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man tage croissanter med? Oscar vil gerne dele. Han har en pose."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Oscars far: Ja. Hvis han har nok til alle."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Må man tage havregryn med hjemmefra? Ida er kræsen med mælken."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Idas mor: Ja. Mælken har vi ikke planer om at skifte."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Morgenmad er det bedste måltid. Især sammen med en voksen, der smiler. Jeg smiler."
+      }
+    ],
     "inspiration": "Morgenmad i SFO med forventninger om luksus.",
     "sources": []
   },
@@ -3295,6 +4619,10 @@
       {
         "author": "Storms far (fiktiv)",
         "body": "Til Valdemars far: Du overhalede Storm fire gange. Han havde ikke brug for en hare."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg løber ikke med. Men jeg sidder gerne med i omklædningsrummet og forstår ikke reglerne."
       },
       {
         "author": "Valdemars far (fiktiv)",
@@ -3322,6 +4650,14 @@
       {
         "author": "Oscars far (fiktiv)",
         "body": "Oscar har sagt slik hver dag i en uge. Nu forstår jeg det."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Frugt, knækbrød og vand. Ebba spiser kun vand. Det må ikke være fra boden."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Skoleboden er hyggelig. Jeg køber altid en banan. Og et smil."
       }
     ],
     "inspiration": "Skoleboden og børnenes kreative beretninger.",
@@ -3337,7 +4673,40 @@
       "lektier",
       "ferie"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Emil har lavet lektier. Han har skrevet en roman. Den er på to sider."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Emils far: Det er flot. Den skal ikke afleveres, men vi læser den gerne."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Storm siger, at lektier er ferie. Det er et problem for mig."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba laver lektier i en plastikpose, uden papir. Er det i orden?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Lektier er ikke et krav i ferien. Plastikposen er ikke omfattet af nogen regel."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Lektier i ferien? Jeg kan ikke engang forstå dem i skoletiden."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Vinterferie er til at slappe af. Jeg er hjemme og kan gøre selskab. Hej, Storms mor."
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Lærer Klausen: Storms mor har sin mand. Det er mig."
+      }
+    ],
     "inspiration": "Ferie uden lektier og ivrige børn.",
     "sources": []
   },
@@ -3356,8 +4725,16 @@
         "body": "Vi har fundet et par briller i sandkassen. De er blå under sandet."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Briller er plast, nikkel og lak. Ebba ser uden. Det er også et allergen."
+      },
+      {
         "author": "Wilmas far (fiktiv)",
         "body": "Til SFO-personalet: Det lyder rigtigt. Er der en ridse?"
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Wilmas briller er blå. Jeg så dem i går. Hej, Wilmas far."
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -3387,6 +4764,10 @@
         "body": "Til Storms mor: De er batteridrevne. De flimrer kun lidt."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Luciaoptoget er så smukt. Jeg bærer gerne lys. Især for de voksne."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Emil vil gå som stjernedreng. Han har lavet hatten selv. Den er meget høj."
       },
@@ -3412,7 +4793,44 @@
       "legeplads",
       "pedel"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis den ligner et skib? Oscar har meget fantasi."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Så er den et skib. Men det står ikke på bænken."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Den ser ud som en scene. Det er et problem. Vi har forudsagt det."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Bænken er af træ, lak og imprægnering. Ebba må ikke sidde, røre eller kigge på den."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Ebbas mor: Hun må kigge på den. Det er det eneste, vi kan sikre."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Bænken er ikke certificeret til kig. Vi tager det op ved næste inspektion."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Jeg sad på den i går. Den var ret god til at sidde på. Jeg ved ikke, om det er tilladt."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Bænke er gode til at sidde to på. Jeg ved noget om det. Hej, Vikaren."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Lærer Klausen: Jeg sidder helst alene."
+      }
+    ],
     "inspiration": "Pedellens forsøg på at forebygge.",
     "sources": []
   },
@@ -3432,12 +4850,24 @@
         "body": "Bjørn var hos os i weekenden. Han så fjernsyn og faldt i søvn. Det var det."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Bamser er pels, stof og lugt. Ebba tager en bamse af luft. Den er meget blød."
+      },
+      {
         "author": "Storms mor (fiktiv)",
         "body": "Til Majas far: Det er også en weekend. Med al respekt, så er det helt fint."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Bjørn skal hjem til os. Jeg har ikke fået en dagbog. Jeg skriver bare i hovedet."
+      },
+      {
         "author": "Noahs mor (fiktiv)",
         "body": "Til Majas far: Bjørn har det svært med at komme ned i niveau igen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Bjørn har det godt hos mig. Jeg har ham gerne en weekend. Og en voksen at tale med."
       },
       {
         "author": "Pædagog Bent (fiktiv)",
@@ -3461,6 +4891,10 @@
       {
         "author": "Emils far (fiktiv)",
         "body": "Emil har kun børstet de tænder, der kan ses. Han siger, de andre er private."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Tandpasta og børster er allergener. Ebba børster tænder med luft."
       },
       {
         "author": "Idas mor (fiktiv)",
@@ -3489,6 +4923,14 @@
         "body": "Malthes har hul i bunden. Han siger, det er til fugle, der kommer nedefra."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Hullerne sidder forkert. Det gør de også i matematik."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Fuglekasser har træ, lim og fjer. Må Ebba holde sig inde, når de hænger op?"
+      },
+      {
         "author": "Frejas mormor (fiktiv)",
         "body": "Jeg glæder mig til at hænge Frejas op. Den er skæv, men kærlig."
       },
@@ -3510,7 +4952,28 @@
       "tøj",
       "mistet"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Må man tage en hue, der er varm? Min er blevet kold."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Idas mormor: Alle huer er koldere end nødvendigt. Det er november."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er der en blå? Så er den nok min."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Alberts mor: Der er 19. Seks er blå."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg bytter gerne hue med en af jer. Jeg ved allerede hvem."
+      }
+    ],
     "inspiration": "Glemte huer, der bliver en byttehandel.",
     "sources": []
   },
@@ -3531,6 +4994,10 @@
       {
         "author": "Klasseforældrerådet (fiktiv)",
         "body": "Til Oscars mormor: Du er med i lodtrækningen. Held og lykke."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Billetter? Jeg kommer nok en time for sent og sidder bagved og forstår ikke stykket."
       },
       {
         "author": "Idas mormor (fiktiv)",
@@ -3564,6 +5031,10 @@
         "body": "Søen er pæn. Emil siger, at det er den bedste time i ugen."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Den viser et billede af hvad? Jeg forstår ikke tavlen. Jeg forstod heller ikke den gamle."
+      },
+      {
         "author": "Skolens pedel (fiktiv)",
         "body": "Jeg har trykket på opdatering. Nu viser den en anden sø."
       },
@@ -3585,7 +5056,32 @@
       "idræt",
       "tøj"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hænger der en sort pose? Den er Oscars. Han kalder den sin skat."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har lukket vinduerne i garderoben. Det var et dårligt valg. Det ved jeg nu."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sved, bakterier og skimmel er allergener. Ebba har haft udslæt i fire uger. Hvem har ansvaret?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Det ved vi ikke. Men vi kigger på det."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Skolen har ansvar for indeklimaet. Vi nedsætter et udvalg om lugt."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Skolelederen: Så vil jeg gerne have lov at sidde i det udvalg."
+      }
+    ],
     "inspiration": "Glemt idrætstøj, der gør sig bemærket.",
     "sources": []
   },
@@ -3604,8 +5100,20 @@
         "body": "Maja er i elevrådet. Det var hendes forslag med hesten. Hun er meget seriøs."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Elevrådet ønsker pizza, hoppepude og længere frikvarter. Ebba ønsker et lukket rum med filter."
+      },
+      {
         "author": "Skolelederen (fiktiv)",
         "body": "Til Majas mor: Det kan man se. Den var tegnet meget fint."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg stemmer på hoppepuden. Jeg kan ikke følge med i de andre forslag."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Elevrådet har gode ønsker. Især pizza. Jeg tager gerne en pizza med nogen."
       }
     ],
     "inspiration": "Elevrådets ambitiøse ønskeliste.",
@@ -3632,6 +5140,10 @@
       {
         "author": "Storms mor (fiktiv)",
         "body": "Til Emils far: Det er det samme som et ønske."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har også svaret. Jeg krydsede af ved «jeg trives», men jeg ved ikke, hvad spørgsmålet var."
       },
       {
         "author": "Emils far (fiktiv)",
@@ -3663,7 +5175,40 @@
       "kaffe",
       "personale"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må forældre få en kop, hvis de er meget høflige? Oscars far er meget høflig."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Skolelederen: Så skal vi have en maskine i forældrerummet. Vi betaler selv."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Kaffe er bedst, når man drikker den sammen. Kom gerne ind, Storms mor. Der er plads."
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Lærer Klausen: Vi drikker vores egen kaffe. Hjemme."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kaffemaskinen har plast, kalk og damp. Ebba reagerer på den i hele skolen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Lærerværelset ligger i fløj C. Ebba skal kun færdes i fløj A og B."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Jeg har aldrig fået en kop. Jeg har det fint, men jeg bemærker det."
+      }
+    ],
     "inspiration": "Personalets kaffe og forældre, der vil have.",
     "sources": []
   },
@@ -3683,8 +5228,20 @@
         "body": "Valdemar er ret glad for det nye navn. Vi tænker over det."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba hænger sin jakke over armen. Aldrig på knagerne."
+      },
+      {
         "author": "SFO-personalet (fiktiv)",
         "body": "Til Valdemars far: Skiltet er sat tilbage. Han hedder Valdemar igen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Knagerne er fine. Min knage sidder ved siden af Anjas. Det er et rigtigt godt sted."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Det var tilfældigt."
       }
     ],
     "inspiration": "Navneskilte, der bliver byttet rundt.",
@@ -3709,6 +5266,10 @@
       {
         "author": "Storms far (fiktiv)",
         "body": "Må man kaste efter lærerne, hvis de selv starter?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sne er kulde, fugt og vand. Ebba er allergisk over for alle tre. Må hun kaste luft?"
       },
       {
         "author": "Skolelederen (fiktiv)",
@@ -3746,8 +5307,16 @@
         "body": "Til Idas mor: Mågerne er ligeglade. Det er Ida, der skal spise dem."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Fugle har fjer, mider og larver. Ebba kan ikke være udenfor, når der er fugle. Må de flytte?"
+      },
+      {
         "author": "Oscars far (fiktiv)",
         "body": "Oscar siger, at en måge tog hele hans rugbrød. Han var ikke sulten bagefter."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Fuglene bliver. Det plejer at gå."
       },
       {
         "author": "Naboen Preben (fiktiv)",
@@ -3767,7 +5336,28 @@
       "skak",
       "fritid"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man flytte tårnet diagonalt? Emil har en teori, han vil afprøve."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Emils far: I starten må man alt. Det er derfor, det er sjovt."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Er der præmie? Oscar spiller kun, hvis der er kage til vinderen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens bibliotekar: Skak kræver regler. Vi kan ikke starte uden en vedtægt."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Skak er for kompliceret. Jeg sad med, og de flyttede en springer, og jeg fik hovedpine."
+      }
+    ],
     "inspiration": "Skakklub for begyndere.",
     "sources": []
   },
@@ -3794,6 +5384,10 @@
       {
         "author": "Storms mor (fiktiv)",
         "body": "Med al respekt, var det nødvendigt at gå gennem det høje græs?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Skove er et allergen. Ebba deltager i skovture fra en bil med lukkede vinduer."
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -3827,6 +5421,10 @@
         "body": "Maja er borgen. Hun kan ikke sidde ned, men hun er meget glad."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg kommer som en ridder. Jeg søger en prinsesse. Eller bare nogen at drikke kaffe med."
+      },
+      {
         "author": "Skolens pedel (fiktiv)",
         "body": "Til Majas far: Hvor bred er borgen? Døren er 90 cm."
       },
@@ -3848,7 +5446,36 @@
       "legeplads",
       "frikvarter"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad sker der, hvis Oscar klatrer i det mellemste? Vi vil gerne vide, hvor vi står."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Oscars far: Det er en pædagogisk diskussion. Vi har ikke et svar endnu."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har målt det mellemste. Det er 3,2 meter. Det er mellem."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Træerne i skolegården er birk, ask og lind. Ebba er allergisk over for alle tre. Må de fældes?"
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Ebbas mor: Det må de ikke. De er skolens stolthed."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Børn under træer er en risiko. Vi nedsætter et udvalg."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Træer er gode steder at mødes. Jeg har mødt mange smukke mennesker under dem."
+      }
+    ],
     "inspiration": "Regler for træklatring, der ikke er færdige.",
     "sources": []
   },
@@ -3866,6 +5493,10 @@
       {
         "author": "Oscars far (fiktiv)",
         "body": "Vi tilmeldte Oscar for en sikkerheds skyld. Vi tog så til mormor."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "41 tilmeldt og 3 kom sidste år. Jeg kommer og går. Det er min plan."
       },
       {
         "author": "SFO-personalet (fiktiv)",
@@ -3896,6 +5527,10 @@
         "body": "Det var mig ved lågen igen. Jeg har tilmeldt i Aula nu."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kunne ikke tilmelde mig lørdag kl. 12. Jeg tror, jeg misforstod, at det var fredag."
+      },
+      {
         "author": "Lucas' far (fiktiv)",
         "body": "Hvad hvis man kommer til at tilmelde to gange? Lucas er tilmeldt to gange."
       },
@@ -3917,7 +5552,40 @@
       "nøgle",
       "mistet"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Er det en gul and? Så er det måske Oscars. Han har mistet meget."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Oscars far: Den er hvid. Den har en lille hat."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Jeg har også mistet en nøgle. Den er til mit hus. Er den her?"
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Naboen Preben: Nej. Men vi har en til en kælder."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Nøgler er af nikkel, og Ebba er allergisk over for nikkel. Må de hænge i en pose?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Posen skal være godkendt. Vi har desværre ingen på lager."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Der hænger en nøgle, der minder mig om nogen. Hej, Ebbas mor."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Lærer Klausen: Jeg er allergisk over for opmærksomhed."
+      }
+    ],
     "inspiration": "Glemte nøgler med personlige vedhæng.",
     "sources": []
   },
@@ -3941,8 +5609,16 @@
         "body": "Til Idas mor: Den er frugt. Vi kan sende en liste over leverandøren."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Æbler er birk-krydsallergi. Ebba får en tom skål, som hun må kigge på."
+      },
+      {
         "author": "Karls mor (fiktiv)",
         "body": "Karl siger, at hans æble var skåret som en svane i går. Var det jer?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: En tom skål er et udleveret redskab. Det skal registreres."
       },
       {
         "author": "Skolekøkkenet (fiktiv)",
@@ -3972,6 +5648,10 @@
         "body": "Jeg har ledt i 20 minutter. Jeg fandt en invitation til lus."
       },
       {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Kurset var for svært. Jeg sad med og forstod ikke menuen. Jeg bruger telefonen i stedet."
+      },
+      {
         "author": "Skolesekretæren (fiktiv)",
         "body": "Til Oscars far: Den er fra i fjor. Den gælder ikke mere."
       }
@@ -3998,6 +5678,10 @@
         "body": "Til Emils far: Han har ikke været den samme siden."
       },
       {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hamsteren har pels, strøelse og lort. Ebba kan ikke være i samme hus, i samme by."
+      },
+      {
         "author": "Malthes far (fiktiv)",
         "body": "Vi tager ham næste weekend. Vi har ikke planlagt noget. Vi er meget kedelige."
       },
@@ -4019,7 +5703,28 @@
       "vand",
       "pedel"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis man trykker på saft og får vand? Er det en fejl i automaten?"
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Nej. Det er en fejl i forventningerne."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Vandkvalitet skal dokumenteres. Har vi en rapport?"
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Skolelederen: Automaten er 12 år gammel. Rapporten er også 12 år gammel."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Mine børn kan ikke finde automaten. De kommer for sent, og jeg ved ikke, hvor den er."
+      }
+    ],
     "inspiration": "Vandautomat med urealistiske forventninger.",
     "sources": []
   },
@@ -4037,6 +5742,10 @@
       {
         "author": "Majas far (fiktiv)",
         "body": "Det var vores nummer. Vi har stadig tandlægens nummer i stedet. Vi beklager."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Mit nummer er forkert. Jeg har ikke fået nyt, men jeg har heller ikke tjekket."
       },
       {
         "author": "Valdemars far (fiktiv)",
@@ -4070,12 +5779,20 @@
         "body": "Jeg tager hoppeborgen. Med al respekt, så er det den eneste, der kræver erfaring."
       },
       {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg står gerne i pølsebod. Jeg har et smil, der sælger alt."
+      },
+      {
         "author": "Emils far (fiktiv)",
         "body": "Til Storms mor: Du bliver perfekt. Du siger det allerede på Aula."
       },
       {
         "author": "Storms mor (fiktiv)",
         "body": "Til Emils far: Jeg ved ikke, hvad du mener."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Pølsebod, lotteri og hoppeborg. Ebba er allergisk over for alle tre. Må hun stå ved siden af?"
       },
       {
         "author": "Klasseforældrerådet (fiktiv)",
@@ -4095,7 +5812,44 @@
       "vejr",
       "udeskole"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba er allergisk over for regn, vind og sol. Må hun gennemføre udeskolen i en pose?"
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Ebbas mor: Det er vejr. Det er det, der er udenfor."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan have regntøj på. Det plejer at hjælpe på det meste."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Regntøj skal være godkendt. Vi har ikke modtaget en allergierklæring for vejr."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man have paraply? Oscar har en med dinosaurer."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Oscars far: Ja. Hvis den ikke er åben indendørs."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Udeskole i regn kan jeg ikke forstå. Jeg sidder med i bilen, og jeg fatter ikke pointen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Regn er romantisk. Jeg deler gerne min paraply. Med en eller to af jer."
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Lærer Klausen: Vi har selv en paraply."
+      }
+    ],
     "inspiration": "Udeskole i alt slags vejr.",
     "sources": []
   },
@@ -4113,6 +5867,10 @@
       {
         "author": "Naboen Preben (fiktiv)",
         "body": "Den kat var min. Han har det godt. Han kan lide sandkassen endnu mere nu."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sandkassen har sand, katte og låg. Ebba er allergisk over for alle tre. Må hun gå udenom?"
       },
       {
         "author": "Skolens pedel (fiktiv)",
@@ -4166,8 +5924,2168 @@
     "tags": [
       "skolen"
     ],
-    "comments": [],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvis man vender den, ligner den også en bølge. Så er det en dobbelt bølge."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Oscars far: Vi har noteret det. Det er ikke med vilje."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, det er et sko-logo. Skolen hedder noget andet."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Blåt blæk indeholder farvestoffer. Må Ebba få en version uden farve og uden blæk?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Logoet følger skolens profil. En version uden blæk er under overvejelse."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Skolelederen: Det ligner mest en sko, hvis man er meget glad for sko."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Logoet er flot. Det er jeg også. Hej, Skolelederen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Lærer Klausen: Vi har en regel om det."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg forstår ikke logoet. Mine kan heller ikke. Vi har kigget på det i bilen."
+      }
+    ],
     "inspiration": "Nyt logo, der kan misforstås.",
+    "sources": []
+  },
+  {
+    "id": "satire-151",
+    "title": "VIGTIGT: Allergiliste til klassen",
+    "body": "Vedhæftet er Ebbas opdaterede allergiliste. Den fylder nu 41 sider. Vi beder alle læse den inden fredag og bekræfte med en kommentar.\nHilsen Ebbas mor",
+    "author": "Ebbas mor (fiktiv)",
+    "important": true,
+    "tags": [
+      "allergi",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Tak for info. Jeg har læst side 1. Må jeg bekræfte side for side?"
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Oscars far: Nej. Det skal være samlet. Det er vigtigt."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi har læst den. Vi har gemt den. Vi tager den frem, hvis vi får brug for den."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Listen er registreret i vores system under punkt 14. Vi bekræfter modtagelsen skriftligt."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, side 23 modsiger side 9. Jeg har markeret det."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Storms mor: Det er korrekt. Jeg retter den. Version 42 kommer i morgen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg har læst den hele natten. Det er en imponerende liste. Og en imponerende mor."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Lærer Klausen: Det står på side 17. Jeg er allergisk over for komplimenter."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-152",
+    "title": "Nye borde og stole",
+    "body": "Klassen får nye borde og stole i uge 48. De er lavet af et materiale, vi ikke kan nævne her, men det er godkendt.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": false,
+    "tags": [
+      "klassen",
+      "møbler"
+    ],
+    "comments": [
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hvilket materiale? Spånplade, bøg, plast eller lim? Jeg skal bruge navnet på lakken."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Materialet er godkendt af alle relevante instanser. Navnet sendes skriftligt."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "De er brune. Det er det, jeg ved. Børnene bliver glade."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har samlet dem. Der var syv skruer til overs. Jeg har lagt dem i en skål."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Kan de også holde til, at Oscar sidder skævt? Det er hans stil."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har tjekket mål og vægt. Der er to centimeter forskel mellem bordene."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Storms mor: Det er designet. Ingen to borde er ens."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-153",
+    "title": "Nyt rengøringsmiddel",
+    "body": "Rengøringsmidlet er skiftet. Det lugter af citron, men er ikke citron. Hvis nogen undrer sig, har vi ikke lavet en fejl.\nMvh Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
+    "important": false,
+    "tags": [
+      "rengøring"
+    ],
+    "comments": [
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hvad er indholdet? Jeg skal bruge sikkerhedsdatablad, leverandør og lugtprøve."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Ebbas mor: Databladet ligger hos sekretæren. Lugtprøven må du selv tage."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Ebbas mor: Databladet er sendt. Det fylder 12 sider og er på tysk."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Skift af rengøringsmiddel kræver en risikovurdering. Vi har lavet en. Den ligger i en mappe."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Børnene siger, det lugter fint. Det gør de også om alt."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man drikke det? Emil har spurgt. Svaret er nej, ikke?"
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Emils far: Nej."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-154",
+    "title": "Åbent hus hos Lærer Klausen",
+    "body": "Jeg holder åbent hus i klassen torsdag kl. 16. Alle forældre er velkomne, især dem, der ikke har tid til resten af ugen.\nHilsen Lærer Klausen",
+    "author": "Lærer Klausen (fiktiv)",
+    "important": false,
+    "tags": [
+      "klassen",
+      "arrangement"
+    ],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Tak for invitationen. Vi kommer begge to. Med børnene."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Til Idas mor: Det glæder mig. Men I behøver ikke tage børnene med."
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Lærer Klausen: Vi kommer også. Begge to. Og børnene."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Åbent hus er en god tradition. Vi har dog ikke haft det før."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Åbent hus kræver forudgående tilladelse. Vi har ikke modtaget en ansøgning."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Er der kaffe? Er den økologisk? Er klassen luftet? Jeg kommer kun, hvis svaret er ja."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Jeg har ikke fået en invitation. Jeg har dog set, at flere har."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-155",
+    "title": "Ny afleveringstid?",
+    "body": "Kan afleveringen flyttes til kl. 9.30? Mine børn er ikke morgenmennesker, og det er jeg heller ikke.\nHilsen Tvillingernes mor",
+    "author": "Tvillingernes mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "aflevering"
+    ],
+    "comments": [
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Tvillingernes mor: Skolen starter kl. 8.00. Det er fastlagt af kommunen."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Til Klasselærer Anja: Kommunen kender ikke mine børn."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Skolens åbningstider følger vedtægterne. Vi kan ikke indføre individuelle morgener."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har morgenmad fra 6.30. Der er plads, hvis I kommer tidligere."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Til SFO-personalet: Det var det modsatte, jeg ville."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må vi komme sammen? Oscar vil gerne ankomme sent og dramatisk."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Til Tvillingernes mor: Jeg venter gerne på dig. Jeg har alligevel ikke travlt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-156",
+    "title": "VIGTIGT: Reflekser i mørket",
+    "body": "Det er mørkt, når børnene går hjem. Alle skal have refleks på. Også dem, der siger, at de er nemme at se.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": true,
+    "tags": [
+      "sikkerhed",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Storm har tre. Han tager dem af, når han ikke ser dem."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må refleksen sidde på hunden? Oscar går ikke alene, han går med hund."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Hunden må godt have en. Det er smart."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Refleks er plast, lim og mikrokugler. Ebba går hjem med en lommelygte i hånden."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Lommelygte er ikke godkendt som refleks. Vi har en liste."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg henter dem kl. 13. Så er der lys. Jeg har ikke brug for refleks."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Jeg ser dem hver dag. De er svære at overse. Især den lille med hjelmen."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-157",
+    "title": "Skolebussen",
+    "body": "Skolebussen kører fra mandag en anden rute. Den holder nu ved siden af skolen og ikke foran den. Vi beder om forståelse.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": false,
+    "tags": [
+      "bus"
+    ],
+    "comments": [
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Den holder nu i min indkørsel. Jeg har sagt hej til chaufføren."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Naboen Preben: Det er en fejl. Vi retter den."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Til Skolelederen: Det er fint. Jeg har kaffe."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, ruten er 2,3 kilometer længere. Det koster tid. Jeg har regnet på det."
+      },
+      {
+        "author": "Oscars mor (fiktiv)",
+        "body": "Børnene kan lide den nye rute. De kommer sent, men glade."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Kan bussen også køre kl. 9.30? Så er jeg med."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Vi har flyttet skiltet. Det blev et skilt for meget, men det er sat op."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-158",
+    "title": "Pantflasker i garderoben",
+    "body": "Der står 23 flasker i garderoben. De er ikke tomme, og de er ikke fulde. De er pant. Skriv, hvis de er jeres.\nMvh Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
+    "important": false,
+    "tags": [
+      "pant"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Det er Oscars. Han samler pant til en cykel."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Så har han en lang vej at gå."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Er pant skattepligtigt? Emil vil gerne vide det, før han begynder."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er nogen af dem blå? Så er de nok mine."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har også en pose med dåser. Pedellen ved ikke noget om dem."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Flasker har etiketter, lim og rester. Ebba kan ikke være i et rum med dem."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Pant skal opbevares efter retningslinjerne. Vi sender dem."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-159",
+    "title": "Fællesspisning i hallen",
+    "body": "Vi holder fællesspisning i hallen lørdag. Alle tager mad med og en dyne, hvis de bliver trætte. Ingen går hjem før kl. 22.\nMvh Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
+    "important": false,
+    "tags": [
+      "fællesspisning"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man gå hjem kl. 21.59? Så er det ikke en bevidst handling."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Jeg medbringer en fuldkornslasagne. Ingen kan sige noget til den."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, der er ikke strøm nok til alle varmeplader. Jeg har kigget."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Kl. 22? Så sidder jeg ved siden af og forstår ikke, hvorfor vi sidder."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hallen har gummigulv, støv og lak. Ebba spiser fra bilen, med åben dør."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg tager guitaren med. Jeg spiller kun, hvis nogen beder mig om det."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Det gør vi ikke. Tak."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-160",
+    "title": "Lommelygtedag",
+    "body": "Torsdag er det lommelygtedag. Børnene tager en lommelygte med. Vi slukker lyset og leder efter noget, vi ikke ved hvad er.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "sfo",
+      "udflugt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man tage en pandelygte? Oscar har en. Den sidder ret fast."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Oscars far: Ja. Hvis den kan tages af."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida har en dynamolygte. Den kræver en times arbejde, før den virker."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Lommelygter har batterier, plast og lysstråler. Ebba må ikke kigge på lys."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan kigge ned. Der er også interessante ting dér."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til SFO-personalet: Lommelygter skal være CE-mærkede. Vi tjekker dem ved døren."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg har en lommelygte, der kun lyser, når man ikke kigger. Den kommer med."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-161",
+    "title": "Besked fra Emils far",
+    "body": "Emil har besluttet, at han vil have en egen avis. Den udkommer mandag. Den handler om frikvarteret og om Emil.\nHilsen Emils far",
+    "author": "Emils far (fiktiv)",
+    "important": false,
+    "tags": [
+      "avis"
+    ],
+    "comments": [
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Emils far: Vi læser den gerne. Gerne med kilder."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Til Klasselærer Anja: Kilden er Emil. Han er meget troværdig."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg vil gerne have ret til at svare i næste nummer."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Emils far: Vi sætter den på reolen med de andre aviser. Den får en egen hylde."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må Oscar skrive horoskoper? Han har en god fornemmelse."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Avis er papir, blæk og støv. Ebba læser den kun på skærm, med handsker."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Emils far: Udgivelse kræver en tilladelse. Vi sender en blanket."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-162",
+    "title": "Sundhedsplejersken kommer",
+    "body": "Sundhedsplejersken kommer onsdag. Børnene bliver vejet, målt og spurgt om søvn. Der er ingen rigtige svar, men der er forkerte.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "sundhed"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad er et forkert svar? Oscar vil gerne træne."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: At sige, at man sover i skole."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, vi har fået at vide, at det er frivilligt. Er det nu pludselig ikke det?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Storms mor: Det er frivilligt. Men alle plejer at komme."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Vægten er af plastik og gummi. Ebba vejes bedst på en nylonvægt uden mærke."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har aldrig forstået tallene. Jeg sad med og nikkede. Der var mange."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg er også gerne med. Jeg vejer lidt for lidt, har de sagt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-163",
+    "title": "Vedr. Idas hårelastikker",
+    "body": "Ida har mistet 14 hårelastikker i denne uge. De er ikke tabt, de er flyttet. Vi leder efter dem alle sammen.\nHilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tøj",
+      "mistet"
+    ],
+    "comments": [
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er nogen af dem blå? Så er de nok mine."
+      },
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Er det de samme som til sommerfesten? De var gule."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Til Idas mormor: Nej, de var røde. De gule er fra i fjor."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har fundet en i afløbet. Den er grøn. Ida har ikke grøn."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi har tre i glemmekassen. Den ene ligner en sommerfugl."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Elastikker er gummi, plast og latex. Ebba binder sit hår med en tanke."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-164",
+    "title": "Mistet: en gul regnjakke",
+    "body": "En gul regnjakke er forsvundet. Den har stor hætte og en lille lomme. Noah mener, den er blevet snydt.\nHilsen Noahs mor",
+    "author": "Noahs mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet",
+      "tøj"
+    ],
+    "comments": [
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er den blå? Så er det nok min."
+      },
+      {
+        "author": "Noahs mor (fiktiv)",
+        "body": "Til Alberts mor: Nej. Den er gul. Det står i opslaget."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Der hænger en gul jakke på knage 9. Den er dog for stor til Noah."
+      },
+      {
+        "author": "Noahs mor (fiktiv)",
+        "body": "Til SFO-personalet: Det er den. Noah har lagt sig i den og sovet."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har fundet en hætte i skraldespanden. Er det en del af jakken?"
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Mine har også en gul. Den hænger hos mig. Jeg har ikke fortalt det."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-165",
+    "title": "VIGTIGT: Brandøvelse torsdag",
+    "body": "Torsdag er der brandøvelse. Alle skal gå roligt ud. Ingen må løbe, råbe eller tage legetøj med. Forældre må ikke ringe.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": true,
+    "tags": [
+      "sikkerhed",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis man har glemt noget? Oscar har glemt sin hue."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Oscars far: Man glemmer ikke i en brandøvelse."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, sidste gang tog det 7 minutter. Vi regnede på det. Det er for langsomt."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Storms mor: Vi kan godt gøre det på 6. Hvis alle følger ruten."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Røg er et allergen. Ebba deltager gennem et åbent vindue, med en våd klud."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Alle forlader bygningen. Vinduet er ikke en nødudgang."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Børnene har øvet sig. De kan næsten gå roligt."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer til øvelsen. Jeg går først ud. Det tæller vel som at følge med?"
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-166",
+    "title": "Hønsene i skolehaven",
+    "body": "Skolehaven har fået tre høns. De hedder Karen, Karen og Hylde 7. Der er æg hver anden dag, og vi bruger dem ikke.\nHilsen Pædagog Bent",
+    "author": "Pædagog Bent (fiktiv)",
+    "important": false,
+    "tags": [
+      "dyr",
+      "skolehave"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvorfor bruger I dem ikke? Oscar kan godt spise et æg."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Til Oscars far: De er til at kigge på. De har det godt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Høns har fjer, støv og æg. Ebba kommer aldrig i haven. Må hønsene flyttes til en balje?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Hønsehold kræver en tilladelse fra de relevante myndigheder. Er den indhentet?"
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Til Skolelederen: Jeg har spurgt Karen. Hun sagde ikke nej."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har bygget hønsehuset. Det er skævt, men hønsene kan lide det."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Min kat har kigget på dem fra hækken. Han er bare nysgerrig."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-167",
+    "title": "Kopimaskinen er væk",
+    "body": "Kopimaskinen er væk. Den er ikke flyttet, den er ikke solgt. Hvis I har set den, bedes I ikke røre den.\nMvh Skolesekretæren",
+    "author": "Skolesekretæren (fiktiv)",
+    "important": false,
+    "tags": [
+      "kontor"
+    ],
+    "comments": [
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Den står i kælderen. Jeg har ikke flyttet den. Den gik selv."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Skolens pedel: Det er ikke muligt."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man tage en kopi af noget, man ikke kan finde? Spørger for Oscar."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi har brug for 28 kopier til fredag. Er der nogen, der har en hånd?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolesekretæren: Vi anmelder det som mistet inventar. Der skal skrives en rapport."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kopimaskiner har toner, støv og varme. Jeg er glad for, at den er væk."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-168",
+    "title": "Vedr. Karls madkasse",
+    "body": "Karls madkasse er forsvundet. Den er rund, og den indeholder en kakao. Karl tror, den er gået hjem uden ham.\nHilsen Karls mor",
+    "author": "Karls mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "mistet",
+      "mad"
+    ],
+    "comments": [
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er den blå? Så er den nok min."
+      },
+      {
+        "author": "Karls mor (fiktiv)",
+        "body": "Til Alberts mor: Den er rød."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Der står en rund kasse i køkkenet. Den er varm. Vi har ikke åbnet den."
+      },
+      {
+        "author": "Karls mor (fiktiv)",
+        "body": "Til SFO-personalet: Det er den. Åbn den ikke. Den er meget personlig."
+      },
+      {
+        "author": "Skolekøkkenet (fiktiv)",
+        "body": "Til Karls mor: Vi har serveret indholdet til tre børn. Det var kakao. Det var godt."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Madkassen har det godt. Den hedder Hylde 12. Den har fået en pude."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-169",
+    "title": "Aulaens nye højttaler",
+    "body": "Aulaen har fået en ny højttaler. Den kan høres i hele bygningen. Vi har endnu ikke fundet ud af, hvordan man slukker den.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": false,
+    "tags": [
+      "skolen"
+    ],
+    "comments": [
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Den er tilsluttet strømmen. Jeg har prøvet at trække stikket. Den spiller stadig."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Kan man vælge sange? Oscar har en til morgensang."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg kan spille på den. Jeg har lavet en playliste med regnlyde."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Højttalere har magneter, plast og lyd. Må de flyttes til fløj C?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Lyd er ikke omfattet af allergilisten. Vi har tjekket."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Skolelederen: Det står på side 19."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg kan godt lide musik. Især hvis en af jer vil danse med mig til morgensang."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-170",
+    "title": "Klasselæreren holder fri",
+    "body": "Jeg holder fri på fredag. Vikaren overtager. Vikaren har fået en instruks på 12 linjer, og seks af dem handler om kaffe.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "klassen",
+      "vikar"
+    ],
+    "comments": [
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Klasselærer Anja: Jeg har læst alle seks. Jeg er klar."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad står der i de andre seks? Oscar vil gerne vide det."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Det er til vikaren."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, vi har ret til at få at vide, hvem der underviser. Jeg vil have et CV."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Storms mor: Jeg har et. Det er kort."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Vikaren har ikke læst allergilisten. Jeg sender den i morgen. Version 43."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Fredag er min yndlingsdag. Jeg kan sagtens tage et par timer ekstra. Hej, Anja."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Nej tak. Men tak."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-171",
+    "title": "VIGTIGT: Parkering ved skolefesten",
+    "body": "Skolefesten er lørdag. Der er 40 pladser og 200 gæster. Vi beder alle om at komme sammen, parkere sammen og gå sammen.\nMvh Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
+    "important": true,
+    "tags": [
+      "skolefest",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis man kommer alene? Er det så ensomt eller bare mere plads?"
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Oscars far: Det er mere plads. Men ikke nok."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har tegnet en plan for hver bil. Den er vedhæftet."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Min indkørsel kan rumme tre biler. Jeg tager 50 kr. pr. bil. Spøg."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Naboen Preben: Vi tager imod tilbuddet. Uden penge."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg parkerer ved skolen, så går jeg hjem. Så er der plads til en anden."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har sat kegler op. De står der, hvor der ikke skal parkeres. Altså overalt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-172",
+    "title": "Yoga i frikvarteret",
+    "body": "I morgen er der yoga i frikvarteret. Man skal kunne ligge stille i fem minutter. Hvis man ikke kan, skal man ligge stille alligevel.\nHilsen Vikaren",
+    "author": "Vikaren (fiktiv)",
+    "important": false,
+    "tags": [
+      "frikvarter",
+      "yoga"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Kan Oscar lave en stilling, hvor han ligner en kat? Han har øvet."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Oscars far: Ja. Kattestillingen er en klassiker."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Måtter er gummi, skum og svedlugt. Ebba laver yoga på en blanding af luft og tillid."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Ebbas mor: Hun kan ligge på gulvet. Det er pointen."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Gulvet er nylakeret. Vi kan ikke tillade liggende elever."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg underviser gerne. Jeg kan nogle meget avancerede stillinger. Spørg Anja."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Jeg har ikke set nogen."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-173",
+    "title": "Skolens affaldssortering",
+    "body": "Affaldet skal sorteres i fem beholdere: papir, plast, metal, glas og «andet». «Andet» er meget stort, og vi arbejder på det.\nMvh Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
+    "important": false,
+    "tags": [
+      "affald"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvor lægger man en æggeskal? Oscar er i tvivl."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: I «andet»."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, det er forkert. Æggeskaller er bio. Jeg har læst vejledningen."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Storms mor: Vi har ingen bio. Vi har «andet»."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Affald er skimmel, bakterier og mikroplast. Ebba går aldrig forbi beholderne."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Affaldssortering skal følge kommunens rammer. Vi har brug for en plan."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Jeg lagde en kop i glas. Det var en papirkop. Jeg er blevet bedt om at undskylde."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-174",
+    "title": "Bogkasse ved indgangen",
+    "body": "Der står nu en bogkasse ved indgangen. Man må tage en bog og lægge en bog. Man må ikke tage kassen.\nHilsen Skolens bibliotekar",
+    "author": "Skolens bibliotekar (fiktiv)",
+    "important": false,
+    "tags": [
+      "bøger"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man lægge en bog, der ikke er færdig? Oscar har en med fire sider."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Oscars far: Den ligger fint. Så ved den næste, hvor han stopper."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man lægge sin egen bog? Emil har skrevet en. Den er på to sider."
+      },
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "Jeg lægger en bog, jeg har læst tre gange. Den er meget fin."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Bøger er papir, lim og støv. Ebba tager en bog med handsker og en klud."
+      },
+      {
+        "author": "Skolens bibliotekar (fiktiv)",
+        "body": "Til Ebbas mor: Vi har handsker. Vi har ikke klud."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens bibliotekar: Bogkassen skal registreres. Hver bog skal have et nummer."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-175",
+    "title": "Ændret skema fredag",
+    "body": "Skemaet er ændret fredag. Første time er nu anden time, og anden time er nu første time. Vi beder om forståelse.\nMvh Skolesekretæren",
+    "author": "Skolesekretæren (fiktiv)",
+    "important": false,
+    "tags": [
+      "skema"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Betyder det, at man kan komme senere? Oscar er meget interesseret."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Lucas' far (fiktiv)",
+        "body": "Så er fredag efter torsdag? Lucas vil gerne vide det."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lucas' far: Ja. Fredag er efter torsdag. Det har den altid været."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer til første time, som nu er anden. Så er jeg til tiden."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ændringer er stressende. Ebba er vant til, at skemaet er fast. Må hun få en kopi af det gamle?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolesekretæren: Vi sender en rettelse af rettelsen. Det er korrekt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-176",
+    "title": "Tak til pedellen",
+    "body": "Tak til pedellen, der reparerede vores cykel i går. Han sagde ikke noget, men han smilede. Det er det, vi husker.\nHilsen Idas mor",
+    "author": "Idas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tak"
+    ],
+    "comments": [
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Idas mor: Det var ikke en cykel. Det var en trillebør."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Til Skolens pedel: Så har vi fået en trillebør, som virker."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Kan han også lave Oscars? Den har et hul i dækket og et i hjertet."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Pedellen kan alt. Ikke altid til tiden, men alt."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolens pedel: Reparationer af privat ejendom kræver en tilladelse. Vi skriver et notat."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Skolelederen: Jeg har ikke fået en tilladelse. Jeg har fået en kop kaffe."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-177",
+    "title": "Skolens snemand",
+    "body": "Børnene har bygget en snemand. Den står i gården og kigger på vinduet. Vi ved ikke, hvad den vil, men vi kigger tilbage.\nMvh SFO-personalet",
+    "author": "SFO-personalet (fiktiv)",
+    "important": false,
+    "tags": [
+      "sne"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må den få en hue? Oscar har en til overs."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Til Oscars far: Ja. Tak. Den fryser."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sne er vand, kulde og luft. Ebba ser snemanden fra et vindue i fløj A."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Den hedder Sven. Den har det godt. Den vil gerne have en gulerod."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Pædagog Bent: Snemænd skal godkendes af skolens bestyrelse. Vi indkalder til et møde."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Den kigger også på mig. Jeg har vinket. Den vinker ikke tilbage."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-178",
+    "title": "Besked fra Storms mor",
+    "body": "Storm har lavet en tidsplan for hele ugen. Den ligger vedhæftet. Der er ikke plads til frikvarter. Det er hans eget valg.\nHilsen Storms mor",
+    "author": "Storms mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "tidsplan"
+    ],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Storms mor: Det er ikke hans eget valg. Det er dit."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Til Storms far: Han har skrevet det selv."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Storms mor: Frikvarteret er et krav. Vi lægger det ind igen."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må Emil låne den? Han er meget tiltrukket af tidsplaner."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Kan man se tidsplanen? Oscar vil gerne have den som tapet."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Tidsplan? Jeg bruger bare dagen. Det går som regel godt, indtil klokken er 10."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-179",
+    "title": "VIGTIGT: Forkølelse i klassen",
+    "body": "Der er konstateret forkølelse i klassen. Børn med snue bedes blive hjemme. Børn uden snue bedes ikke få snue.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": true,
+    "tags": [
+      "sundhed",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man have lidt snue? Oscar har en lille en. Han vil gerne komme."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: En lille snue må gerne komme. Den skal bare tørres."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba har snue hver dag. Er det også forkølelse? Eller er det støv?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Det er ikke forkølelse. Det er allergi. Vi har det i listen."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Skolelederen: Så må hun komme. Hun har en gasbind med."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har tjekket tallene. Det er tre børn, ikke fem."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Min har nyst i tre dage. Jeg har ikke tid, så de går i skole og nyser derinde."
+      },
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Tvillingernes mor: Det er ikke så godt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-180",
+    "title": "Optagelse til koret",
+    "body": "Koret optager nye medlemmer. Man skal kunne synge, men ikke nødvendigvis i toneart. Optagelsesprøven er en sang om en gris.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "kor"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man synge falsk? Oscar er meget stolt af sin falske stemme."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Ja. Men kun lidt."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida har sunget grisen siden august. Hun kan alle vers."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har hørt koret. Det er ikke altid i toneart. Jeg vil have en dirigent."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg dirigerer. Jeg bruger en meget blød hånd."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg synger baryton. Jeg melder mig. Jeg er ikke et barn, men jeg har stor ånd."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Det er til børn. Tak."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-181",
+    "title": "Vedr. Majas elevrådsforslag",
+    "body": "Maja har foreslået en hest på skolen. Elevrådet har stemt, og der var flertal. Vi spørger nu pænt, hvad skolen siger.\nHilsen Majas mor",
+    "author": "Majas mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "elevråd",
+      "dyr"
+    ],
+    "comments": [
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Majas mor: Heste kræver en tilladelse, en stald og en plan. Vi har ingen af delene."
+      },
+      {
+        "author": "Majas far (fiktiv)",
+        "body": "Til Skolelederen: Maja har en plan. Den er tegnet på bagsiden af en pizzabakke."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har et hjørne bag hallen. Det er stort nok til en pony."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Heste er pels, hø og støv. Ebba bliver hjemme, hvis der kommer en hest. Eller en pony."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi tager forslaget med til næste elevrådsmøde. Med respekt for hesten."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må Oscar ride? Han har aldrig prøvet, men har stor tillid."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-182",
+    "title": "Skolens nye hjemmeside",
+    "body": "Skolen har fået ny hjemmeside. Den ligner den gamle, men den er ny. Hvis I ikke kan finde noget, er det en del af designet.\nMvh Skolesekretæren",
+    "author": "Skolesekretæren (fiktiv)",
+    "important": false,
+    "tags": [
+      "it"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvor finder man åbningstiderne? Oscar har kigget i tre timer."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Oscars far: Under «om skolen», «kontakt», «praktisk» og «andet»."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, siden loader i 14 sekunder. Det er for langsomt. Jeg har målt det."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kan ikke finde mine børns navne. Er de tilmeldt? Jeg ved det ikke."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Siden har lysende baggrund, pop-ups og animationer. Ebba kan kun læse sort på sort."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Hjemmesiden følger tilgængelighedsreglerne. Vi har en rapport."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg har fundet forsiden. Den er flot. Der er et billede af mig. Jeg smiler."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-183",
+    "title": "Tag-selv-bord",
+    "body": "Der står et tag-selv-bord ved indgangen. Man må tage en kage og lægge en kage. Man må ikke tage en kage og lægge ingenting.\nMvh Kageudvalget",
+    "author": "Kageudvalget (fiktiv)",
+    "important": false,
+    "tags": [
+      "kage"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad hvis man lægger en halv kage? Er det en kage?"
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Til Oscars far: Det er en halv kage. Det tæller som halvt."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har lagt en kage hver dag i tre uger. Hvem har taget dem?"
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Til Storms mor: Vi har taget dem. Det er et tag-selv-bord."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kage er sukker, mel og forventninger. Ebba går forbi bordet med en hånd for munden."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Jeg har lagt en sukkerfri. Den er ikke så populær. Men den står der stadig."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Kageudvalget: Tag-selv-borde kræver en risikovurdering. Vi har ikke modtaget en."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-184",
+    "title": "Cykelprøven",
+    "body": "Cykelprøven er tirsdag. Børnene cykler en bane med kegler. Rammer man en kegle, er det en fejl. Rammer man to, er det en samtale.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "cykel"
+    ],
+    "comments": [
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Må man cykle uden at ramme noget? Storm vil gerne forsøge."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Storms far: Ja. Det er det, vi håber."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar har kun tre hjul. Må han få en bonus?"
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har sat keglerne op. De står meget tæt, for at gøre det spændende."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Cykler har gummi, lak og smøremiddel. Ebba deltager på en usynlig cykel."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Klasselærer Anja: Usynlige cykler er ikke godkendt i cykelprøven. Vi har læst reglerne."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har aldrig forstået reglerne. Jeg cyklede selv, men der var ingen kegler."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-185",
+    "title": "Sovedyrsdag",
+    "body": "Fredag er det sovedyrsdag. Børnene må tage et sovedyr med. Sovedyret må godt sove, men ikke i timerne. Det er vigtigt.\nHilsen Pædagog Bent",
+    "author": "Pædagog Bent (fiktiv)",
+    "important": false,
+    "tags": [
+      "sovedyr"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må Oscar tage sin far med? Han er ret god til at sove."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Til Oscars far: Ja. Men han må ikke snorke."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Sovedyr er plys, pels og støv. Ebba tager et sovedyr af luft. Det er meget blødt."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Til Ebbas mor: Luft er et dejligt sovedyr. Det kan sove overalt."
+      },
+      {
+        "author": "Malthes far (fiktiv)",
+        "body": "Malthe vil tage en krokodille. Den er ægte. Nej, det er en spøg. Næsten."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Malthes far: Ægte dyr er ikke tilladt. Vi tager det i bestyrelsen."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg tager mit sovedyr med. Det hedder Klaus. Det er meget kærligt."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-186",
+    "title": "Forældre-quiz",
+    "body": "Torsdag holder vi forældre-quiz. Spørgsmål om klassen, børnene og madpakker. Man vinder ikke noget, men man kan tabe.\nMvh Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
+    "important": false,
+    "tags": [
+      "arrangement"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man spørge sine børn undervejs? Oscar ved alt."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har allerede lavet svarene. Jeg tager gerne spørgsmålene også."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida har skrevet 40 spørgsmål. Hun vil gerne læse dem op."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer, men jeg sidder ved siden af. Spørgsmålene lyder svære."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Quizzen foregår i et rum med tæpper og støv. Ebba deltager via sms."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Ebbas mor: Det er et tag-selv-rum. Vi har ikke sms."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg stiller gerne spørgsmål. Jeg har allerede nogle til Idas mor."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-187",
+    "title": "Ny menuplan",
+    "body": "Ny menuplan fra mandag. Mandag er der noget med fisk. Tirsdag noget med kød. Onsdag noget, vi ikke har besluttet.\nMvh Skolekøkkenet",
+    "author": "Skolekøkkenet (fiktiv)",
+    "important": false,
+    "tags": [
+      "skolemad"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Hvad er «noget med fisk»? Oscar vil gerne vide, om det er en fisk."
+      },
+      {
+        "author": "Skolekøkkenet (fiktiv)",
+        "body": "Til Oscars far: Det er en fisk. Der er også noget andet."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Jeg skal bruge ingredienslister for alle retter, leverandører og tilberedningsmetode."
+      },
+      {
+        "author": "Skolekøkkenet (fiktiv)",
+        "body": "Til Ebbas mor: Vi har lister. De er på køleskabet."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Skolekøkkenet: Menuplaner skal godkendes af skolens bestyrelse. Det er sket."
+      },
+      {
+        "author": "Wilmas far (fiktiv)",
+        "body": "Onsdag er pasta. Det er det altid. Wilma er allerede glad."
+      },
+      {
+        "author": "Skolekøkkenet (fiktiv)",
+        "body": "Til Wilmas far: Onsdag er ikke pasta. Det er noget, vi ikke har besluttet."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-188",
+    "title": "Vedr. Wilmas frikvarter",
+    "body": "Wilma vil gerne have lov til at gå på hænder i frikvarteret. Det må hun godt, men kun hvis hun ikke ser på nogen.\nHilsen Wilmas far",
+    "author": "Wilmas far (fiktiv)",
+    "important": false,
+    "tags": [
+      "frikvarter"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man gå på knæ? Oscar vil gerne være med."
+      },
+      {
+        "author": "Wilmas far (fiktiv)",
+        "body": "Til Oscars far: Ja, hvis han ikke ser på nogen."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi ser på dem alle. Vi ser aldrig på nogen. Det er en balance."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Gulvet har lak, støv og gummi. Ebba kan ikke gå på hænder. Hun går på tå, forsigtigt."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Wilmas far: Hænder er ikke omfattet af reglerne for gang. Vi tager det op."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Wilma har talent. Hun har det efter sin far, tænker jeg."
+      },
+      {
+        "author": "Wilmas far (fiktiv)",
+        "body": "Til Lærer Klausen: Tak. Jeg går kun på fødder."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-189",
+    "title": "VIGTIGT: Ny adgangskode til Aula",
+    "body": "Aula har fået ny adgangskode. Den gamle gælder ikke mere. Den nye er den gamle med et ekstra tegn, men vi siger ikke hvilket.\nMvh Skolesekretæren",
+    "author": "Skolesekretæren (fiktiv)",
+    "important": true,
+    "tags": [
+      "aula",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Er det et udråbstegn? Oscar har prøvet fire gange."
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Oscars far: Det er ikke et udråbstegn."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg er låst ude. Det er tredje gang i denne måned."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Adgangskoder er tegn, tal og stress. Ebba logger på med et ord, der ikke findes."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Adgangskoder skal følge kravene. Ikke-eksisterende ord er ikke tilladt."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg har ikke logget på i to år. Er jeg stadig inde?"
+      },
+      {
+        "author": "Skolesekretæren (fiktiv)",
+        "body": "Til Tvillingernes mor: Det ved jeg ikke."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Jeg har skrevet den på en post-it. Den sidder på skærmen."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-190",
+    "title": "Skolens talentshow",
+    "body": "Talentshowet er fredag. Børnene viser, hvad de kan. Hvis man ikke kan noget, må man gerne vise det alligevel.\nMvh Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "talentshow"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar kan gå baglæns. Det tæller vel?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Det tæller. Det er meget flot."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Emil kan rulle med ørerne. Han har øvet i ni uger."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida læser digt på rødbedesprog. Ingen forstår det, men det er smukt."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg kan synge, danse og sjonglere med tre bolde. Må jeg være med?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Lærer Klausen: Talentshowet er for elever. Vi har ikke et punkt for lærere."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sidder med til generalprøven. Jeg forstår ikke, hvem der vinder."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-191",
+    "title": "Vedr. Malthes ur",
+    "body": "Malthe har fået et ur. Det kan ringe og vise tiden. Han ringer til os hver time for at fortælle, hvad klokken er.\nHilsen Malthes far",
+    "author": "Malthes far (fiktiv)",
+    "important": false,
+    "tags": [
+      "ur",
+      "mobil"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Det er rart at vide, hvad klokken er. Oscar har intet ur."
+      },
+      {
+        "author": "Malthes far (fiktiv)",
+        "body": "Til Oscars far: Så kan I låne vores. Det ringer meget."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Malthe fortæller os også tiden. Vi har ikke bedt om det."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Smarture er omfattet af mobilfri skole. Malthe skal aflevere uret i kassen."
+      },
+      {
+        "author": "Malthes far (fiktiv)",
+        "body": "Til Skolelederen: Så ringer han fra kassen. Den har også en telefon."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ure har metal, nikkel og plast. Ebba kigger kun på solen. Den er også et ur."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-192",
+    "title": "Fra naboen: Hækken",
+    "body": "Hækken omkring skolen vokser ind i min have. Jeg klipper den ikke, men jeg vil gerne have, at nogen ved det.\nHilsen Naboen Preben",
+    "author": "Naboen Preben (fiktiv)",
+    "important": false,
+    "tags": [
+      "skolegård"
+    ],
+    "comments": [
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Naboen Preben: Jeg tager den i morgen. Jeg har allerede klippet to meter."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Til Skolens pedel: Tak. Jeg har sat kaffe på."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Hæklipning kræver en tilladelse fra kommunen. Vi har ansøgt. Vi har ikke hørt noget."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Hække er pollen, blade og insekter. Ebba kan ikke være i nærheden. Må den fjernes helt?"
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må børnene klatre i hækken? Oscar har en god plan."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-193",
+    "title": "Bolden i taget",
+    "body": "Bolden ligger på taget. Den har ligget der siden oktober. Vi har ikke tænkt os at hente den, men den er velkommen til at blive.\nMvh Skolens pedel",
+    "author": "Skolens pedel (fiktiv)",
+    "important": false,
+    "tags": [
+      "frikvarter"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man hente den? Oscar har en stige."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Oscars far: Nej. Den har det godt dér."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Bolden på taget skal fjernes af hensyn til sikkerheden. Vi bestiller en lift."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Til Skolelederen: Lift er dyrt. Bolden er billig."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Bolden hedder Bjørn 2. Den har det godt. Den kigger ned på os."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Jeg kan se den fra min have. Den er rød. Eller blå. Det skifter med lyset."
+      },
+      {
+        "author": "Alberts mor (fiktiv)",
+        "body": "Er den blå? Så er det nok min."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-194",
+    "title": "Pakkelegen",
+    "body": "Til julefrokosten er der pakkeleg. Man tager en pakke, og man må stjæle fra en anden. Man må ikke blive vred.\nMvh Klasseforældrerådet",
+    "author": "Klasseforældrerådet (fiktiv)",
+    "important": false,
+    "tags": [
+      "julefrokost"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man stjæle to? Oscar har en plan."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, værdien skal være ens. Jeg har lavet en prisliste."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Pakker har papir, lim og snor. Ebba pakker sin gave ind i en tanke."
+      },
+      {
+        "author": "Klasseforældrerådet (fiktiv)",
+        "body": "Til Ebbas mor: Tanker kan ikke stjæles. Det er en fordel."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg tager gerne en pakke. Især hvis den er fra en af jer."
+      },
+      {
+        "author": "Storms far (fiktiv)",
+        "body": "Til Lærer Klausen: Pakker er til børn. Vi har selv et par."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-195",
+    "title": "VIGTIGT: Nye regler for forældrekaffe",
+    "body": "Forældrekaffe afholdes fremover efter en dagsorden. Der er tre punkter: kaffe, samtale og afrunding. Samtale må ikke overstige 12 minutter.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": true,
+    "tags": [
+      "forældrekaffe",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man tale i 13 minutter, hvis man er meget høflig?"
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Oscars far: Nej."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, tre punkter er for lidt. Der mangler eventuelt."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Storms mor: Eventuelt er ikke et punkt. Det er en tilstand."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Vi tager kaffen først. Det er det vigtigste punkt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Kaffe er koffein, damp og allergener. Ebba deltager gennem et vindue. Samtalen tæller 12 minutter."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Forældrekaffe er min yndlingstid. Jeg bruger gerne 12 minutter på hver af jer."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Lærer Klausen: Det overstiger rammen. Vi skriver et notat."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-196",
+    "title": "Klausens vikartime",
+    "body": "Jeg har vikartime i morgen i 3.b. Jeg glæder mig til at møde børnene og især de voksne, der henter dem.\nHilsen Lærer Klausen",
+    "author": "Lærer Klausen (fiktiv)",
+    "important": false,
+    "tags": [
+      "vikar"
+    ],
+    "comments": [
+      {
+        "author": "Vikaren (fiktiv)",
+        "body": "Til Lærer Klausen: De voksne henter ikke børnene. Børnene finder selv ud."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Husk, at vi taler med børnene. Ikke med forældrene."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må forældre sidde med? Oscars far er meget flink."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Til Oscars far: Du er altid velkommen."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg sidder altid med. Jeg skal nok finde en stol."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Lærer Klausen: Forældre er ikke en del af undervisningen. Det står i reglerne."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Vikartimer er uforudsigelige. Ebba kommer kun, hvis jeg har tjekket lokalet."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-197",
+    "title": "Spørgsmål til matematikken",
+    "body": "Kan nogen forklare, hvad en brøk er? Jeg sad med i dag, og de snakkede om en halv og en tredjedel. Jeg blev ked af det.\nHilsen Tvillingernes mor",
+    "author": "Tvillingernes mor (fiktiv)",
+    "important": false,
+    "tags": [
+      "matematik"
+    ],
+    "comments": [
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Tvillingernes mor: En brøk er en del af noget. Det er det hele."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Til Klasselærer Anja: Hvis det er en del, hvorfor hedder det så en brøk?"
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Det er som en kage. Man skærer den i stykker. Oscar forklarer."
+      },
+      {
+        "author": "Kageudvalget (fiktiv)",
+        "body": "Til Oscars far: Kagen skal stadig være hel, når den når bordet."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, brøker er ikke svære. Jeg har forklaret det til Storm fire gange."
+      },
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Emil forklarer brøker med pizza. Det fungerer ikke altid."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg forklarer gerne brøker over en kop kaffe. Det plejer at hjælpe."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Til Lærer Klausen: Tak, men jeg har ikke tid til kaffe."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-198",
+    "title": "VIGTIGT: Måling af luftkvalitet",
+    "body": "Jeg har målt luften i klassen. Den indeholder 14 stoffer, vi ikke kender. Jeg beder skolen om en uvildig undersøgelse.\nHilsen Ebbas mor",
+    "author": "Ebbas mor (fiktiv)",
+    "important": true,
+    "tags": [
+      "allergi",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Vi har modtaget din henvendelse. Vi iværksætter en undersøgelse."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Luften er fin. Vi har lukket vinduerne op. Børnene har det godt."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har målt den også. Den indeholder ilt og lidt kaffe."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, der er 14 stoffer i al luft. Det er ikke usædvanligt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Storms mor: Det ved jeg. Men de her er mine."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må Oscar måle med? Han har et termometer."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Luften bliver altid bedre, når Ebbas mor kommer ind. Det er min egen måling."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Til Lærer Klausen: Den måling er ugyldig."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-199",
+    "title": "Sidste skoledag før jul",
+    "body": "Sidste skoledag før jul er fredag. Vi spiser risalamande, synger og siger tak. Mandelgaven er en blyant.\nVenlig hilsen Klasselærer Anja",
+    "author": "Klasselærer Anja (fiktiv)",
+    "important": false,
+    "tags": [
+      "jul"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar vil gerne have mandlen. Han har trænet."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Det er tilfældigt."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Risalamande er mælk, mandler og kanel. Ebba spiser en tom skål og hører sangene."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Ebbas mor: Skålen skal registreres. Vi har et skema."
+      },
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Jeg bager en rødbede-risalamande. Ingen forstår det, men den er sund."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Jeg kommer kl. 11 og henter dem kl. 11.15. Så får de risalamande."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Jeg synger gerne. Især «Højt fra træets grønne top». Jeg har en særlig version."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-200",
+    "title": "Tak for i år",
+    "body": "Tak for i år. Vi har haft 14 opslag om kage, 11 om huer og ét om en snegl. Vi vender tilbage, når vi har fundet ud af hvad.\nMvh Skolelederen",
+    "author": "Skolelederen (fiktiv)",
+    "important": false,
+    "tags": [
+      "tak"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Tak for info. Hvad var opslaget med sneglen om?"
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Oscars far: Det var en snegl. Den hedder Hylde 7."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg har optalt det. Det var 16 om kage."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Storms mor: Tallet er korrekt. Vi retter opslaget."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Tak for et år, hvor jeg ikke blev syg. Næsten."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Tak for i år. Jeg forstod en del af det."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Tak for et dejligt år. Især til forældrene. Vi ses i det nye."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Til Lærer Klausen: Det håber jeg ikke."
+      }
+    ],
+    "inspiration": "",
     "sources": []
   }
 ]
