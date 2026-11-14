@@ -4,7 +4,7 @@ Fast persongalleri til kommentartrådene i `lib/satire-posts.json`. Brug kun per
 
 ## Regler for kommentarer
 
-- 1-10 kommentarer pr. opslag, alle 200 opslag har kommentarer. Puljen skal kunne deles med 5 (rotation: fem nye opslag om dagen, 200 opslag = 40 dages cyklus).
+- 1-10 kommentarer pr. opslag, alle 205 opslag har kommentarer. Puljen skal kunne deles med 5 (rotation: fem nye opslag om dagen, 205 opslag = 41 dages cyklus).
 - 10-120 tegn pr. kommentar. Ingen links, `@` eller lange cifferfølger.
 - Svar til en bestemt kommentar starter med `Til X:` (X = den, der svares), uden «(fiktiv)». Omkring hver tredje kommentar er et sådant svar.
 - Humoren er tør og venlig. Ingen grov, diskriminerende eller seksuel humor, og ingen rigtige personer, skoler eller børn.
@@ -88,6 +88,7 @@ Fast persongalleri til kommentartrådene i `lib/satire-posts.json`. Brug kun per
 - Kræver skriftlige garantier for urealistiske scenarier: at der ikke er våben i isen, at ingen falder, at ingen saks, rutsjebanetop eller kegle er farlig, at ingen kage har et ansigt, at snemanden ikke bliver ked af at smelte, at hønsene ikke lægger triste æg, at ingen hopper over 10 centimeter, at ingen taber ved afstemninger og at alle vinder. Gerne med underskrift og «risikovurdering».
 - Tonen er høflig og bekymret, aldrig vred. Ingen sætning er urimelig for dem selv.
 - Dynamikken: Skolelederen kan hverken love eller afvise («vi kan ikke give garantier, men vi noterer ønsket»), Anja er afslappet («det skal nok gå»), og Mathildes forældre svarer «Så vil vi gerne have det skriftligt».
+- Skriver også opslag (satire-201..205: «Garantier for næste uge», «Nyhedsfri legeplads», «Mathildes legekammerater», «Afskærmning ved fald», «Vedr. årstider»).
 - Humoren går på kontrolbehovet og de absurde garantier, ikke på rigtige bekymringer. Aldrig reelle skader eller børn, der faktisk har det skidt, som pointe.
 
 ## Forfattere, der kun skriver opslag

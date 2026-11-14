@@ -8,10 +8,10 @@ import { parseTab } from '@/lib/posts-ui';
 
 describe('satire-data', () => {
   const N = satirePosts.length;
-  it('har 200 opslag med unikke id\'er satire-01..satire-200 og alle felter', () => {
-    expect(N).toBe(200);
-    expect(SATIRE_CYCLE_DAYS).toBe(40);
-    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 200 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
+  it('har 205 opslag med unikke id\'er satire-01..satire-205 og alle felter', () => {
+    expect(N).toBe(205);
+    expect(SATIRE_CYCLE_DAYS).toBe(41);
+    expect(satirePosts.map((p) => p.id)).toEqual(Array.from({ length: 205 }, (_, i) => `satire-${String(i + 1).padStart(2, '0')}`));
     expect(new Set(satirePosts.map((p) => p.id)).size).toBe(N);
     for (const p of satirePosts) {
       expect(p.title.trim()).not.toBe('');
@@ -34,9 +34,9 @@ describe('satire-data', () => {
       }
     }
   });
-  it('har 35 vigtige og kommentarer på alle opslag', () => {
-    expect(satirePosts.filter((p) => p.important)).toHaveLength(35);
-    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(200);
+  it('har 36 vigtige og kommentarer på alle opslag', () => {
+    expect(satirePosts.filter((p) => p.important)).toHaveLength(36);
+    expect(satirePosts.filter((p) => p.comments.length > 0)).toHaveLength(205);
     expect(satirePosts.filter((p) => p.comments.length === 0)).toHaveLength(0);
   });
   it('har unikke titler', () => {

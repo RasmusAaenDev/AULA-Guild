@@ -8479,5 +8479,239 @@
     ],
     "inspiration": "",
     "sources": []
+  },
+  {
+    "id": "satire-201",
+    "title": "VIGTIGT: Garantier for næste uge",
+    "body": "Vi beder om skriftlig garanti for, at der næste uge ikke sker noget. Hverken med børnene, vejret, maden eller nyhederne. Svar inden fredag.\nHilsen Mathildes forældre",
+    "author": "Mathildes forældre (fiktiv)",
+    "important": true,
+    "tags": [
+      "garanti",
+      "vigtigt"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Tak for info. Hvad hvis der sker noget godt? Er det inden for garantien?"
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Oscars far: Ja. Men kun hvis det er kendt på forhånd."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Vi kan ikke give garantier. Vi kan notere, at der er et ønske. Det er nu noteret."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Skolelederen: Så vil vi gerne have det skriftligt, at I har noteret det."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Det skal nok gå. Det plejer."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Klasselærer Anja: «Plejer» er ikke en garanti."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, jeg vil gerne bidrage med en uge, hvor intet sker. Jeg har en plan."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Næste uge sker der noget. Jeg sørger for det. Gerne efter kl. 22."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-202",
+    "title": "Nyhedsfri legeplads",
+    "body": "Vi vil gerne have en nyhedsfri legeplads. Børnene må ikke tale om nyheder i frikvarteret. Vi har lavet en liste med 40 emner, der må nævnes. Den er vedhæftet.\nHilsen Mathildes forældre",
+    "author": "Mathildes forældre (fiktiv)",
+    "important": false,
+    "tags": [
+      "legeplads",
+      "nyheder"
+    ],
+    "comments": [
+      {
+        "author": "Emils far (fiktiv)",
+        "body": "Må man nævne en nyhed, hvis den er fra i fjor? Emil har en om en hund, der blev fundet."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Emils far: Nej. Hunden er en del af en gammel historie, og den er ikke på listen."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg nævner kun snegle og bamser. De har aldrig været i nyhederne."
+      },
+      {
+        "author": "SFO-personalet (fiktiv)",
+        "body": "Vi snakker om vejret i frikvarteret. Er vejret en nyhed?"
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til SFO-personalet: Ja. Vi vil have det droppet."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har hængt en liste op. Den har ni emner. Det er nok til et frikvarter."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Mathildes forældre: Frikvarteret kan ikke være nyhedsfrit. Vi noterer ønsket."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Nyheder er støj og stress. Ebba støtter forslaget, så længe listen er uden allergener."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-203",
+    "title": "Mathildes legekammerater",
+    "body": "Mathilde må godt lege med de børn, vi har godkendt. Listen er kort. Børn på listen må ikke have slået sig i de seneste 14 dage.\nHilsen Mathildes forældre",
+    "author": "Mathildes forældre (fiktiv)",
+    "important": false,
+    "tags": [
+      "legeaftaler"
+    ],
+    "comments": [
+      {
+        "author": "Idas mor (fiktiv)",
+        "body": "Ida har haft en forkølelse i november. Er hun stadig uden for listen?"
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Idas mor: Ja. Vi venter til foråret."
+      },
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Oscar slog sig i september. Er det længe nok siden?"
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Oscars far: Vi har noteret det. Han er på en anden liste."
+      },
+      {
+        "author": "Storms mor (fiktiv)",
+        "body": "Med al respekt, Storm har ikke slået sig siden august. Han har heller ikke været udenfor."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Børn leger med dem, de vil. Det plejer at gå."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Klasselærer Anja: Det er det, der bekymrer os."
+      },
+      {
+        "author": "Lærer Klausen (fiktiv)",
+        "body": "Mathilde er heldig. Jeg vil gerne være på hendes liste. Jeg har aldrig slået mig."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-204",
+    "title": "Afskærmning ved fald",
+    "body": "Hvis et barn falder, bedes Mathilde ledt væk, før hun ser det. Vi foreslår et tæppe, en paraply eller en sang. Vi sender gerne en paraply med.\nHilsen Mathildes forældre",
+    "author": "Mathildes forældre (fiktiv)",
+    "important": false,
+    "tags": [
+      "sikkerhed",
+      "garanti"
+    ],
+    "comments": [
+      {
+        "author": "Oscars far (fiktiv)",
+        "body": "Må man synge i stedet? Oscar kan «Højt fra træets grønne top», hvis det kan hjælpe."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Oscars far: Ja. Men kun, hvis sangen ikke handler om noget, der falder."
+      },
+      {
+        "author": "Skolens pedel (fiktiv)",
+        "body": "Jeg har en presenning. Den er stor. Jeg kan holde den op, når nogen falder."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Mathildes forældre: Vi kan ikke garantere, at børn ikke falder. Vi noterer ønsket om tæppe."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Skolelederen: Vi har allerede sendt tæppet. Det er grønt, så det ikke ligner noget."
+      },
+      {
+        "author": "Klasselærer Anja (fiktiv)",
+        "body": "Børn falder. Så rejser de sig. Det er næsten hele pointen med børn."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Klasselærer Anja: Vi kender pointen. Vi er ikke enige."
+      },
+      {
+        "author": "Pædagog Bent (fiktiv)",
+        "body": "Jeg kan bære Mathilde væk, før hun ser noget. Jeg har gode arme. Og en bamse."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
+  },
+  {
+    "id": "satire-205",
+    "title": "Vedr. årstider",
+    "body": "Vi har fortalt Mathilde, at der ikke er vinter i år. Vi beder skolen om ikke at nævne sne, kulde eller mørke før foråret.\nHilsen Mathildes forældre",
+    "author": "Mathildes forældre (fiktiv)",
+    "important": false,
+    "tags": [
+      "vinter",
+      "garanti"
+    ],
+    "comments": [
+      {
+        "author": "Valdemars far (fiktiv)",
+        "body": "Hvad skal man så sige, når det sner? At det er hvidt konfetti?"
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Valdemars far: Ja. Det er et godt ord."
+      },
+      {
+        "author": "Skolelederen (fiktiv)",
+        "body": "Til Mathildes forældre: Vi kan ikke aflyse vinteren. Vi noterer ønsket."
+      },
+      {
+        "author": "Naboen Preben (fiktiv)",
+        "body": "Det sner stadig udenfor min indkørsel. Jeg har prøvet at ignorere det. Det hjælper ikke."
+      },
+      {
+        "author": "Ebbas mor (fiktiv)",
+        "body": "Ebba støtter forslaget. Hun har aldrig set vinter. Hun har kun hørt den gennem en pose."
+      },
+      {
+        "author": "Tvillingernes mor (fiktiv)",
+        "body": "Vinter? Jeg har ikke lagt mærke til noget. Jeg sidder med inde og forstår ikke, hvorfor man har jakker."
+      },
+      {
+        "author": "Idas mormor (fiktiv)",
+        "body": "I min tid var der vinter hele året. Vi blev ikke ængstelige af det."
+      },
+      {
+        "author": "Mathildes forældre (fiktiv)",
+        "body": "Til Idas mormor: Det er det, vi frygter."
+      }
+    ],
+    "inspiration": "",
+    "sources": []
   }
 ]
