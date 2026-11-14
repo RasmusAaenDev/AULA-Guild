@@ -109,6 +109,10 @@ for (const [name, t] of Object.entries(themes)) {
       ['satire-kommentar: navn --sat-ink på --card', t['sat-ink'], t.card, 4.5],
       ['satire-kommentar: «Vis flere» --heading på --sat-bg', t.heading, t['sat-bg'], 4.5],
       ['satire-kommentar: venstre kant mod --card', t['sat-border'], t.card, 3],
+      ['satire «Vis flere»: --sat-ink på --sat-bg-hover', t['sat-ink'], t['sat-bg-hover'], 4.5],
+      ['satire «Vis flere»: hint --muted på --sat-bg-hover', t.muted, t['sat-bg-hover'], 4.5],
+      ['satire «Vis flere»: kant mod --sat-bg-hover', t['sat-border'], t['sat-bg-hover'], 3],
+      ['satire «Vis flere»: fokusring --focus mod --bg', t.focus, t.bg, 3],
     );
     for (const bg of ['chat-bubble', 'chat-mine'] as const) {
       pairs.push(

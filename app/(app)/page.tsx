@@ -34,7 +34,7 @@ import { statusClass } from '@/lib/rsvp-ui';
 import { recentChatItems } from '@/lib/overview-chat';
 import { recentGalleryItems } from '@/lib/overview-gallery';
 import { mergeTimeline } from '@/lib/overview-feed';
-import { SATIRE_COOKIE, SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, SATIRE_WINDOW_DAYS, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode, timelineSatire } from '@/lib/satire';
+import { SATIRE_COOKIE, SATIRE_PER_DAY, SATIRE_RANDOM_COUNT, SATIRE_TIMELINE_DAYS, SATIRE_WINDOW_DAYS, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode, satirePosts, timelineSatire } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
 import { isSimConfigured } from '@/lib/services';
 import { requireUser } from '@/lib/session';
@@ -195,6 +195,8 @@ export default async function OverviewPage({
             <SatireMore
               key={tab}
               label={tab === 'satire' ? 'Vis flere' : 'Vis flere satire'}
+              total={satirePosts.length}
+              step={SATIRE_RANDOM_COUNT}
               shownIds={feed.flatMap((e) => (e.kind === 'satire' ? [e.item.id] : []))}
             />
           )}
