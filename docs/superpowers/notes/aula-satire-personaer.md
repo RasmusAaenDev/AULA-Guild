@@ -40,6 +40,7 @@ Fast persongalleri til kommentartrådene i `lib/satire-posts.json`. Brug kun per
 | **Naboen Preben** | – | Står ved skolen, har kat og bil, kender alles ruter. Lidt udenforstående og meget hyggelig. |
 | **Ebbas mor** (ny) | Ebba | Se nedenfor. |
 | **Tvillingernes mor** (ny) | tvillinger | Se nedenfor. |
+| **Mathildes forældre** (ny) | Mathilde | Se nedenfor. |
 
 ## Skolens voksne
 
@@ -81,6 +82,13 @@ Fast persongalleri til kommentartrådene i `lib/satire-posts.json`. Brug kun per
 - Skolens voksne reagerer med tålmodig tørhed: Anja forklarer det helt enkelt, Skolesekretæren minder om, at hun ikke er indskrevet i klassen.
 - Tvillingerne navngives ikke. Det er en del af pointen.
 - Skriver også opslag (satire-155 «Ny afleveringstid?», satire-197 «Spørgsmål til matematikken»).
+
+### Mathildes forældre
+- Overbeskyttende, skriver som «vi». Mathilde må ikke se nyheder og ikke høre om, at andre børn slår sig, græder eller har det skidt: «Kan I afskærme hende?», «vi vil ikke vide det, men vi skal vide det», «hun tror, de bor i Frankrig».
+- Kræver skriftlige garantier for urealistiske scenarier: at der ikke er våben i isen, at ingen falder, at ingen saks, rutsjebanetop eller kegle er farlig, at ingen kage har et ansigt, at snemanden ikke bliver ked af at smelte, at hønsene ikke lægger triste æg, at ingen hopper over 10 centimeter, at ingen taber ved afstemninger og at alle vinder. Gerne med underskrift og «risikovurdering».
+- Tonen er høflig og bekymret, aldrig vred. Ingen sætning er urimelig for dem selv.
+- Dynamikken: Skolelederen kan hverken love eller afvise («vi kan ikke give garantier, men vi noterer ønsket»), Anja er afslappet («det skal nok gå»), og Mathildes forældre svarer «Så vil vi gerne have det skriftligt».
+- Humoren går på kontrolbehovet og de absurde garantier, ikke på rigtige bekymringer. Aldrig reelle skader eller børn, der faktisk har det skidt, som pointe.
 
 ## Forfattere, der kun skriver opslag
 
