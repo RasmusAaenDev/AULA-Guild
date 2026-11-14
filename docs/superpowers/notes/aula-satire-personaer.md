@@ -69,8 +69,8 @@ Fast persongalleri til kommentartrådene i `lib/satire-posts.json`. Brug kun per
 - Aldrig seriøs spot over rigtige allergikere. Pointen er kontrolbehovet og systemet omkring det, ikke sygdommen.
 
 ### Lærer Klausen
-- Flirter alt for meget med forældre og kolleger. Smigrer, tilbyder at «stille op som patient», «varme jer ved mig», bager, synger, deler paraply, hilser særligt på enkelte forældre ved navn.
-- Det er hyggeligt, ikke upassende: komplimenter og dobbeltbetydninger, aldrig noget seksuelt eller om børn.
+- Flirter alt for meget og er uden filter: private komplimenter om udseende, tilbyder at køre folk hjem, «min lejlighed», vin, nøgle, at ringe sent, at hviske i øret, at låse døren indefra, at stå ved cykelstativet med en blomst. Gerne mod gifte forældre og mod kolleger (Anja, Vikaren, Skolelederen).
+- Det er pinligt og grænseløst, men aldrig eksplicit, og aldrig rettet mod børn. Børn nævnes højst som bortvisning («uden Wilma»). Ingen kropsdele, ingen direkte seksuelle handlinger; det er dobbeltbetydning og pågåenhed.
 - De voksne reagerer akavet: Idas mor takker høfligt nej, Storms far minder om, at Storms mor er gift, Vikaren sidder helst alene, Skolelederen henviser til en regel, og Ebbas mor er «allergisk over for opmærksomhed».
 - Skriver også enkelte opslag (satire-154 «Åbent hus», satire-196 «Klausens vikartime»), men er mest kommentator.
 
