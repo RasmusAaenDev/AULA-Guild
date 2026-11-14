@@ -153,6 +153,43 @@ export function newestFirst<T extends { at: Date }>(items: readonly T[]): T[] {
     .map((x) => x.item);
 }
 
+/** Antal opslag, knappen «Vis 5 tilfældige» trækker. */
+export const SATIRE_RANDOM_COUNT = 5;
+
+/** Frø til tilfældig udvælgelse: 1-16 små bogstaver/cifre. Alt andet (også tomt) giver `null`. */
+export function parseRandomSeed(value: string | string[] | undefined): string | null {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v && /^[a-z0-9]{1,16}$/.test(v) ? v : null;
+}
+
+function mulberry32(a: number): () => number {
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Tilfældige opslag ud fra hele puljen (ikke kun dagens vindue), med alle deres kommentarer. Samme frø giver samme opslag i samme rækkefølge,
+ * så en opdatering eller tilbage-knap viser det samme; et nyt frø giver et nyt udvalg. Ingen opslag optræder to gange. Tidspunktet er opslagets
+ * faste klokkeslæt i dag, men aldrig senere end nu (så intet ligger i fremtiden); rækkefølgen er den tilfældige, ikke tidens.
+ */
+export function randomSatire(seed: string, dateKey: string, now: Date, count: number = SATIRE_RANDOM_COUNT): DatedSatire[] {
+  const rand = mulberry32(hashSeed(seed));
+  const pool = [...satirePosts];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count).map((post, i) => {
+    const r = copenhagenToUtc(dateKey, clockFor(post.id));
+    const at = r.ok && r.utc.getTime() <= now.getTime() ? r.utc : new Date(now.getTime() - (i + 1) * SLOT_MIN * 60_000);
+    return { ...post, at };
+  });
+}
+
 export type SatireMode = 'none' | 'timeline' | 'all';
 
 /** Hvilke faner viser satire: kun ALLE (som del af tidslinjen) og SATIRE (alle); aldrig når det er slået fra. */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   activeSatire, clockFor, datedSatire, newestFirst, SATIRE_CYCLE_DAYS, SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, SATIRE_VISIBLE,
-  SATIRE_WINDOW_DAYS, parseSatirePreference, satireMode, effectiveTab, satirePosts, timelineSatire,
+  SATIRE_RANDOM_COUNT, SATIRE_WINDOW_DAYS, parseRandomSeed, parseSatirePreference, randomSatire, satireMode, effectiveTab, satirePosts, timelineSatire,
 } from '@/lib/satire';
 import { addDaysToDate, todayInCopenhagen, utcToCopenhagen } from '@/lib/time';
 import { parseTab } from '@/lib/posts-ui';
@@ -258,5 +258,37 @@ describe('fane til indhold', () => {
   });
   it('parseTab kender satire', () => {
     expect(parseTab('satire')).toBe('satire');
+  });
+});
+
+describe('randomSatire (knappen «Vis 5 tilfældige»)', () => {
+  const now = new Date('2026-11-14T10:00:00Z');
+  const pick = (seed: string) => randomSatire(seed, '2026-11-14', now);
+  it('giver fem forskellige opslag med alle deres kommentarer', () => {
+    expect(SATIRE_RANDOM_COUNT).toBe(5);
+    const r = pick('abc123');
+    expect(r).toHaveLength(5);
+    expect(new Set(r.map((p) => p.id)).size).toBe(5);
+    for (const p of r) expect(p.comments).toEqual(satirePosts.find((x) => x.id === p.id)!.comments);
+  });
+  it('giver det samme udvalg for samme frø og et andet for et nyt', () => {
+    expect(pick('abc123').map((p) => p.id)).toEqual(pick('abc123').map((p) => p.id));
+    const ids = new Set<string>();
+    for (const seed of ['a1', 'b2', 'c3', 'd4', 'e5', 'f6', 'g7', 'h8']) pick(seed).forEach((p) => ids.add(p.id));
+    expect(ids.size).toBeGreaterThan(20);
+    expect(pick('a1').map((p) => p.id)).not.toEqual(pick('b2').map((p) => p.id));
+  });
+  it('trækker fra hele puljen, ikke kun dagens vindue', () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 200; i++) pick(`s${i}`).forEach((p) => seen.add(p.id));
+    expect(seen.size).toBeGreaterThan(190);
+  });
+  it('lægger intet i fremtiden', () => {
+    for (let i = 0; i < 50; i++) for (const p of pick(`t${i}`)) expect(p.at.getTime()).toBeLessThanOrEqual(now.getTime());
+  });
+  it('accepterer kun små bogstaver og cifre som frø', () => {
+    expect(parseRandomSeed('a1b2c3')).toBe('a1b2c3');
+    expect(parseRandomSeed(['abc', 'def'])).toBe('abc');
+    for (const bad of [undefined, '', 'ABC', 'a b', '../x', 'x'.repeat(17), '<script>']) expect(parseRandomSeed(bad)).toBeNull();
   });
 });

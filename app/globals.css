@@ -337,7 +337,7 @@ details.create .menu a:hover { background: var(--border); }
 .chat-item-title { display: flex; align-items: center; gap: 8px; overflow-wrap: anywhere; }
 .chat-item-title svg { flex: none; }
 .chat-item-text { white-space: pre-wrap; }
-.satire-note { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: space-between; margin: -4px 0 16px; }
+.satire-note { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-start; margin: -4px 0 16px; }
 .satire-note p { margin: 0; }
 .satire-toggle { margin: 0; }
 .satire-explain { background: var(--sat-bg); border: 2px dashed var(--sat-border); color: var(--text); }
