@@ -7,7 +7,8 @@ import { and, count, desc, eq, isNotNull } from 'drizzle-orm';
 import { ChatItemCard } from '@/components/ChatItemCard';
 import { GalleryItemCard } from '@/components/GalleryItemCard';
 import { SatireCard } from '@/components/SatireCard';
-import { randomSatireAction, setSatirePreferenceAction } from '@/app/(app)/satire-actions';
+import { SatireMore } from '@/components/SatireMore';
+import { setSatirePreferenceAction } from '@/app/(app)/satire-actions';
 import { PostCard } from '@/components/PostCard';
 import { PostFeedMore } from '@/components/PostFeedMore';
 import { armoryUrl } from '@/lib/armory';
@@ -33,7 +34,7 @@ import { statusClass } from '@/lib/rsvp-ui';
 import { recentChatItems } from '@/lib/overview-chat';
 import { recentGalleryItems } from '@/lib/overview-gallery';
 import { mergeTimeline } from '@/lib/overview-feed';
-import { SATIRE_COOKIE, SATIRE_PER_DAY, SATIRE_RANDOM_COUNT, SATIRE_TIMELINE_DAYS, SATIRE_WINDOW_DAYS, datedSatire, effectiveTab, newestFirst, parseRandomSeed, parseSatirePreference, randomSatire, satireMode, timelineSatire } from '@/lib/satire';
+import { SATIRE_COOKIE, SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, SATIRE_WINDOW_DAYS, datedSatire, effectiveTab, newestFirst, parseSatirePreference, satireMode, timelineSatire } from '@/lib/satire';
 import { todayInCopenhagen } from '@/lib/time';
 import { isSimConfigured } from '@/lib/services';
 import { requireUser } from '@/lib/session';
@@ -51,7 +52,7 @@ const EMPTY: Record<OverviewTab, string> = {
 export default async function OverviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fane?: string | string[]; side?: string | string[]; tilfaeldig?: string | string[] }>;
+  searchParams: Promise<{ fane?: string | string[]; side?: string | string[]}>;
 }) {
   const member = await requireUser();
   const perms = permissions(member);
@@ -59,7 +60,6 @@ export default async function OverviewPage({
   const satireOn = parseSatirePreference((await cookies()).get(SATIRE_COOKIE)?.value);
   const tab = effectiveTab(parseTab(sp.fane), satireOn);
   const mode = satireMode(tab, satireOn);
-  const randomSeed = mode === 'all' ? parseRandomSeed(sp.tilfaeldig) : null;
   const page = mode === 'all' ? 1 : parsePage(sp.side);
   const timeline = tab === 'alle' && page === 1;
   const db = getDb();
@@ -99,7 +99,7 @@ export default async function OverviewPage({
     | { kind: 'satire'; item: ReturnType<typeof datedSatire>[number] };
   const feed: Entry[] =
     mode === 'all'
-      ? (randomSeed ? randomSatire(randomSeed, dateKey, now) : newestFirst(datedSatire(dateKey, now))).map((item) => ({ kind: 'satire' as const, item }))
+      ? newestFirst(datedSatire(dateKey, now)).map((item) => ({ kind: 'satire' as const, item }))
       : timeline
         ? mergeTimeline({
             real: items.map((item) => ({ item, at: item.createdAt, pinned: item.pinned })),
@@ -155,24 +155,8 @@ export default async function OverviewPage({
               <input type="hidden" name="satire" value={satireOn ? 'off' : 'on'} />
               <button type="submit" className="btn secondary">{satireOn ? 'Skjul satire' : 'Vis satire'}</button>
             </form>
-            {satireOn && (
-              <form action={randomSatireAction} className="satire-toggle">
-                <button type="submit" className="btn secondary">
-                  {randomSeed ? `Vis ${SATIRE_RANDOM_COUNT} nye tilfældige` : `Vis ${SATIRE_RANDOM_COUNT} tilfældige`}
-                </button>
-              </form>
-            )}
           </div>
-          {mode === 'all' && randomSeed && (
-            <section className="card satire-explain">
-              <h2>Satire</h2>
-              <p>
-                Her er {SATIRE_RANDOM_COUNT} tilfældige fiktive opslag fra hele samlingen, med alle deres kommentarer. De er opdigtede for sjov og
-                handler ikke om rigtige personer. Tryk på knappen ovenfor for at få {SATIRE_RANDOM_COUNT} nye, eller <Link href="/?fane=satire">se dagens satire</Link>.
-              </p>
-            </section>
-          )}
-          {mode === 'all' && !randomSeed && (
+          {mode === 'all' && (
             <section className="card satire-explain">
               <h2>Satire</h2>
               <p>
@@ -205,6 +189,13 @@ export default async function OverviewPage({
               startOffset={(page - 1) * POSTS_PAGE_SIZE + items.length}
               initialIds={items.map((p) => p.id)}
               renderedAt={now.getTime()}
+            />
+          )}
+          {mode !== 'none' && (
+            <SatireMore
+              key={tab}
+              label={tab === 'satire' ? 'Vis flere' : 'Vis flere satire'}
+              shownIds={feed.flatMap((e) => (e.kind === 'satire' ? [e.item.id] : []))}
             />
           )}
         </div>

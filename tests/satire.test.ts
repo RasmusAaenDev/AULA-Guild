@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   activeSatire, clockFor, datedSatire, newestFirst, SATIRE_CYCLE_DAYS, SATIRE_PER_DAY, SATIRE_TIMELINE_DAYS, SATIRE_VISIBLE,
-  SATIRE_RANDOM_COUNT, SATIRE_WINDOW_DAYS, parseRandomSeed, parseSatirePreference, randomSatire, satireMode, effectiveTab, satirePosts, timelineSatire,
+  SATIRE_RANDOM_COUNT, SATIRE_WINDOW_DAYS, parseSatirePreference, randomSatire, satireMode, effectiveTab, satirePosts, timelineSatire,
 } from '@/lib/satire';
 import { addDaysToDate, todayInCopenhagen, utcToCopenhagen } from '@/lib/time';
 import { parseTab } from '@/lib/posts-ui';
@@ -261,7 +261,7 @@ describe('fane til indhold', () => {
   });
 });
 
-describe('randomSatire (knappen «Vis 5 tilfældige»)', () => {
+describe('randomSatire (knappen «Vis flere» nederst i satire-listen)', () => {
   const now = new Date('2026-11-14T10:00:00Z');
   const pick = (seed: string) => randomSatire(seed, '2026-11-14', now);
   it('giver fem forskellige opslag med alle deres kommentarer', () => {
@@ -286,9 +286,11 @@ describe('randomSatire (knappen «Vis 5 tilfældige»)', () => {
   it('lægger intet i fremtiden', () => {
     for (let i = 0; i < 50; i++) for (const p of pick(`t${i}`)) expect(p.at.getTime()).toBeLessThanOrEqual(now.getTime());
   });
-  it('accepterer kun små bogstaver og cifre som frø', () => {
-    expect(parseRandomSeed('a1b2c3')).toBe('a1b2c3');
-    expect(parseRandomSeed(['abc', 'def'])).toBe('abc');
-    for (const bad of [undefined, '', 'ABC', 'a b', '../x', 'x'.repeat(17), '<script>']) expect(parseRandomSeed(bad)).toBeNull();
+  it('springer de allerede viste opslag over og stopper, når samlingen er brugt', () => {
+    const shown = satirePosts.slice(0, 40).map((p) => p.id);
+    for (let i = 0; i < 30; i++) for (const p of randomSatire(`x${i}`, '2026-11-14', now, 5, shown)) expect(shown).not.toContain(p.id);
+    const all = satirePosts.map((p) => p.id);
+    expect(randomSatire('x', '2026-11-14', now, 5, all)).toEqual([]);
+    expect(randomSatire('x', '2026-11-14', now, 5, all.slice(2)).map((p) => p.id).sort()).toEqual(all.slice(0, 2).sort());
   });
 });

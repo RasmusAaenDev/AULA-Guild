@@ -153,14 +153,8 @@ export function newestFirst<T extends { at: Date }>(items: readonly T[]): T[] {
     .map((x) => x.item);
 }
 
-/** Antal opslag, knappen «Vis 5 tilfældige» trækker. */
+/** Antal opslag, knappen «Vis 5 tilfældige» trækker ad gangen. */
 export const SATIRE_RANDOM_COUNT = 5;
-
-/** Frø til tilfældig udvælgelse: 1-16 små bogstaver/cifre. Alt andet (også tomt) giver `null`. */
-export function parseRandomSeed(value: string | string[] | undefined): string | null {
-  const v = Array.isArray(value) ? value[0] : value;
-  return v && /^[a-z0-9]{1,16}$/.test(v) ? v : null;
-}
 
 function mulberry32(a: number): () => number {
   return () => {
@@ -172,13 +166,17 @@ function mulberry32(a: number): () => number {
 }
 
 /**
- * Tilfældige opslag ud fra hele puljen (ikke kun dagens vindue), med alle deres kommentarer. Samme frø giver samme opslag i samme rækkefølge,
- * så en opdatering eller tilbage-knap viser det samme; et nyt frø giver et nyt udvalg. Ingen opslag optræder to gange. Tidspunktet er opslagets
- * faste klokkeslæt i dag, men aldrig senere end nu (så intet ligger i fremtiden); rækkefølgen er den tilfældige, ikke tidens.
+ * Tilfældige opslag ud fra hele puljen (ikke kun dagens vindue), med alle deres kommentarer, uden dem i `exclude` (de allerede viste).
+ * Samme frø og samme `exclude` giver samme opslag i samme rækkefølge; et nyt frø giver et nyt udvalg. Ingen opslag optræder to gange,
+ * og er der færre end `count` tilbage, returneres de, der er. Tidspunktet er opslagets faste klokkeslæt i dag, men aldrig senere end nu
+ * (så intet ligger i fremtiden); rækkefølgen er den tilfældige, ikke tidens.
  */
-export function randomSatire(seed: string, dateKey: string, now: Date, count: number = SATIRE_RANDOM_COUNT): DatedSatire[] {
+export function randomSatire(
+  seed: string, dateKey: string, now: Date, count: number = SATIRE_RANDOM_COUNT, exclude: readonly string[] = [],
+): DatedSatire[] {
+  const skip = new Set(exclude);
   const rand = mulberry32(hashSeed(seed));
-  const pool = [...satirePosts];
+  const pool = satirePosts.filter((p) => !skip.has(p.id));
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
